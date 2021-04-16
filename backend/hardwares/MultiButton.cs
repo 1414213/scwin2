@@ -7,16 +7,16 @@ using Robot;
 
 
 namespace Backend {
-	class MultiButton : Button, IEnumerable {
+	class ButtonMany : Button, IEnumerable {
 		public IList<Button> Buttons { get; set; } = new List<Button>();
 
-		public MultiButton() {}
+		public ButtonMany() {}
 
-		public MultiButton(IList<Button> buttons) {
+		public ButtonMany(IList<Button> buttons) {
 			this.Buttons = buttons;
 		}
 
-		public MultiButton(params Key[] keys) {
+		public ButtonMany(params Key[] keys) {
 			foreach (Key k in keys) {
 				Buttons.Add(new ButtonKey{ Key = k });
 			}

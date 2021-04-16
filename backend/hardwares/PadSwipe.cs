@@ -39,7 +39,7 @@ namespace Backend {
 		public bool IsContinuous { get; set; } = false;
 		public double MinimumSpeed { get; set; } = 80;
 		[JsonIgnore]
-		public int Amount { get => this.Buttons.Count; }
+		public int Amount => this.Buttons.Count;
 
 		private double minimumDistance = 0.25;
 		// defaults to an impossible input value (1.5 times the diameter of the trackpad)

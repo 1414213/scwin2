@@ -24,8 +24,8 @@ namespace Backend {
 				this.deadzone = value;
 			}
 		}
-		public bool IsLeftElseRight { get; set; } = true;
-		public bool Anchored { get; set; } = false;
+		public bool IsLeftElseRight { get; set; }
+		public bool Anchored { get; set; }
 
 		// // Gets the position of the simulated thumbstick.
 		// [JsonIgnore]

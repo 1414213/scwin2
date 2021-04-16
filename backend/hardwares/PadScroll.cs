@@ -16,7 +16,6 @@ namespace Backend {
 
 		protected override void DoEventImpl(api.InputData e) {
 			(short x, short y) coord = e.Coordinates ?? throw new ArgumentException(e + " isn't coordinal.");
-			var sideEffects = new List<SideEffect>();
 
 			// if e is an initial press
 			if (isInitialPress) {

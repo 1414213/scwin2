@@ -12,7 +12,8 @@ namespace Backend {
 			set => this.radial.IncrementsLeftElseRight = value;
 		}
 		public bool TapsElseHolds { get => this.radial.TapsElseHolds; set => this.radial.TapsElseHolds = value; }
-		public bool StartsFromPress { get; set; } = true;
+		// I don't know why I wrote this and it has 0 references ???
+		//public bool StartsFromPress { get; set; } = true;
 
 		private StickRadial radial = new StickRadial();
 
