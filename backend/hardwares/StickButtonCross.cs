@@ -45,7 +45,7 @@ namespace Backend {
 
 		private double deadzone = 0.2;
 		private double innerRadius = 0.35;
-		private double outerRadius = 0.1;
+		private double outerRadius;
 
 		public StickButtonCross() {}
 
