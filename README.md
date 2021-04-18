@@ -1,7 +1,7 @@
 # scwin2
 User-level driver for steam controllers built in .NET.&ensp;Allows for functionality to be defined using key-mappings written in JSON and inputted using a command line interface.
 
-The program aims to suppliment Steam Input by implementing features in a more simple and naieve way to allow for more flexibility when configuring the steam controller with the detriment of a rougher experience.&ensp;For example when mouse scrolling is bound to a button it can be set to click the scroll wheel or scroll it while held, and touching and clicking the trackpad are seperate inputs that can be configured seperately.
+The program aims to suppliment Steam Input by implementing features in a more simple and naïve way to allow for more flexibility when configuring the steam controller with the detriment of a rougher experience.&ensp;For example when mouse scrolling is bound to a button it can be set to click the scroll wheel or scroll it while held, and touching and clicking the trackpad are seperate inputs that can be configured seperately.
 
 ### Dependencies
 - .NET 5
