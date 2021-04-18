@@ -161,7 +161,7 @@ Sets a trackpad to simulate a thumbstick of a gamepad.&ensp;*Deadzone* sets an a
 "IsContinuous": false,
 "MinimumSpeed": 80
 ```
-Translates lines drawn on a trackpad into button input based on the direction of the line.&ensp;For example, with a list of two buttons and an offset of 0.5 pi's a northward swipe would tap the first button and a southward swipe would tap the second.&ensp;*MinimumDistance* sets the minimum length a detected swipe needs to be to activate a button.&ensp;It is recommended to keep this above the default value.&ensp;*AngleOffset* specifies at what angle slice listing begins.&ensp;Measured in amounts of pi (1 would be read as 1*pi).&ensp;*LongSwipeThreshold* set the minimum length a swipe needs to be to be considered a long swipe.&ensp;Measured as a proportion of the diameter of the trackpad.&ensp;This should be greater than *MinimumDistance*; when less all swipes will be considered long swipes.&ensp;The default value is impossible so that long swipes are ignored in default function.&ensp;*Buttons* specifies a list of Button types to be tapped by swiping.&ensp;The size of this sets the amount of directions to draw lines with, extending from 0 pi to 2 pi.&ensp;*LongSwipeButtons* sets a list of type Button to be pressed by long swipes.&ensp;Since the amount of slices is set by *Buttons* if this list is longer than *Buttons* the Buttons exceeding the length of *Buttons* will be ignored and if it is shorter the unfilled slices will be considered empty and do nothing.&ensp;*IsContinuous* sets whether multiple swipes can be made from a single gesture.&ensp;By default the end of the swipe is where input stops on the trackpad.&ensp;When enabled this takes where a stroke stops moving to be a swipe's end with *MinimumSpeed* setting how slow the stroke needs to move to be considered stopped.&ensp;*MinimumSpeed* should be kept at the default value for best performance.
+Translates lines drawn as swipes on a trackpad into button input based on the direction of the line.&ensp;For example, with a list of two buttons and an offset of 0.5 pi's a northward swipe would tap the first button and a southward swipe would tap the second.&ensp;*MinimumDistance* sets the minimum length a detected swipe needs to be to activate a button.&ensp;It is recommended to keep this above the default value.&ensp;*AngleOffset* specifies at what angle slice listing begins.&ensp;Measured in amounts of pi (1 would be read as 1*pi).&ensp;*LongSwipeThreshold* set the minimum length a swipe needs to be to be considered a long swipe.&ensp;Measured as a proportion of the diameter of the trackpad.&ensp;This should be greater than *MinimumDistance*; when less all swipes will be considered long swipes.&ensp;The default value is impossible so that long swipes are ignored in default function.&ensp;*Buttons* specifies a list of Button types to be tapped by swiping.&ensp;The size of this sets the amount of directions to draw lines with, extending from 0 pi to 2 pi.&ensp;*LongSwipeButtons* specifies a list of Button types to be pressed by long swipes.&ensp;Since the amount of directions is set by *Buttons* if this list is shorter than *Buttons* the unfilled directions will do nothing.&ensp;*IsContinuous* sets whether multiple swipes can be made from a single gesture.&ensp;By default the end of the swipe is where input stops on the trackpad.&ensp;When enabled this takes where a stroke stops moving to be a swipe's end with *MinimumSpeed* sets how slow the stroke needs to move to be considered stopped.&ensp;*MinimumSpeed* should be kept near the default value for best performance.
 
 ### PadTrackball
 ```
@@ -172,7 +172,7 @@ Translates lines drawn on a trackpad into button input based on the direction of
 "InvertX": false,
 "InvertY": false
 ```
-Sets a trackpad to act as a trackball.&ensp;*HasInertia* sets whether the trackball will roll when input stops.&ensp;*Sensitivity* sets how many pixels an input the length of the diameter of the trackpad will move the mouse cursor.&ensp;For example a value of 500 will fit 500 pixels across the trackpad.&ensp;*Decceleration* sets how fast the trackball stops rolling.&ensp;*InvertX* and *InvertY* invert the x and y axises.
+Sets a trackpad to act as a trackball.&ensp;*HasInertia* sets whether the trackball will roll when input stops.&ensp;*Sensitivity* sets the resolution of sensitivity measured as pixels per diameter.&ensp;For example when set to 500 an input the length of half the trackpad will move the mouse cursor 250 pixels.&ensp;*Decceleration* sets how fast the trackball deccelerates when rolling.&ensp;*InvertX* and *InvertY* invert the x and y axises.
 
 ### StickButtonCross
 ```
@@ -186,9 +186,9 @@ Sets a trackpad to act as a trackball.&ensp;*HasInertia* sets whether the trackb
 "HasOverlap": true,
 "Deadzone": 0.2,
 "InnerRadius": 0.35,
-"OuterRadius": 0.1
+"OuterRadius": 0.0
 ```
-Allows the thumbstick to be used like a directional pad.&ensp;*East*, *North*, *West*, and *South* bind a Button type to each direction.&ensp;*Inner* is a Button type pressed when input is a certain distance from the center; distance is specified by *InnerRadius* as a proportion of the radius of the thumbstick's range.&ensp;*Outer* is a Button type pressed when input is a certain distance from the edge of the thumbstick's range; distance is specified by *OuterRadius* as a proportion of the radius of the range.&ensp;*HasOverlap* specifies whether there is overlap in the transition between buttons.&ensp;*Deadzone* specifies a distance from the center within which to stop creating input as a proportion of the radius of the thumbstick's range.
+Allows the thumbstick to be used like a directional pad.&ensp;*East*, *North*, *West*, and *South* bind a Button type to their respective direction.&ensp;*Inner* is a Button type pressed when input is within a certain distance from the center; distance is specified by *InnerRadius* as a proportion of the radius of the thumbstick's range measuring from the center.&ensp;*Outer* is a Button type pressed when input is a certain distance from the edge of the thumbstick's range; distance is specified by *OuterRadius* as a proportion of the radius of the thumbstick's range measured from its edge.&ensp;*HasOverlap* specifies whether there is overlap in the transition between buttons.&ensp;*Deadzone* specifies a distance from the center within which to stop creating input, measured as a proportion of the radius of the thumbstick's range from its center.
 
 ### StickRadial
 ```
@@ -199,7 +199,7 @@ Allows the thumbstick to be used like a directional pad.&ensp;*East*, *North*, *
 "IncrementsLeftElseRight": true
 "TapsElseHolds": false
 ```
-Seperates the thumbstick into a number of slices of Button types and activates the slice it enters.&ensp;*Buttons* is a list of Button types.&ensp;The amount of slices is the size of *Buttons*.&ensp;"Deadzone" is measured as a proportion of the thumbstick's radius and creates a range in the center where input releases.&ensp;*AngleOffset* specifies at what angle slice 0 starts.&ensp;Measured in amounts of pie (1 would be read as 1*pi).&ensp;*IncrementsLeftElseRight* specifies whether the list progresses clockwise (left) or counterclockwise arount the thumbstick.&ensp;*TapsElseHolds*: if set to tap the Button respective to the entered slice will be tapped.&ensp;If set to hold the slice will be pressed when entered and released when exitted.
+Seperates the thumbstick into a number of slices and activates a slice's respective button when input enters it.&ensp;*Buttons* is a list of Button types.&ensp;"Deadzone" is measured as a proportion of the thumbstick's radius from its center and creates a range where input releases.&ensp;*AngleOffset* specifies at what angle slice 0 starts.&ensp;Measured in amounts of pie (1 would be read as 1*pi).&ensp;*IncrementsLeftElseRight* specifies whether rotating clockwise (left) or counterclockwise traverses up or down *Buttons*, respectively.&ensp;*TapsElseHolds*: if set to tap the Button respective to the entered slice will be tapped.&ensp;If set to hold the slice will be pressed when entered and released when exitted.
 
 ### StickScroll
 ```
@@ -209,7 +209,7 @@ Seperates the thumbstick into a number of slices of Button types and activates t
 "Reversed": false,
 "ScrollAlongXElseY": true
 ```
-Sets the thumbstick to scroll the mouse wheel.&ensp;*Sensitivity* sets how much the thumbstick scrolls.&ensp;*Deadzone* sets a deadzone for the thumbstick.&ensp;*Reversed* reverses the direction that the thumbstick scrolls in.&ensp;*ScrollAlongXElseY* sets the thumbstick to scroll based on north and south orientation or east and west.
+Sets the thumbstick to scroll the mouse wheel.&ensp;*Sensitivity* sets how quickly the thumbstick scrolls.&ensp;*Deadzone* sets a deadzone for the thumbstick measured from its center as a proportion of its radius.&ensp;*Reversed* reverses the direction that the thumbstick scrolls in.&ensp;*ScrollAlongXElseY* sets the thumbstick to scroll based on east and west orientation or north and south.
 
 ### StickStick
 ```
@@ -217,7 +217,7 @@ Sets the thumbstick to scroll the mouse wheel.&ensp;*Sensitivity* sets how much 
 "Deadzone": 0.2,
 "IsLeftElseRight": false
 ```
-Takes thumbstick input and translates it into input of a thumbstick from a gamepad.&ensp;*Deadzone* sets a radius from the center where input is always 0 and is measured as a proportion of the thumbstick's radius from its center.&ensp;*IsLeftElseRight* specifies whether to simulate the left or right thumbstick.
+Translates thumbstick input into thumbstick input of a gamepad.&ensp;*Deadzone* sets a radius extending from its center where input is always 0.&ensp;Measured as a proportion of the thumbstick's radius.&ensp;*IsLeftElseRight* specifies whether to simulate a left or right thumbstick.
 
 ### TriggerButton
 ```
@@ -226,7 +226,7 @@ Takes thumbstick input and translates it into input of a thumbstick from a gamep
 "PullThreshold": 0.5,
 "IncludeSwitchInRange": false
 ```
-Sets a trigger to press a button when pulled past a threshold and release the button when released.&ensp;*Button* specifies a Button type to press and release.&ensp;*PullThreshold* is the distance the trigger needs to travel to activate the button.&ensp;This is a value between 0 and 1 inclusively.&ensp;*IncludeSwitchInRange* will include the distance traveled to push the switch behind the trigger as part of the range of the trigger.
+Sets a trigger to press a button when pulled past a certain degree and release the button when released.&ensp;*Button* specifies a Button type to press and release.&ensp;*PullThreshold* is the distance the trigger needs to travel to activate the button.&ensp;This is a value between 0 and 1 inclusively.&ensp;*IncludeSwitchInRange* will include the distance traveled to push the switch behind the trigger as part of the range of the trigger.
 
 ### TriggerTrigger
 ```
@@ -234,6 +234,6 @@ Sets a trigger to press a button when pulled past a threshold and release the bu
 "IsLeftElseRight": false,
 "IncludeSwitchInRange": false
 ```
-Sets a trigger to act as a gamepad's trigger.&ensp;*IsLeftElseRight* sets input to translate to either the left or right trigger of a gameped.&ensp;*IncludeSwitchInRange* will include the distance traveled to push the switch behind the trigger as part of the range of the trigger.
+Sets a trigger to act as a gamepad's trigger.&ensp;*IsLeftElseRight* sets input to translate to either a left or right trigger.&ensp;*IncludeSwitchInRange* will include the distance traveled to push the switch behind the trigger as part of the range of the trigger.
 
 
