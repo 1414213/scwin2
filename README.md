@@ -1,16 +1,15 @@
 # scwin2
 User-level driver for steam controllers built in .NET.&ensp;Allows for functionality to be defined using key-mappings written in JSON and inputted using a command line interface.
 
-The program aims to suppliment Steam Input by implementing features in a more simple and naïve way to allow for more flexibility when configuring the steam controller with the detriment of a rougher experience.&ensp;For example when mouse scrolling is bound to a button it can be set to click the scroll wheel or scroll it while held, and touching and clicking the trackpad are seperate inputs that can be configured seperately.
+This is a hobby project that aims to suppliment Steam Input by implementing features in a more simple and naïve way to allow for more flexibility when configuring the steam controller.&ensp;For example when a button assigned as a mouse scroll can be set to click the scroll wheel or scroll it while held, and touches and clicks of the trackpads can be configured seperately.
 
 ### Dependencies
 - .NET 5
 - ViGEm Bus Driver: Will run without this but will fail if gamepad inputs are included in the keymap
-- Recommended to be used alongside the Steam client
 
 
 ## How To Use
-The program accepts the name of a keymap.&ensp;If the given keymap cannot be found then it creates a blank keymap of the given name.
+It is recommended to use this alongside the Steam client and Steam Input.&ensp;The first argument should be the name of a keymap.&ensp;If the given keymap cannot be found then it creates a blank keymap of the given name.&ensp;Flags can appear anywhere.
 ### Flags
 - -n: start the program without creating a virtual gamepad
 
@@ -19,17 +18,17 @@ The program accepts the name of a keymap.&ensp;If the given keymap cannot be fou
 The JSON file defines an *Map* (keymap) object:
 - Field *Name* specifies the inputmap's name.&ensp;This is optional
 - Field *ActionMaps* contains Maps to be applied, similar to Steam Input's action sets.&ensp;Each Map *must* contain a name
-- Field *InputMap* defines functionality.&ensp;Each field is some hardware on the controller and contains fields to define how that hardware creates functionality:
-  - *Regular* is a straight binding of a *Hardware* object to the specified hardware
-  - *TemporalThreshold* defines the timing for when a short press becomes a long press.&ensp;Only applies to buttons
-  - *ShortPress* is the functionality used for a pressing time length below the threshhold
-  - *LongPress* is the functionality used for a pressing time length above the threshold
-  - *IsLongPressHeld* activates the Hardware object assigned to LongPress exactly when the temporal threshold is passed when set to true.&ensp;When false input is decided when the button is released
+- Field *InputMap* defines the keymap.&ensp;Each field is some input on the controller and each input contains fields to define how that input is given:
+  - *Regular* is a straight binding of a simulated input to the specified input
+  - *TemporalThreshold* defines the timing for when a short press becomes a long press.&ensp;Note: temporal pressingsOnly applies to buttons
+  - *ShortPress* simulates input when the duration of the press is below the threshhold
+  - *LongPress* simulates input when the duration of the press is above the threshold
+  - *IsLongPressHeld* simulates the input of a *LongPress* exactly when the temporal threshold is passed if set to true.&ensp;When false input is decided when the button is released
 
-A hardware object must include the class field.&ensp;All other fields are optional and will be given a default value if omitted.&ensp;The value shown to the right of the field is its default value.
+Each simulated input must include the *$type* field.&ensp;All other fields are optional and will be given a default value if omitted.&ensp;The value shown to the right of the field is its default value.
 
 ### Button
-Any type beginning with the name "Button" is part of the button type.&ensp;Any button type can be assigned to a field with "Button" listed as the default value, and any such field will default to a button which does nothing.&ensp;Any button can press, release, and tap.&ensp;Press presses, release releases, and tap presses and then releases.
+Any type beginning with the name "Button" is a type of a button type.&ensp;Any button type can be assigned to a field with "Button" listed as its default value and any such field will default to a button which simulates no input.&ensp;Any button can simulate a press, release, and tap (press and then release).
 
 ### ButtonAction
 ```
@@ -37,43 +36,44 @@ Any type beginning with the name "Button" is part of the button type.&ensp;Any b
 "IsLayered": true,
 "Name": ""
 ```
-Adds an action map when it is pressed and removes the action map from the action layering when it is released.&ensp;*Name* specifies the action map to choose.&ensp;*IsLayered* adds layering like Steam Input's action layer; if an input in the action map is unbound the program will then try the input in the layer below.&ensp;It is recommended to keep this enabled.
+Functions like action layers in Steam Input.&ensp;Layers an action map when it is pressed and removes it when released.&ensp;*Name* specifies the action map to choose.&ensp;*IsLayered* sets transparency; when true if an input in the layer is unbound the program will then try to use the equivalent input from the layer below.$ensp;When false an input with no simulated input bound to it will do nothing.&ensp;It is recommended to keep this true.
 
 ### ButtonDoubler
 ```
 "$type": "Backend.ButtonDoubler, scwin",
 "Button": Button
 ```
-Taps *Button* when pressed and taps again when released.
+Taps *Button* when pressed and taps it again when released.
 
 ### ButtonDualStage
 ```
 "$type": "Backend.ButtonDualStage, scwin",
 "Button": Button,
 ```
-Presses *Button* when pressed and then released *Button* when pressed again.
+Presses *Button* when pressed and released and then released *Button* when pressed and released again.
 
 ### ButtonKey
 ```
 "$type": "Backend.ButtonKey, scwin",
 "Key": 0
 ```
-Basic button input simulator.&ensp;Presses the given key corresponding to the keycode when presses and releases it when released.
+Simulates input from a button or key.&ensp;*Key* is the button or key to simulate.
 
 ### ButtonScroll
 ```
 "$type": "Backend.ButtonScroll, scwin",
+"Amount": 1.0,
 "AsClicks": true,
 "IsContinuous": false
 ```
-Scrolls the mouse wheel when pressed.&ensp;*Amount* specifies what magnitude to scroll by.&ensp;*AsClicks* specifies is the magnitude represents clicks of the mouse wheel.&ensp;*IsContinuous*, when false, will scroll by the magnitude once for every press of the button.&ensp;When true it will continuously scroll the mouse wheel while the button is being held.&ensp;Input is send 100 times per second.
+Scrolls the mouse wheel when pressed.&ensp;*Amount* specifies the amount to scroll.&ensp;*AsClicks* specifies whether or not *Amount* represents clicks of the mouse wheel.&ensp;*IsContinuous*, when set to false, will simulate input once for every press of the button.&ensp;When set to true holding the button will continuously scroll the mouse wheel; while held input is sent 100 times per second.
 
 ### ButtonMany
 ```
 "$type": "Backend.ButtonMany, scwin",
 "Buttons": []
 ```
-Presses every button in *Buttons*, a list of type Button, when pressed and releases every listed button when released.
+Presses every button in *Buttons* when pressed and releases every button when released.&ensp;*Buttons* is a list of Button types.
 
 ### PadButtonCross
 ```
@@ -90,7 +90,7 @@ Presses every button in *Buttons*, a list of type Button, when pressed and relea
 "OuterRadius": 0.1,
 "OverlapIgnoranceRadius": 0.5
 ```
-Works the same as *StickButtonCross*.&ensp;*OverlapIgnoranceRadius* specifies a distance, measured as a proportion of the trackpad's radius extending from the center to its edge, to not allow directional input to overlap to make swiping motions feel more precise.
+Works the same as *StickButtonCross*.&ensp;*OverlapIgnoranceRadius* specifies a distance, measured as a proportion of the trackpad's radius from its center to its edge, within which to not simulate diagonal input.&ensp;Its purpose is to hopefully make swiping feel more precise.
 
 ### PadRadial
 ```
@@ -101,7 +101,7 @@ Works the same as *StickButtonCross*.&ensp;*OverlapIgnoranceRadius* specifies a 
 "IncrementsLeftElseRight": true
 "TapsElseHolds": false
 ```
-Works the same as *StickRadial*.&ensp;All Button types are released when touch input is stopped so *Deadzone* defaults to 0.
+Works the same as *StickRadial*.&ensp;All buttons in *Buttons* are released when input to the trackpad stops.
 
 ### PadScroll
 ```
@@ -111,7 +111,7 @@ Works the same as *StickRadial*.&ensp;All Button types are released when touch i
 "Reversed": false,
 "SwipeAlongXElseY": true
 ```
-Scrolls the mouse wheel using a trackpad.&ensp;*IsWheelElseSwipe* sets whether the trackpad functions like a scroll wheel.&ensp;*Sensitivity* sets how much a swipe scrolls the mouse.&ensp;*Reversed* reverses input from swiping and increments the scroll wheel counterclockwise when set to true.&ensp;*SwipeAlongXElseY* specifies whether swipes should travel horizontally or vertically.
+Sets a trackpad to simulate scrolling the mouse wheel.&ensp;*IsWheelElseSwipe* sets whether input is given by swiveling the trackpad or by swiping it.&ensp;*Sensitivity* sets how much a swivel or swipe scrolls the mouse.&ensp;*Reversed* reverses the direction swivels and swipes scroll.&ensp;*SwipeAlongXElseY* specifies whether swipes should travel horizontally or vertically.
 
 ### PadSlideButtonCross
 ```
@@ -129,7 +129,7 @@ Scrolls the mouse wheel using a trackpad.&ensp;*IsWheelElseSwipe* sets whether t
 "RelativeSize": 0.5,
 "Anchored": false
 ```
-Like *PadButtonCross* but uses the initial contact point as point 0.&ensp;*RelativeSize* sets how big the range of input from the initial point is relative to the diameter of the trackpad.&ensp;*Anchored* specifies whether point 0 should be dragged along when swiping distance exceeds the range of the *RelativeSize*.
+Works the same as *PadSlideStick* but simuates a button cross instead of a thumbstick.
 
 ### PadSlideStick
 ```
@@ -139,7 +139,7 @@ Like *PadButtonCross* but uses the initial contact point as point 0.&ensp;*Relat
 "IsLeftElseRight": false,
 "Anchored": false
 ```
-Translates sliding input on the trackpad into thumbstick input.&ensp;*RelativeSize* sets how big the range of input from the initial point is relative to the diameter of the trackpad.&ensp;*Deadzone* specifies the deadzone of the thumbstick area.&ensp;*IsLeftElseRight* sets input to simulate the left or right thumbstick.&ensp;*Anchored*, when set to false, causes the thumbstick area to be dragged when input goes beyond the bounds of the area.&ensp;For example travelling up beyond the area's bounds will push the stick towards a northward position while repositoning point 0 of the area to respect that orientation.
+Translates sliding input on the trackpad into thumbstick input.&ensp;For example sliding leftwards will push the simulated thumbstick left and then sliding northwards will push it into a more north-facing position.&ensp;*RelativeSize* sets how big the simulated thumbstick is relative to the diameter of the trackpad.&ensp;*Deadzone* sets the deadzone of the simulated thumbstick.&ensp;*IsLeftElseRight* specifies whether to simulate a left or right thumbstick.&ensp;*Anchored* sets what happens when input leaves the area of the simulated thumbstick.&ensp;When set to false the center of the simulated thumbstick is dragged along the surface of the trackpad.&ensp;When true leaving its area simulates pushing the thumbstick to its maximum degree of tilt.
 
 ### PadStick
 ```
@@ -148,7 +148,7 @@ Translates sliding input on the trackpad into thumbstick input.&ensp;*RelativeSi
 "OuterLimit": 0.8,
 "IsLeftElseRight": false
 ```
-Sets a trackpad to act as a thumbstick of a gamepad.&ensp;*Deadzone* sets a radius form the centre where input is always 0 and is measured as a proportion of the thumbstick's radius from its center.&ensp;*OuterLimit* sets a radius of the trackpad to be used, measuring from its center.&ensp;Any input beyond the outer edge will be translated as the thumbstick being pushed to its limit.&ensp;*IsLeftElseRight* specifies whether to simulate the left or right thumbstick.
+Sets a trackpad to simulate a thumbstick of a gamepad.&ensp;*Deadzone* sets an area extending from the center where simulated input is always 0.&ensp;Measured as a proportion of its radius.&ensp;*OuterLimit* specifies an area extending from the edge where entered input will simulate the thumbstick being pushed to its maximum degree of tilt.&ensp;Measured as a proportion of the radius from its center.&ensp;*IsLeftElseRight* specifies whether to simulate a left or right thumbstick.
 
 ### PadSwipe
 ```
@@ -161,7 +161,7 @@ Sets a trackpad to act as a thumbstick of a gamepad.&ensp;*Deadzone* sets a radi
 "IsContinuous": false,
 "MinimumSpeed": 80
 ```
-Allows lines to be drawn on a trackpad and activates a given Button based on the angle of the swipe.&ensp;For example a list of two buttons and an offset of 0.5 pi's would tap the first Button for a northward swipe and the second for a southward swipe.&ensp;*MinimumDistance* specifies how long a detected swipe needs to be to activate a button.&ensp;It is recommended to keep this above the default value.&ensp;*AngleOffset* specifies at what angle slice 0 starts.&ensp;Measured in amounts of pi (1 would be read as 1*pi).&ensp;*LongSwipeThreshold* set the minimum length a swipe needs to be to be considered a long swipe and is a proportion of the diameter of the trackpad.&ensp;This should be greater than *MinimumDistance* or else all swipes will be considered long swipes.&ensp;The default value is impossible (1.5 times the diameter of the trackpad) so that long swipes are ignored in default function.&ensp;*Buttons* sets a list of type Button to be pressed by swiping.&ensp;The amount of slices is the size of *Buttons*.&ensp;*LongSwipeButtons* sets a list of type Button to be pressed by long swipes.&ensp;Since the amount of slices is set by *Buttons* if this list is longer than *Buttons* the Buttons exceeding the length of *Buttons* will be ignored and if it is shorter the unfilled slices will be considered empty and do nothing.&ensp;*IsContinuous* sets whether multiple swipes can be made from a single gesture.&ensp;By default the end of the swipe is where input stops on the trackpad.&ensp;When enabled this takes where a stroke stops moving to be a swipe's end with *MinimumSpeed* setting how slow the stroke needs to move to be considered stopped.&ensp;*MinimumSpeed* should be kept at the default value for best performance.
+Translates lines drawn on a trackpad into button input based on the direction of the line.&ensp;For example, with a list of two buttons and an offset of 0.5 pi's a northward swipe would tap the first button and a southward swipe would tap the second.&ensp;*MinimumDistance* sets the minimum length a detected swipe needs to be to activate a button.&ensp;It is recommended to keep this above the default value.&ensp;*AngleOffset* specifies at what angle slice listing begins.&ensp;Measured in amounts of pi (1 would be read as 1*pi).&ensp;*LongSwipeThreshold* set the minimum length a swipe needs to be to be considered a long swipe.&ensp;Measured as a proportion of the diameter of the trackpad.&ensp;This should be greater than *MinimumDistance*; when less all swipes will be considered long swipes.&ensp;The default value is impossible so that long swipes are ignored in default function.&ensp;*Buttons* specifies a list of Button types to be tapped by swiping.&ensp;The size of this sets the amount of directions to draw lines with, extending from 0 pi to 2 pi.&ensp;*LongSwipeButtons* sets a list of type Button to be pressed by long swipes.&ensp;Since the amount of slices is set by *Buttons* if this list is longer than *Buttons* the Buttons exceeding the length of *Buttons* will be ignored and if it is shorter the unfilled slices will be considered empty and do nothing.&ensp;*IsContinuous* sets whether multiple swipes can be made from a single gesture.&ensp;By default the end of the swipe is where input stops on the trackpad.&ensp;When enabled this takes where a stroke stops moving to be a swipe's end with *MinimumSpeed* setting how slow the stroke needs to move to be considered stopped.&ensp;*MinimumSpeed* should be kept at the default value for best performance.
 
 ### PadTrackball
 ```
