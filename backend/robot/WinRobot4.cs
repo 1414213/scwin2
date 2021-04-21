@@ -81,8 +81,10 @@ namespace Robot {
 				else if (k == Key.MouseFive) this.sim.Mouse.XButtonUp(2);
 				else if ((int)k >= (int)Key.Tab && (int)k <= (int)Key.Pad_Period)
 					this.sim.Keyboard.KeyUp(k.ToVirtualKeyCode());
-				else if ((int)k >= (int)Key.Face_East)
+				else if ((int)k >= (int)Key.Face_East) {
+					Console.WriteLine(k);
 					this.virtualGamepad.SetButtonState(k.ToXbox360Button(), false);
+				}
 			}
 			// foreach (var key in keys) switch (key) {
 			// 	case Key.None: break;
@@ -91,7 +93,7 @@ namespace Robot {
 			// 	case Key.MouseMiddle: this.sim.Mouse.MiddleButtonUp(); break;
 			// 	case Key.MouseFour: this.sim.Mouse.XButtonUp(1); break;
 			// 	case Key.MouseFive: this.sim.Mouse.XButtonUp(2); break;
-			// 	case int k as (int)key: break;
+			// 	case Key k as int i when (int)key is (>= (int)Key.Tab) and (<= (int)Key.Pad_Period): break;
 			// }
 		}
 
