@@ -27,7 +27,7 @@ namespace Backend {
 			public bool IsLongPressHeld { get; set; }
 		}
 
-		public static string Directory { get; set; } = @"inputmappings\";
+		public static string Directory { get; set; } = @"inputmaps\";
 
 		/// <summary>
 		/// Returns true if the map was opened and false if no map was found and a blank map
@@ -38,11 +38,11 @@ namespace Backend {
 			string jsonString;
 
 			// create the directory to store the input maps in if it doesn't already exist
-			FileInfo mapFileInfo = new FileInfo(mapPath);
+			var mapFileInfo = new FileInfo(mapPath);
 			mapFileInfo.Directory?.Create();
 
 			if (!File.Exists(mapPath)) {
-				Map blankInputMap = new Map();
+				var blankInputMap = new Map{ Name = mapName };
 				jsonString = JsonConvert.SerializeObject(blankInputMap, Formatting.Indented);
 				File.WriteAllText(mapPath, jsonString);
 

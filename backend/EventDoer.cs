@@ -55,17 +55,6 @@ namespace Backend {
 
 		public void DoEvents(IList<api.InputData> events) {
 			foreach (api.InputData e in events) {
-				// Descend thru the list of layers until a bounded input is found 
-				// or until layer opacity in encountered.
-				// for (int i = actionLayering.Count-1; i >= 0; i--) {
-				// 	if (actionLayering.Find[i].map.ContainsKey(e.Key.ToString())) {
-				// 		this.DoAction(e, actionLayering[i].map[e.Key.ToString()]);
-				// 		break;
-				// 	} else {
-				// 		if (actionLayering[i].isLayered) continue;
-				// 		else break;
-				// 	}
-				// }
 				var itr = actionLayering.Last;
 				for (int i = 0; i < actionLayering.Count; i++) {
 					if (itr!.Value.map.ContainsKey(e.Key.ToString())) {
