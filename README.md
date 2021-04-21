@@ -11,7 +11,8 @@ This is a hobby project that aims to suppliment Steam Input by implementing feat
 ## How To Use
 It is recommended to use this alongside the Steam client and Steam Input.&ensp;The first argument should be the name of a keymap.&ensp;If the given keymap cannot be found then it creates a blank keymap of the given name.&ensp;Flags can appear anywhere.
 ### Flags
-- -n: start the program without creating a virtual gamepad
+- -n, --no-gamepad: start the program without creating a virtual gamepad
+- -d, --directory: specify a directory to search for input maps from as the next argument
 
 
 ## Creating Keymaps
