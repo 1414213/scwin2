@@ -4,8 +4,8 @@ User-level driver for steam controllers built in .NET.&ensp;Allows for functiona
 This is a hobby project that aims to suppliment Steam Input by implementing features in a more simple and naïve way to allow for more flexibility when configuring the steam controller.&ensp;For example when a button assigned as a mouse scroll can be set to click the scroll wheel or scroll it while held, and touches and clicks of the trackpads can be configured seperately.
 
 ### Dependencies
-- .NET 5
-- ViGEm Bus Driver: Will run without this but will fail if gamepad inputs are included in the keymap
+- [.NET 5](https://dotnet.microsoft.com/)
+- [ViGEm Bus Driver](https://github.com/ViGEm/ViGEmBus): Will run without this but *will crash* if steam controller input set to simulate gamepad inputs is activated
 
 
 ## How To Use
