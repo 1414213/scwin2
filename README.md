@@ -96,8 +96,8 @@ Works the same as *StickButtonCross*.&ensp;*OverlapIgnoranceRadius* specifies a 
 ```
 "$type": "Backend.PadRadial, scwin",
 "Buttons": [],
-"Deadzone": 0,
-"AngleOffset": 0,
+"Deadzone": 0.0,
+"AngleOffset": 0.0,
 "IncrementsLeftElseRight": true
 "TapsElseHolds": false
 ```
@@ -107,7 +107,7 @@ Works the same as *StickRadial*.&ensp;All buttons in *Buttons* are released when
 ```
 "$type": "Backend.PadScroll, scwin",
 "IsWheelElseSwipe": true,
-"Sensitivity": 5,
+"Sensitivity": 5.0,
 "Reversed": false,
 "SwipeAlongXElseY": true
 ```
@@ -154,12 +154,12 @@ Sets a trackpad to simulate a thumbstick of a gamepad.&ensp;*Deadzone* sets an a
 ```
 "$type": "Backend.PadSwipe, scwin",
 "MinimumDistance": 0.25,
-"AngleOffset": 0,
+"AngleOffset": 0.0,
 "LongSwipeThreshold": 1.5,
 "Buttons": [],
 "LongSwipeButtons": [],
 "IsContinuous": false,
-"MinimumSpeed": 80
+"MinimumSpeed": 80.0
 ```
 Translates lines drawn as swipes on a trackpad into button input based on the direction of the line.&ensp;For example, with a list of two buttons and an offset of 0.5 pi's a northward swipe would tap the first button and a southward swipe would tap the second.&ensp;*MinimumDistance* sets the minimum length a detected swipe needs to be to activate a button.&ensp;It is recommended to keep this above the default value.&ensp;*AngleOffset* specifies at what angle slice listing begins.&ensp;Measured in amounts of pi (1 would be read as 1*pi).&ensp;*LongSwipeThreshold* set the minimum length a swipe needs to be to be considered a long swipe.&ensp;Measured as a proportion of the diameter of the trackpad.&ensp;This should be greater than *MinimumDistance*; when less all swipes will be considered long swipes.&ensp;The default value is impossible so that long swipes are ignored in default function.&ensp;*Buttons* specifies a list of Button types to be tapped by swiping.&ensp;The size of this sets the amount of directions to draw lines with, extending from 0 pi to 2 pi.&ensp;*LongSwipeButtons* specifies a list of Button types to be pressed by long swipes.&ensp;Since the amount of directions is set by *Buttons* if this list is shorter than *Buttons* the unfilled directions will do nothing.&ensp;*IsContinuous* sets whether multiple swipes can be made from a single gesture.&ensp;By default the end of the swipe is where input stops on the trackpad.&ensp;When enabled this takes where a stroke stops moving to be a swipe's end with *MinimumSpeed* sets how slow the stroke needs to move to be considered stopped.&ensp;*MinimumSpeed* should be kept near the default value for best performance.
 
@@ -195,7 +195,7 @@ Allows the thumbstick to be used like a directional pad.&ensp;*East*, *North*, *
 "$type": "Backend.StickRadial, scwin",
 "Buttons": [],
 "Deadzone": 0.1,
-"AngleOffset": 0,
+"AngleOffset": 0.0,
 "IncrementsLeftElseRight": true
 "TapsElseHolds": false
 ```
