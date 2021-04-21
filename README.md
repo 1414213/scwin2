@@ -5,7 +5,7 @@ This is a hobby project that aims to suppliment Steam Input by implementing feat
 
 ### Dependencies
 - [.NET 5](https://dotnet.microsoft.com/)
-- [ViGEm Bus Driver](https://github.com/ViGEm/ViGEmBus): Will run without this but *will crash* if steam controller input set to simulate gamepad inputs is activated
+- [ViGEm Bus Driver](https://github.com/ViGEm/ViGEmBus/releases/): Will run without this but *will crash* if steam controller input set to simulate gamepad inputs is activated
 
 
 ## How To Use
