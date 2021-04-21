@@ -15,7 +15,7 @@ It is recommended to use this alongside the Steam client and Steam Input.&ensp;T
 
 
 ## Creating Keymaps
-The JSON file defines an *Map* (keymap) object:
+The JSON file defines an *Map* object:
 - Field *Name* specifies the inputmap's name.&ensp;This is optional
 - Field *ActionMaps* contains Maps to be applied, similar to Steam Input's action sets.&ensp;Each Map *must* contain a name
 - Field *InputMap* defines the keymap.&ensp;Each field is some input on the controller and each input contains fields to define how that input is given:
