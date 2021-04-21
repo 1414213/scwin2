@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-
-using Newtonsoft.Json;
 
 using api = SteamControllerApi;
 
@@ -11,8 +8,9 @@ namespace Backend {
 		public double RelativeSize {
 			get => this.relativeSize;
 			set {
-				if (value < 0 || value > 1.0)
-					throw new ArgumentException("RelativeSize must be a proportion of the diameter [0, 1].");
+				if (value < 0 || value > 1.0) throw new SettingNotProportionException(
+					"RelativeSize must be a proportion of the diameter [0, 1]."
+				);
 				this.relativeSize = value;
 			}
 		}
@@ -20,7 +18,7 @@ namespace Backend {
 			get => this.deadzone;
 			set {
 				if (value < 0 || value > 1.0)
-					throw new ArgumentException("RelativeSize must be a proportion of the radius [0, 1].");
+					throw new SettingNotProportionException("RelativeSize must be a proportion of the radius [0, 1].");
 				this.deadzone = value;
 			}
 		}

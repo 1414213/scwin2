@@ -48,8 +48,9 @@ namespace Backend {
 		public double RelativeSize {
 			get => this.relativeSize;
 			set {
-				if (value < 0 || value > 1.0)
-					throw new ArgumentException("RelativeSize must be a proportion of the trackpad's radius ([0, 1])");
+				if (value < 0 || value > 1.0) throw new SettingNotProportionException(
+					"RelativeSize must be a proportion of the trackpad's radius ([0, 1])"
+				);
 				this.relativeSize = value;
 			}
 		}
@@ -60,9 +61,9 @@ namespace Backend {
 		public double InitialDeadzone {
 			get => initialDeadzone;
 			set {
-				if (value < 0 || value > 1d)
-					throw
-					new ArgumentException("InitialDeadzone must be a proportion of the trackpad's radius ([0, 1])");
+				if (value < 0 || value > 1d) throw new SettingNotProportionException(
+					"InitialDeadzone must be a proportion of the trackpad's radius ([0, 1])"
+				);
 			}
 		}
 		public bool Anchored { get; set; }

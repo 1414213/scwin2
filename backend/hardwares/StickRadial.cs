@@ -9,8 +9,9 @@ namespace Backend {
 		public double Deadzone {
 			get => this.deadzone;
 			set {
-				if (value < 0 || value > 1d)
-					throw new ArgumentException("Deadzone must be a ratio of the trackpad's radius ([0, 1]).");
+				if (value < 0 || value > 1d) throw new SettingNotProportionException(
+					"Deadzone must be a ratio of the trackpad's radius ([0, 1])."
+				);
 				this.deadzone = value;
 			}
 		}

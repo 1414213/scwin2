@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
 using Newtonsoft.Json;
 using api = SteamControllerApi;
-using Robot;
-
 
 namespace Backend {
 	public class TriggerTrigger : Hardware {

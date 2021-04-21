@@ -9,14 +9,16 @@ namespace Backend {
 		public double Deadzone {
 			get => this.stick.Deadzone;
 			set {
-				if (value < 0 || value > 1.0) throw new ArgumentException("Deadzone must be between 0 and 1.0");
+				if (value < 0 || value > 1.0)
+					throw new SettingNotProportionException("Deadzone must be between 0 and 1.0");
 				this.stick.Deadzone = value;
 			}
 		}
 		public double OuterLimit {
 			get => this.outerLimit;
 			set {
-				if (value < 0 || value > 1.0) throw new ArgumentException("OuterLimit must be between 0 and 1.0");
+				if (value < 0 || value > 1.0)
+					throw new SettingNotProportionException("OuterLimit must be between 0 and 1.0");
 				this.outerLimit = value;
 			}
 		}

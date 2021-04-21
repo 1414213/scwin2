@@ -49,7 +49,7 @@ namespace Backend {
 			get => this.relativeSize;
 			set {
 				if (value < 0 || value > 1.0)
-					throw new ArgumentException("RelativeSize must be a proportion of 0 to 1.");
+					throw new SettingNotProportionException("RelativeSize must be a proportion of 0 to 1.");
 				this.relativeSize = value;
 			}
 		}

@@ -11,7 +11,7 @@ namespace Backend {
 			get => this.deadzone;
 			set {
 				if (value < 0 && value > 1d)
-					throw new ArgumentException("Deadzone must be a ratio of the radius [0, 1].");
+					throw new SettingNotProportionException("Deadzone must be a ratio of the radius [0, 1].");
 				this.deadzone = value;
 			}
 		}

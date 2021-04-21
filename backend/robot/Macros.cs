@@ -1,25 +1,5 @@
 using System;
 
-namespace Robot.Macros {
-	public abstract class Macro {}
-
-	public class ButtonPress : Macro {
-		public Key[] keys = {Key.None};
-	}
-
-	public class ButtonRelease : Macro {
-		public Key[] keys = {Key.None};
-	}
-
-	public class ButtonTap : Macro {
-		public Key[] keys = {Key.None};
-	}
-
-	public class Mouse : Macro {
-
-	}
-}
-
 namespace Robot {
 	public class Macro {
 		public Key[] PressButtons = {Key.None};
@@ -31,5 +11,7 @@ namespace Robot {
 		public (short x, short y) MoveLeftStickTo = (0, 0);
 		public (short x, short y) MoveRightStickTo = (0, 0);
 		public int Wait = 0;
+
+		public Macro() {}
 	}
 }

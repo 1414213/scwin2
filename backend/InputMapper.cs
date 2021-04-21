@@ -4,6 +4,7 @@ using System.IO;
 
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 using api = SteamControllerApi;
 using Robot;
@@ -11,17 +12,11 @@ using Robot;
 
 namespace Backend {
 	public static class InputMapper {
-		// public class Map {
-		// 	public Dictionary<string, Dictionary<string, Hardware>> InputMap { get; set; } = CreateBlankInputMap();
-		// }
 		public class Map {
 			public string Name { get; set; } = "";
 			public Dictionary<string, InputTypeTable> InputMap { get; set; } = CreateBlankInputMap();
-			public Dictionary<string, Dictionary<string, InputTypeTable>> ActionMaps;
-
-			public Map() {
-				this.ActionMaps = new Dictionary<string, Dictionary<string, InputTypeTable>>();
-			}
+			public Dictionary<string, Dictionary<string, InputTypeTable>> ActionMaps
+				= new Dictionary<string, Dictionary<string, InputTypeTable>>();
 		}
 
 		public class InputTypeTable {
@@ -44,8 +39,7 @@ namespace Backend {
 
 			// create the directory to store the input maps in if it doesn't already exist
 			FileInfo mapFileInfo = new FileInfo(mapPath);
-			try { mapFileInfo.Directory.Create(); }
-			catch (NullReferenceException) { throw new FileNotFoundException("Directory not found."); }
+			mapFileInfo.Directory?.Create();
 
 			if (!File.Exists(mapPath)) {
 				Map blankInputMap = new Map();
@@ -56,9 +50,11 @@ namespace Backend {
 			}
 			jsonString = File.ReadAllText(mapPath);
 
+			JsonConvert.DefaultSettings = () => new JsonSerializerSettings{ TypeNameHandling = TypeNameHandling.Auto };
 			var map = JsonConvert.DeserializeObject<Map>(
 				jsonString,
-				new JsonSerializerSettings{ TypeNameHandling = TypeNameHandling.Auto }
+				new StringEnumConverter()
+				//new JsonSerializerSettings{ TypeNameHandling = TypeNameHandling.Auto }
 			);
 			if (map == null) throw new Exception("Input map couldn't be opened.");
 			else return (map, true);
@@ -72,7 +68,7 @@ namespace Backend {
 			);
 			FileInfo file = new FileInfo(Directory + mapName + ".json");
 
-			file.Directory.Create();
+			file.Directory?.Create();
 			File.WriteAllText(file.FullName, jsonString);
 		}
 
@@ -93,11 +89,9 @@ namespace Backend {
 			var keylist = new List<string>();
 
 			foreach (api.Key k in Enum.GetValues(typeof(api.Key))) {
-				if (k == api.Key.DPadLeft) continue;
-				else if (k == api.Key.DPadUp) continue;
-				else if (k == api.Key.DPadLeft) continue;
-				else if (k == api.Key.DPadDown) continue;
-				else keylist.Add(k.ToString());
+				if (k == api.Key.DPadLeft || k == api.Key.DPadUp || k == api.Key.DPadLeft || k == api.Key.DPadDown) {
+					continue;
+				} else keylist.Add(k.ToString());
 			}
 			keylist.Sort();
 			

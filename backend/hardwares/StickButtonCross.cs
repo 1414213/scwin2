@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Newtonsoft.Json;
 using api = SteamControllerApi;
 using Robot;
@@ -17,26 +16,27 @@ namespace Backend {
 		public double Deadzone {
 			get => this.deadzone;
 			set {
-				if (value > 1.0 || value < 0)
-					throw new ArgumentException("Deadzone must be proportion of the thumbstick's radius ([0, 1]).");
+				if (value > 1.0 || value < 0) throw new SettingNotProportionException(
+					"Deadzone must be proportion of the thumbstick's radius ([0, 1])."
+				);
 				else this.deadzone = value;
 			}
 		}
 		public double InnerRadius {
 			get => this.innerRadius;
 			set {
-				if (value > 1.0 || value < 0)
-					throw
-					new ArgumentException("InnerRadius must be proportion of the thumbstick's radius ([0, 1]).");
+				if (value > 1.0 || value < 0) throw	new SettingNotProportionException(
+					"InnerRadius must be proportion of the thumbstick's radius ([0, 1])."
+				);
 				else this.innerRadius = value;
 			}
 		}
 		public double OuterRadius {
 			get => this.outerRadius;
 			set {
-				if (value > 1.0 || value < 0)
-					throw
-					new ArgumentException("OuterRadius must be proportion of the thumbstick's radius ([0, 1]).");
+				if (value > 1.0 || value < 0) throw	new SettingNotProportionException(
+					"OuterRadius must be proportion of the thumbstick's radius ([0, 1])."
+				);
 				else this.outerRadius = value;
 			}
 		}
@@ -58,8 +58,14 @@ namespace Backend {
 			this.Deadzone = deadzone;
 		}
 
-		public StickButtonCross(Button east, Button north,
-		                                     Button west, Button south, double deadzone, bool hasOverlap = false) {
+		public StickButtonCross(
+			Button east,
+			Button north,
+			Button west,
+			Button south,
+			double deadzone,
+			bool hasOverlap = false
+		) {
 			this.East = east;
 			this.North = north;
 			this.West = west;

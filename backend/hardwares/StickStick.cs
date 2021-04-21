@@ -12,8 +12,9 @@ namespace Backend {
 		public double Deadzone {
 			get => this.deadzone;
 			set {
-				if (value < 0 || value > 1.0)
-					throw new ArgumentException("Deadzone must be proportion of the thumbstick's radius ([0, 1])");
+				if (value < 0 || value > 1.0) throw new SettingNotProportionException(
+					"Deadzone must be proportion of the thumbstick's radius ([0, 1])"
+				);
 				this.deadzone = value;
 			}
 		}

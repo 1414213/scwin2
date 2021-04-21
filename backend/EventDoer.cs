@@ -36,8 +36,7 @@ namespace Backend {
 
 		private Dictionary<api.Key, Task> heldLongPressTasks;
 		private Dictionary<api.Key, CancellationTokenSource> heldLongPressTaskTokens;
-		//private Stack<ActionLayer> appliedActions = new Stack<ActionLayer>();
-		private List<ActionLayer> actionLayering = new List<ActionLayer>();
+		private LinkedList<ActionLayer> actionLayering = new LinkedList<ActionLayer>();
 
 		private ConcurrentQueue<SideEffect> sideEffectsPipe = new ConcurrentQueue<SideEffect>();
 
@@ -46,29 +45,34 @@ namespace Backend {
 			this.heldLongPressTasks = new Dictionary<api.Key, Task>();
 			this.heldLongPressTaskTokens = new Dictionary<api.Key, CancellationTokenSource>();
 
-			actionLayering.Add(new ActionLayer(this.Map.Name, false, this.Map.InputMap));
+			actionLayering.AddLast(new ActionLayer(this.Map.Name, false, this.Map.InputMap));
 
 			Hardware.Init(createVirtualGamepad, this.sideEffectsPipe);
 		}
 		~EventDoer() {
-			foreach (var m in actionLayering) this.ReleaseAll(m.map);
+			foreach (var layer in actionLayering) this.ReleaseAll(layer.map);
 		}
 
 		public void DoEvents(IList<api.InputData> events) {
-			// foreach (api.InputData e in events) {
-			// 	if (Map.InputMap.ContainsKey(e.Key.ToString())) {
-			// 		this.DoAction(e, Map.InputMap[e.Key.ToString()]);
-			// 	}
-			// }
 			foreach (api.InputData e in events) {
-				for (int i = actionLayering.Count-1; i >= 0; i--) {
-					if (actionLayering[i].map.ContainsKey(e.Key.ToString())) {
-						this.DoAction(e, actionLayering[i].map[e.Key.ToString()]);
+				// Descend thru the list of layers until a bounded input is found 
+				// or until layer opacity in encountered.
+				// for (int i = actionLayering.Count-1; i >= 0; i--) {
+				// 	if (actionLayering.Find[i].map.ContainsKey(e.Key.ToString())) {
+				// 		this.DoAction(e, actionLayering[i].map[e.Key.ToString()]);
+				// 		break;
+				// 	} else {
+				// 		if (actionLayering[i].isLayered) continue;
+				// 		else break;
+				// 	}
+				// }
+				var itr = actionLayering.Last;
+				for (int i = 0; i < actionLayering.Count; i++) {
+					if (itr!.Value.map.ContainsKey(e.Key.ToString())) {
+						this.DoAction(e, itr.Value.map[e.Key.ToString()]);
 						break;
-					} else {
-						if (actionLayering[i].isLayered) continue;
-						else break;
-					}
+					} else if (!itr.Value.isLayered) break;
+					itr = itr.Previous;
 				}
 			}
 		}
@@ -96,6 +100,7 @@ namespace Backend {
 							}
 							if (longpress is Button b) b.Press();
 						}, heldLongPressTaskTokens[e.Key].Token);
+						
 					}
 				} else if ((e.Flags & api.Flags.Released) == api.Flags.Released) {
 					// temporal binidngs only apply to things that can be pressed
@@ -104,16 +109,11 @@ namespace Backend {
 					if (mapEntry.IsLongPressHeld) {
 						if (timeHeld < mapEntry.TemporalThreshold) {
 							heldLongPressTaskTokens[e.Key].Cancel();
-							if (shortpress is Button b) b.Tap();
-						} else {
-							if (longpress is Button b) b.Release();
-						}
+							if (shortpress is Button b) { b.Tap(); }
+						} else { if (longpress is Button b) b.Release(); }
 					} else {
-						if (timeHeld < mapEntry.TemporalThreshold) {
-							if (shortpress is Button b) b.Tap();
-						} else {
-							if (longpress is Button b) b.Tap();
-						}
+						if (timeHeld < mapEntry.TemporalThreshold) { if (shortpress is Button b) b.Tap(); }
+						else { if (longpress is Button b) b.Tap(); }
 					}
 				}
 			}
@@ -127,21 +127,24 @@ namespace Backend {
 					// match for different side effects the event doer needs to produce
 					case ActionMapAddition a: {
 						if (Map.ActionMaps.ContainsKey(a.name)) {
-							actionLayering.Add(new ActionLayer(a.name, a.isLayered, Map.ActionMaps[a.name]));
-						} else throw new Exception($"Action map {a.name} was not found nor added.");
+							actionLayering.AddLast(new ActionLayer(a.name, a.isLayered, Map.ActionMaps[a.name]));
+						} else throw new ActionMapNotFoundException(a.name);
 						break;
 					}
 					case ActionMapRemoval r: {
-						for (int i = 1; i < actionLayering.Count; i++) {
-							if (actionLayering[i].name == r.name) {
-								actionLayering.RemoveAt(i);
+						var itr = actionLayering.First!.Next;
+						while (itr != null) {
+							if (itr.Value.name == r.name) {
+								actionLayering.Remove(itr);
 								break;
 							}
+							itr = itr.Next;
 						}
-						//throw new Exception($"Action map {r.name} was not found nor removed.");
 						break;
 					}
-					default: throw new Exception("Concrete type of SideEffect couln't be found.");
+					default: throw new NotImplementedException(
+						$"SideEffect type {sideEffect.GetType().ToString()} doesn't exist."
+					);
 				}
 			}
 		}

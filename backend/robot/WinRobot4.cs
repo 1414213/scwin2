@@ -42,12 +42,10 @@ namespace Robot {
 		public void MoveMouse(int x, int y, bool relative = false) {
 			if (relative) {
 				this.sim.Mouse.MoveMouseBy(x, -y);
-			}
-			else {
-				if (x < 0 || y < 0 || x > 0xFFFF || y > 0xFFFF) {
-					throw
-					new ArgumentException("Absolute movement values must be between 0 and 0xFFFF (65,535)");
-				}
+			} else {
+				if (x < 0 || y < 0 || x > 0xFFFF || y > 0xFFFF) throw new ArgumentException(
+					"Absolute movement values must be between 0 and 0xFFFF (65,535)"
+				);
 				this.sim.Mouse.MoveMouseTo((double)x, -(double)y);
 			}
 		}
@@ -65,15 +63,16 @@ namespace Robot {
 				else if (k == Key.MouseMiddle) this.sim.Mouse.MiddleButtonDown();
 				else if (k == Key.MouseFour) this.sim.Mouse.XButtonDown(1);
 				else if (k == Key.MouseFive) this.sim.Mouse.XButtonDown(2);
-				else if ((int)k >= (int)Key.Tab && (int)k <= (int)Key.Pad_Period)
+				else if ((int)k >= (int)Key.Tab && (int)k <= (int)Key.Pad_Period) {
 					this.sim.Keyboard.KeyDown(k.ToVirtualKeyCode());
-				else if ((int)k >= (int)Key.Face_South)
+				} else if ((int)k >= (int)Key.Face_South) {
 					this.virtualGamepad.SetButtonState(k.ToXbox360Button(), true);
+				}
 			}
 		}
 
 		public void Release(params Key[] keys) {
-			foreach(Key k in keys) {
+			foreach (Key k in keys) {
 				if (k == Key.None) continue;
 				if (k == Key.MouseLeft) this.sim.Mouse.LeftButtonUp();
 				else if (k == Key.MouseRight) this.sim.Mouse.RightButtonUp();
@@ -82,9 +81,18 @@ namespace Robot {
 				else if (k == Key.MouseFive) this.sim.Mouse.XButtonUp(2);
 				else if ((int)k >= (int)Key.Tab && (int)k <= (int)Key.Pad_Period)
 					this.sim.Keyboard.KeyUp(k.ToVirtualKeyCode());
-				else if ((int)k >= (int)Key.Face_South)
+				else if ((int)k >= (int)Key.Face_East)
 					this.virtualGamepad.SetButtonState(k.ToXbox360Button(), false);
 			}
+			// foreach (var key in keys) switch (key) {
+			// 	case Key.None: break;
+			// 	case Key.MouseLeft: this.sim.Mouse.LeftButtonUp(); break;
+			// 	case Key.MouseRight: this.sim.Mouse.RightButtonUp(); break;
+			// 	case Key.MouseMiddle: this.sim.Mouse.MiddleButtonUp(); break;
+			// 	case Key.MouseFour: this.sim.Mouse.XButtonUp(1); break;
+			// 	case Key.MouseFive: this.sim.Mouse.XButtonUp(2); break;
+			// 	case int k as (int)key: break;
+			// }
 		}
 
 		public void Press(params int[] keycodes) {
@@ -132,12 +140,12 @@ namespace Robot {
 		public static VirtualKeyCode ToVirtualKeyCode(this Key k) {
 			if ((int)k <= (int)Key.MouseFive || (int)k >= (int)Key.Face_South) {
 				throw new ArgumentException($"{k} isn't a keyboard key.");
-			}
-			else if (((int)k >= (int)Key.Row_0) && ((int)k <= (int)Key.Row_9))
+			} else if (
+				((int)k >= (int)Key.Row_0) && ((int)k <= (int)Key.Row_9)
+				|| ((int)k >= (int)Key.A) && ((int)k <= (int)Key.Z)
+			) {
 				return (VirtualKeyCode)((int)k);
-			else if (((int)k >= (int)Key.A) && ((int)k <= (int)Key.Z))
-				return (VirtualKeyCode)((int)k);
-			else return k switch {
+			} else return k switch {
 				Key.Tab            => VirtualKeyCode.TAB,
 				Key.Space          => VirtualKeyCode.SPACE,
 				Key.Quotation      => VirtualKeyCode.OEM_7,

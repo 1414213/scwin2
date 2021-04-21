@@ -12,7 +12,8 @@ namespace Backend {
 		public double PullThreshold {
 			get => this.pullThreshold;
 			set {
-				if (value < 0 || value > 1.0) throw new ArgumentException("PullThreshold must be between 0 and 1.");
+				if (value < 0 || value > 1.0)
+					throw new SettingNotProportionException("PullThreshold must be between 0 and 1.");
 				else this.pullThreshold = value;
 			}
 		}

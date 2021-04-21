@@ -14,7 +14,7 @@ namespace Backend {
 			get => this.minimumDistance;
 			set {
 				if (value < 0 || value > 1d) 
-					throw new ArgumentException(
+					throw new SettingNotProportionException(
 						"MinimumDistance must be a proportion of the trackpad's diameter (range [0, 1])."
 					);
 				this.minimumDistance = value;
@@ -30,7 +30,7 @@ namespace Backend {
 		public double LongSwipeThreshold {
 			get => this.longSwipeThreshold;
 			set {
-				if (value < 0) throw new ArgumentException("LongSwipeThreshold must be < 0");
+				if (value < 0) throw new SettingInvalidException("LongSwipeThreshold must be a multiple > 0");
 				this.longSwipeThreshold = value;
 			}
 		}

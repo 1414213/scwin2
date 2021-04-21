@@ -27,26 +27,6 @@ namespace Robot {
 		void MoveRStickY(short y);
 		void PullLTrigger(byte amount);
 		void PullRTrigger(byte amount);
-		void DoMacro(params InputEvent[] events) {
-			foreach (InputEvent e in events) {
-				if ((e.types & InputEvent.Types.None) == InputEvent.Types.None) continue;
-				else if ((e.types & InputEvent.Types.Key) == InputEvent.Types.Key) {
-					if (e.isPressElseRelease) this.Press(e.keys);
-					else this.Release(e.keys);
-				} else if ((e.types & InputEvent.Types.Key) == InputEvent.Types.MouseMove) {
-					this.MoveMouse(e.coordinates.x, e.coordinates.y, relative: e.isRelative);
-				} else if ((e.types & InputEvent.Types.MouseScroll) == InputEvent.Types.MouseScroll) {
-					this.ScrollMouseWheel(e.scrollAmount, asClicks: e.scrollAsClicks);
-				} else if ((e.types & InputEvent.Types.TriggerPull) == InputEvent.Types.TriggerPull) {
-					if (e.isLeftElseRight) this.PullLTrigger(e.pullDistance);
-					else this.PullRTrigger(e.pullDistance);
-				} else if ((e.types & InputEvent.Types.ThumbstickMove) == InputEvent.Types.ThumbstickMove) {
-					if (e.isLeftElseRight)
-						this.MoveLStick((short)e.coordinates.x, (short)e.coordinates.y);
-					else this.MoveRStick((short)e.coordinates.x, (short)e.coordinates.y);
-				}
-			}
-		}
 
 		void DoMacro(Macro[] macros) {
 			foreach (var m in macros) this.DoMacro(m);

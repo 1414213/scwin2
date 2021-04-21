@@ -50,7 +50,7 @@ namespace Backend {
 			get => overlapIgnoranceRadius;
 			set {
 				if (value < 0 || value > 1.0) {
-					throw new ArgumentException(
+					throw new SettingNotProportionException(
 						"OverlapIgnoranceRadius must be proportion of the thumbstick's radius ([0, 1])."
 					);
 				}
