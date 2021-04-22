@@ -56,54 +56,55 @@ namespace Robot {
 		}
 
 		public void Press(params Key[] keys) {
-			foreach(Key k in keys) {
-				if (k == Key.None) continue;
-				if (k == Key.MouseLeft) this.sim.Mouse.LeftButtonDown();
-				else if (k == Key.MouseRight) this.sim.Mouse.RightButtonDown();
-				else if (k == Key.MouseMiddle) this.sim.Mouse.MiddleButtonDown();
-				else if (k == Key.MouseFour) this.sim.Mouse.XButtonDown(1);
-				else if (k == Key.MouseFive) this.sim.Mouse.XButtonDown(2);
-				else if ((int)k >= (int)Key.Tab && (int)k <= (int)Key.Pad_Period) {
-					this.sim.Keyboard.KeyDown(k.ToVirtualKeyCode());
-				} else if ((int)k >= (int)Key.Face_South) {
-					this.virtualGamepad.SetButtonState(k.ToXbox360Button(), true);
+			foreach (var key in keys) switch (key) {
+				case Key.None:        break;
+				case Key.MouseLeft:   this.sim.Mouse.LeftButtonDown(); break;
+				case Key.MouseRight:  this.sim.Mouse.RightButtonDown(); break;
+				case Key.MouseMiddle: this.sim.Mouse.MiddleButtonDown(); break;
+				case Key.MouseFour:   this.sim.Mouse.XButtonDown(1); break;
+				case Key.MouseFive:   this.sim.Mouse.XButtonDown(2); break;
+				default: {
+					if ((int)key >= (int)Key.Tab && (int)key <= (int)Key.Pad_Period) {
+						this.sim.Keyboard.KeyDown(key.ToVirtualKeyCode());
+						break;
+					} else if ((int)key >= (int)Key.Face_South) {
+						this.virtualGamepad.SetButtonState(key.ToXbox360Button(), true);
+						break;
+					}
+					break;
 				}
 			}
 		}
 
 		public void Release(params Key[] keys) {
-			foreach (Key k in keys) {
-				if (k == Key.None) continue;
-				if (k == Key.MouseLeft) this.sim.Mouse.LeftButtonUp();
-				else if (k == Key.MouseRight) this.sim.Mouse.RightButtonUp();
-				else if (k == Key.MouseMiddle) this.sim.Mouse.MiddleButtonUp();
-				else if (k == Key.MouseFour) this.sim.Mouse.XButtonUp(1);
-				else if (k == Key.MouseFive) this.sim.Mouse.XButtonUp(2);
-				else if ((int)k >= (int)Key.Tab && (int)k <= (int)Key.Pad_Period)
-					this.sim.Keyboard.KeyUp(k.ToVirtualKeyCode());
-				else if ((int)k >= (int)Key.Face_East) {
-					Console.WriteLine(k);
-					this.virtualGamepad.SetButtonState(k.ToXbox360Button(), false);
+			foreach (var key in keys) switch (key) {
+				case Key.None:        break;
+				case Key.MouseLeft:   this.sim.Mouse.LeftButtonUp(); break;
+				case Key.MouseRight:  this.sim.Mouse.RightButtonUp(); break;
+				case Key.MouseMiddle: this.sim.Mouse.MiddleButtonUp(); break;
+				case Key.MouseFour:   this.sim.Mouse.XButtonUp(1); break;
+				case Key.MouseFive:   this.sim.Mouse.XButtonUp(2); break;
+				default: {
+					if ((int)key >= (int)Key.Tab && (int)key <= (int)Key.Pad_Period) {
+						this.sim.Keyboard.KeyUp(key.ToVirtualKeyCode());
+						break;
+					} else if ((int)key >= (int)Key.Face_East) {
+						Console.WriteLine(key);
+						this.virtualGamepad.SetButtonState(key.ToXbox360Button(), false);
+						break;
+					}
+					break;
 				}
 			}
-			// foreach (var key in keys) switch (key) {
-			// 	case Key.None: break;
-			// 	case Key.MouseLeft: this.sim.Mouse.LeftButtonUp(); break;
-			// 	case Key.MouseRight: this.sim.Mouse.RightButtonUp(); break;
-			// 	case Key.MouseMiddle: this.sim.Mouse.MiddleButtonUp(); break;
-			// 	case Key.MouseFour: this.sim.Mouse.XButtonUp(1); break;
-			// 	case Key.MouseFive: this.sim.Mouse.XButtonUp(2); break;
-			// 	case Key k as int i when (int)key is (>= (int)Key.Tab) and (<= (int)Key.Pad_Period): break;
-			// }
 		}
 
 		public void Press(params int[] keycodes) {
 			Key[] keys = new Key[keycodes.Length];
 			int i = 0;
 			foreach (int k in keycodes) {
-				if (k > (int)Key.Face_South)
+				if (k > (int)Key.Face_South) {
 					throw new ArgumentException("Keycode " + k + " could not be reasoned as a key.");
-				else keys[i] = (Key)k;
+				} else keys[i] = (Key)k;
 				i++;
 			}
 			this.Press(keys);
@@ -113,9 +114,9 @@ namespace Robot {
 			Key[] keys = new Key[keycodes.Length];
 			int i = 0;
 			foreach (int k in keycodes) {
-				if (k > (int)Key.Face_South)
+				if (k > (int)Key.Face_South) {
 					throw new ArgumentException("Keycode " + k + " could not be reasoned as a key.");
-				else keys[i] = (Key)k;
+				} else keys[i] = (Key)k;
 				i++;
 			}
 			this.Release(keys);
@@ -139,15 +140,15 @@ namespace Robot {
 	}
 
 	static class KeyExtensions {
-		public static VirtualKeyCode ToVirtualKeyCode(this Key k) {
-			if ((int)k <= (int)Key.MouseFive || (int)k >= (int)Key.Face_South) {
-				throw new ArgumentException($"{k} isn't a keyboard key.");
+		public static VirtualKeyCode ToVirtualKeyCode(this Key key) {
+			if ((int)key <= (int)Key.MouseFive || (int)key >= (int)Key.Face_South) {
+				throw new ArgumentException($"{key} isn't a keyboard key.");
 			} else if (
-				((int)k >= (int)Key.Row_0) && ((int)k <= (int)Key.Row_9)
-				|| ((int)k >= (int)Key.A) && ((int)k <= (int)Key.Z)
+				((int)key >= (int)Key.Row_0) && ((int)key <= (int)Key.Row_9)
+				|| ((int)key >= (int)Key.A) && ((int)key <= (int)Key.Z)
 			) {
-				return (VirtualKeyCode)((int)k);
-			} else return k switch {
+				return (VirtualKeyCode)((int)key);
+			} else return key switch {
 				Key.Tab            => VirtualKeyCode.TAB,
 				Key.Space          => VirtualKeyCode.SPACE,
 				Key.Quotation      => VirtualKeyCode.OEM_7,
@@ -214,12 +215,12 @@ namespace Robot {
 				Key.Pad_8          => VirtualKeyCode.NUMPAD8,
 				Key.Pad_9          => VirtualKeyCode.NUMPAD9,
 				Key.Pad_Period     => VirtualKeyCode.DECIMAL,
-				_ => throw new ArgumentException($"Couldn't convert {k} into a keycode")
+				_ => throw new ArgumentException($"Couldn't convert {key} into a keycode")
 			};
 		}
 
-		public static Xbox360Button ToXbox360Button(this Key k) {
-			return k switch {
+		public static Xbox360Button ToXbox360Button(this Key key) {
+			return key switch {
 				Key.LBumper     => Xbox360Button.LeftShoulder,
 				Key.RBumper     => Xbox360Button.RightShoulder,
 				Key.Dpad_Right  => Xbox360Button.Right,
@@ -234,7 +235,7 @@ namespace Robot {
 				Key.Face_North  => Xbox360Button.Y,
 				Key.Face_West   => Xbox360Button.X,
 				Key.Face_South  => Xbox360Button.A,
-				_  => throw new ArgumentException($"Couldn't convert {k} into a Xbox gamepad button.")
+				_  => throw new ArgumentException($"Couldn't convert {key} into a Xbox gamepad button.")
 			};
 		}
 	}
