@@ -51,11 +51,12 @@ namespace Backend {
 			}
 
 			// adjust angle to start from the offset
-			theta -= angleOffset;
+			theta = (theta - angleOffset) % (2 * Math.PI);
 			if (theta < 0) theta += 2 * Math.PI;
 
 			// find the radial slice which the user has pressed
 			double sliceSize = (2 * Math.PI) / Buttons.Count;
+			if (Double.IsNaN(sliceSize)) return;
 			int indexOfPressed = (int)(theta / sliceSize);
 
 			// press the pressed slice while releasing all else
@@ -66,8 +67,7 @@ namespace Backend {
 				if (!previousSliceIndex.HasValue || previousSliceIndex != indexOfPressed)
 					Buttons[indexOfPressed].Tap();
 				previousSliceIndex = indexOfPressed;
-			}
-			else {
+			} else {
 				for (int i = 0; i < Buttons.Count; i++) {
 					if (i == indexOfPressed) Buttons[i].Press();
 					else Buttons[i].Release();
@@ -75,8 +75,6 @@ namespace Backend {
 			}
 		}
 
-		public override void ReleaseAll() {
-			foreach (var b in Buttons) b.ReleaseAll();
-		}
+		public override void ReleaseAll() { foreach (var b in Buttons) b.ReleaseAll(); }
 	}
 }
