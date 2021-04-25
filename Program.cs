@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 using Device.Net;
 using Hid.Net.Windows;
+using DevDecoder.HIDDevices;
 
 using api = SteamControllerApi;
 
@@ -21,6 +22,19 @@ class Program {
 				case "--no-gamepad":
 					noGamepad = true;
 					break;
+				case "-d":
+				case "-directory":
+				case "--directory": {
+					i++;
+					if (i >= args.Length) {
+						Console.WriteLine("ERROR: No directory given.");
+						return;
+					}
+					var directory = args[i];
+					if (!(directory.EndsWith("\\") || directory.EndsWith("/"))) directory += "/";
+					Backend.InputMapper.Directory = directory;
+					break;
+				}
 				default:
 					if (inputMapName == null) inputMapName = args[i];
 					break;
@@ -31,9 +45,9 @@ class Program {
 			return;
 		}
 
-		DebugLogger logger = new DebugLogger();
-		DebugTracer tracer = new DebugTracer();
-		api.Controller steamcon = new api.Controller();
+		var logger = new DebugLogger();
+		var tracer = new DebugTracer();
+		var steamcon = new api.Controller();
 
 		WindowsHidDeviceFactory.Register(logger, tracer);
 
@@ -52,18 +66,18 @@ class Program {
 		}
 		var device = devices[0];
 		await device.InitializeAsync();
-		
-		// read inputs from the HID device
-		ReadResult input;
-		IList<api.InputData> events;
 
 		// prepare to handle input events from steam controller
 		var (map, isNotBlank) = Backend.InputMapper.Open(inputMapName);
 		if (!isNotBlank) {
-			Console.WriteLine($"New input map {map} created!");
+			Console.WriteLine($"New input map {map.Name} created!");
 			return;
 		}
-		Backend.EventDoer doer = new Backend.EventDoer(map, createVirtualGamepad: !noGamepad);
+		var doer = new Backend.EventDoer(map, createVirtualGamepad: !noGamepad);
+
+		// read inputs from the HID device
+		ReadResult input;
+		IList<api.InputData> events;
 
 		// app loop
 		while (true) {
@@ -75,14 +89,14 @@ class Program {
 				events = steamcon.GenerateEvents(input);
 				//foreach (var e in events) Console.WriteLine(e);
 				//foreach (var e in events) if (e.Key != api.Key.GyroMove) Console.WriteLine(e);
-				foreach (var e in events) if (e.Key == api.Key.GyroMove) Console.WriteLine(e);
+				//foreach (var e in events) if (e.Key == api.Key.GyroMove) Console.WriteLine(e);
 				doer.DoEvents(events);
 			}
 		}
 	}
 
 	private static void PrintData(byte[] data) {
-		StringBuilder sb = new StringBuilder();
+		var sb = new StringBuilder();
 
 		for (int i = 1; i <= data.Length; i++) {
 			sb.AppendFormat("{0,2:X2}", data[i-1]);
@@ -92,7 +106,7 @@ class Program {
 		Console.WriteLine(sb.ToString());
 	}
 
-	private static async Task<int> MeasureInputRate(IDevice device, bool onlyKeys = true) {
+	private static async Task<int> MeasureInputRateAsync(IDevice device, bool onlyKeys = true) {
 		var sw = new System.Diagnostics.Stopwatch();
 		int count = 0;
 		sw.Start();
