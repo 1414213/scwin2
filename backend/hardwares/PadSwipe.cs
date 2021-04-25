@@ -13,19 +13,15 @@ namespace Backend {
 		public double MinimunDistance {
 			get => this.minimumDistance;
 			set {
-				if (value < 0 || value > 1d) 
-					throw new SettingNotProportionException(
-						"MinimumDistance must be a proportion of the trackpad's diameter (range [0, 1])."
-					);
+				if (value < 0 || value > 1d) throw new SettingNotProportionException(
+					"MinimumDistance must be a proportion of the trackpad's diameter (range [0, 1])."
+				);
 				this.minimumDistance = value;
 			}
 		}
 		public double AngleOffset {
 			get => this.angleOffset;
-			set {
-				this.angleOffset = value % 2;
-				if (this.angleOffset < 0) this.angleOffset += 2;
-			}
+			set => this.angleOffset = value % 2;
 		}
 		public double LongSwipeThreshold {
 			get => this.longSwipeThreshold;
@@ -55,21 +51,30 @@ namespace Backend {
 
 		public PadSwipe() {}
 
-		public PadSwipe(double angleOffset, double minimumDistance, double longSwipeThreshold = 1.5) : this() {
+		public PadSwipe(double angleOffset, double minimumDistance) : this() {
 			this.AngleOffset = angleOffset;
 			this.MinimunDistance = minimumDistance;
 			this.LongSwipeThreshold = longSwipeThreshold;
 		}
 
-		public PadSwipe(double angleOffset,
-		                double minimumDistance,
-		                double longSwipeThreshold = 1.5, params Key[] keys) : this() {
-			this.AngleOffset = AngleOffset;
-			this.MinimunDistance = minimumDistance;
+		public PadSwipe(double angleOffset, 
+		                double minimumDistance, double longSwipeThreshold) : this(angleOffset, minimumDistance) {
 			this.LongSwipeThreshold = longSwipeThreshold;
+		}
+
+		public PadSwipe(double angleOffset,
+		                double minimumDistance, params Key[] keys): this(angleOffset, minimumDistance) {
 			this.Buttons = new List<Button>();
-			foreach (Key k in keys) {
-				this.Buttons.Add(new ButtonKey(k));
+			foreach (Key k in keys) this.Buttons.Add(new ButtonKey(k));
+		}
+
+		public PadSwipe(double angleOffset, double minimumDistance, double longSwipeThreshold,
+		                Key[] keys, Key[] longKeys) : this(angleOffset, minimumDistance, longSwipeThreshold) {
+			this.Buttons = new List<Button>(keys.Length);
+			this.LongSwipeButtons = new List<Button?>(keys.Length);
+			for (int i = 0; i < keys.Length; i++) {
+				this.Buttons.Add(new ButtonKey(keys[i]));
+				this.LongSwipeButtons.Add(new ButtonKey(longKeys[i]));
 			}
 		}
 
@@ -84,14 +89,12 @@ namespace Backend {
 				isInitialPress = false;
 				stopwatch.Restart();
 				return;
-			}
-			if ((e.Flags & api.Flags.Released) == api.Flags.Released) {
+			} else if ((e.Flags & api.Flags.Released) == api.Flags.Released) {
 				stopwatch.Stop();
 				isInitialPress = true;
-				this.TriggerTap(coord);
+				this.DoTap(coord);
 				return;
-			}
-			else if (IsContinuous) {
+			} else if (IsContinuous) {
 				stopwatch.Stop();
 				long elapsedTime = stopwatch.ElapsedMilliseconds;
 				stopwatch.Restart();
@@ -100,16 +103,12 @@ namespace Backend {
 				var speed = (x: (coord.x - previous.x) / (double)elapsedTime,
 				             y: (coord.y - previous.y) / (double)elapsedTime);
 				double speedMagnitude = Math.Sqrt(speed.x * speed.x + speed.y * speed.y);
-				bool wasTapped = false;
 
 				if (speedMagnitude < MinimumSpeed) {
-					wasTapped = this.TriggerTap(coord);
+					var wasTapped = this.DoTap(coord);
 					//Console.WriteLine($"speed: {speed} tap!");
 					startingPosition = coord;
-				}
-				else {
-					//Console.WriteLine($"speed: {speed} do nothing");
-				}
+				} //else Console.WriteLine($"speed: {speed} do nothing");
 				previous = coord;
 			}
 		}
@@ -119,7 +118,7 @@ namespace Backend {
 			foreach (var b in LongSwipeButtons) b?.ReleaseAll();
 		}
 
-		private bool TriggerTap((short x, short y) releaseCoord) {
+		private bool DoTap((short x, short y) releaseCoord) {
 			// compute drawn vector with angle of radians (range [0, 2))
 			(long x, long y) delta = (releaseCoord.x - startingPosition.x,
 			                          releaseCoord.y - startingPosition.y);
@@ -132,35 +131,27 @@ namespace Backend {
 			theta = theta / Math.PI;
 			if (theta < 0) theta += 2;
 
-			// compute size of each section
-			double sizeOfSlice = 2d / Amount;
-			double boundary = sizeOfSlice;
-
 			if (!Double.IsNaN(theta) && r > minimumDistance * (-Int16.MinValue + Int16.MaxValue)) {
 				// adjust angle to measure starting from the offset
-				theta -= angleOffset;
+				theta = (theta - angleOffset) % 2;
 				if (theta < 0) theta += 2;
 
-				// find angle slice that the vector's angle exists in and tap corresponding button
-				bool isLongSwipe;
-				for (int i = 0; i < Buttons.Count; i++) {
-					//Console.Write(i + " ");
-					if (theta <= boundary) {
-						if (LongSwipeButtons[i] == null) Buttons[i].Tap();
-						else {
-							isLongSwipe = r > longSwipeThreshold * (-Int16.MinValue + Int16.MaxValue);
-							if (!isLongSwipe) Buttons[i].Tap();
-							else {
-								if (i < LongSwipeButtons.Count) LongSwipeButtons[i]!.Tap();
-							}
-						}
-						break;
-					}
-					boundary += sizeOfSlice;
+				// compute size of each section
+				var sliceSize = 2d / Amount;
+				if (Double.IsNaN(sliceSize)) return false;
+				var indexOfButtonToTap = (int)(theta / sliceSize);
+				var isLongSwipe = r > longSwipeThreshold * (-Int16.MinValue + Int16.MaxValue);
+
+				// Tap button corresponding to the direction of the swipe.
+				// Check if there exists buttons within long swipe list.
+				if (isLongSwipe && (indexOfButtonToTap < LongSwipeButtons.Count)) {
+					if (LongSwipeButtons[indexOfButtonToTap] is Button b) b.Tap();
+					else Buttons[indexOfButtonToTap].Tap();
+					return true;
 				}
+				Buttons[indexOfButtonToTap].Tap();
 				return true;
-			}
-			else return false;
+			} else return false;
 		}
 	}
 }
