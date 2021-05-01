@@ -76,6 +76,13 @@ Scrolls the mouse wheel when pressed.&ensp;*Amount* specifies the amount to scro
 ```
 Presses every button in *Buttons* when pressed and releases every button when released.&ensp;*Buttons* is a list of Button types.
 
+### Trackpad
+```
+"DoubleTapButton": Button,
+"IsDoubleTapHeld": false
+```
+Defines functionality shared by all simulation using a trackpad; these fields can be given to any input prefixed with "Pad".&ensp;*DoubleTapButton* specifies a Button type to be activated when the applied trackpad is touched twice in a quick succession.&ensp;*IsDoubleTapHeld* sets whether the button is held during the second touch and released when that input stops or is immediately tapped when the second touch is recieved.
+
 ### PadButtonCross
 ```
 "$type": "Backend.PadButtonCross, scwin",
