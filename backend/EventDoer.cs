@@ -84,12 +84,9 @@ namespace Backend {
 						heldLongPressTasks[e.Key] = Task.Run(() => {
 							Thread.Sleep(mapEntry.TemporalThreshold);
 							// return if press time was shorter than threshold to trigger the long press button
-							if (heldLongPressTaskTokens[e.Key].Token.IsCancellationRequested) {
-								heldLongPressTaskTokens[e.Key].Token.ThrowIfCancellationRequested();
-							}
+							heldLongPressTaskTokens[e.Key].Token.ThrowIfCancellationRequested();
 							if (longpress is Button b) b.Press();
 						}, heldLongPressTaskTokens[e.Key].Token);
-						
 					}
 				} else if ((e.Flags & api.Flags.Released) == api.Flags.Released) {
 					// temporal binidngs only apply to things that can be pressed
