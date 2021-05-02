@@ -29,18 +29,18 @@ namespace Robot {
 		void PullRTrigger(byte amount);
 
 		void DoMacro(Macro[] macros) {
-			foreach (var m in macros) this.DoMacro(m);
+			foreach (var macro in macros) this.DoMacro(macro);
 		}
 
 		void DoMacro(Macro macro) {
 			this.Press(macro.PressButtons);
 			this.Release(macro.ReleaseButtons);
-			this.MoveMouse(macro.MoveMouse.x, macro.MoveMouse.y, macro.MoveMouse.relative);
-			this.ScrollMouseWheel(macro.ScrollMouse.amount, macro.ScrollMouse.asClicks);
-			this.PullLTrigger(macro.PullLeftTrigger);
-			this.PullRTrigger(macro.PullRightTrigger);
-			this.MoveLStick(macro.MoveLeftStickTo.x, macro.MoveLeftStickTo.y);
-			this.MoveRStick(macro.MoveRightStickTo.x, macro.MoveRightStickTo.y);
+			if (macro.MoveMouse is (int, int, bool) mm)        this.MoveMouse(mm.x, mm.y, mm.relative);
+			if (macro.ScrollMouse is (int, bool) sm)           this.ScrollMouseWheel(sm.amount, sm.asClicks);
+			if (macro.PullLeftTrigger is byte plt)             this.PullLTrigger(plt);
+			if (macro.PullRightTrigger is byte prt)            this.PullRTrigger(prt);
+			if (macro.MoveLeftStickTo is (short, short) mlst)  this.MoveLStick(mlst.x, mlst.y);
+			if (macro.MoveRightStickTo is (short, short) mrst) this.MoveRStick(mrst.x, mrst.y);
 		}
 
 		public static void PrintKeycodes(string directory) {
