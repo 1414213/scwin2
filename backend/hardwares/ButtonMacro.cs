@@ -6,28 +6,22 @@ namespace Backend {
 		public Robot.Macro[] Pressed { get; set; } = {};
 		public Robot.Macro[] Held { get; set; } = {};
 		public Robot.Macro[] Released { get; set; } = {};
-		public int RepetitionsPerSecond {
-			get => 1000 / this.waitTime;
-			set {
-				int waitTime = 1000 / value;
-				if (waitTime < 0) throw new SettingInvalidException("RepetitionsPerSecond must be > 0.");
-				this.waitTime = waitTime;
-			}
-		}
+		public int RepetitionsPerSecond { get => 1000 / waitTime; set {
+			int waitTime = 1000 / value;
+			if (waitTime < 0) throw new SettingInvalidException("RepetitionsPerSecond must be > 0.");
+			this.waitTime = waitTime;
+		} }
 
 		private int waitTime = 10;
 		private Task onHold = null!;
 		private CancellationTokenSource cancelOnHold = null!;
 
 		protected override void PressImpl() {
-			robot.DoMacro(Pressed);
+			this.DoMacros(Pressed);
 			this.cancelOnHold = new CancellationTokenSource();
 			onHold = Task.Run(() => {
 				while (true) {
-					foreach (var m in Held) {
-						robot.DoMacro(m);
-						if (m.Wait > 0) Thread.Sleep(m.Wait);
-					}
+					this.DoMacros(Held);
 					Thread.Sleep(waitTime);
 					cancelOnHold.Token.ThrowIfCancellationRequested();
 				}
@@ -36,7 +30,19 @@ namespace Backend {
 
 		protected override void ReleaseImpl() {
 			cancelOnHold.Cancel();
-			robot.DoMacro(Released);
+			this.DoMacros(Released);
+		}
+
+		private void DoMacros(Robot.Macro[] macros) {
+			foreach (var macro in macros) {
+				robot.DoMacro(macro);
+				if (macro.AddActionLayer is string aal) sideEffectsPipe.Enqueue(new ActionMapAddition{
+					name = aal,
+					isTransparent = macro.AddActionLayerAsTransparent
+				});
+				if (macro.RemoveActionLayer is string ral) sideEffectsPipe.Enqueue(new ActionMapRemoval{ name = ral });
+				Thread.Sleep(macro.Wait);
+			}
 		}
 	}
 }
