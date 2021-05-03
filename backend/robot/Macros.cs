@@ -6,12 +6,15 @@ namespace Robot {
 		public Key[] ReleaseButtons = {};
 		public (int x, int y, bool relative)? MoveMouse;
 		public (int amount, bool asClicks)? ScrollMouse;
-		public byte? PullLeftTrigger;
-		public byte? PullRightTrigger;
-		public (short x, short y)? MoveLeftStickTo;
-		public (short x, short y)? MoveRightStickTo;
-		public int Wait = 0;
+		public byte? PullLeftTrigger, PullRightTrigger;
+		public (short x, short y)? MoveLeftStickTo, MoveRightStickTo;
+		public string? AddActionLayer, RemoveActionLayer;
+		public bool AddActionLayerAsTransparent = true;
+		public int Wait { get => wait; set {
+			if (value < 0) throw new Backend.SettingInvalidException("Wait must be a waitable time (> 0).");
+			this.wait = value;
+		} }
 
-		public Macro() {}
+		private int wait = 0;
 	}
 }

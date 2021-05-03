@@ -28,10 +28,6 @@ namespace Robot {
 		void PullLTrigger(byte amount);
 		void PullRTrigger(byte amount);
 
-		void DoMacro(Macro[] macros) {
-			foreach (var macro in macros) this.DoMacro(macro);
-		}
-
 		void DoMacro(Macro macro) {
 			this.Press(macro.PressButtons);
 			this.Release(macro.ReleaseButtons);
