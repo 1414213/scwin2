@@ -13,8 +13,6 @@ namespace Backend {
 		public bool IsPressed => this.isPressed;
 		[JsonIgnore]
 		public bool IsSecondPress => isSecondPress;
-		[JsonIgnore]
-		public override string HardwareType => "Button";
 
 		private bool isPressed = false;
 		private bool isRepetitious = false;

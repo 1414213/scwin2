@@ -2,45 +2,52 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using SteamControllerApi;
 using api = SteamControllerApi;
 
+
 namespace Backend {
-	public class PadTrackball : Trackpad {
+	public class PadStickTrackball : Trackpad {
 		public bool HasInertia { get; set; } = true;
+		public bool InvertX { get; set; }
+		public bool InvertY { get; set; }
 		public double Sensitivity {
 			get => (-Int16.MinValue + Int16.MaxValue) * sensitivity;
 			set => sensitivity = value / (-Int16.MinValue + Int16.MaxValue);
 		}
-		public double Decceleration { get => decceleration; set => decceleration = value; }
-		public bool InvertX { get; set; }
-		public bool InvertY { get; set; }
+		public double Decceleration { get; set; } = 0.1;
 
+		private bool isInitialPress = true, isRolling;
+		private long elapsedTime;
 		private double sensitivity = 0.03;
-		private bool isInitialPress = true;
 		private (short x, short y) previous;
 		private (double x, double y) amountStore;
-
-		//field for calculating rolling
-		private Task? doInertia;
-		private bool isRolling = false;
+		private Task doInertia = null!;
+		private CancellationToken cancelrolling;
 		private Stopwatch stopwatch = new Stopwatch();
-		private long elapsedTime;
-		private double decceleration = 0.1;
 
-		public PadTrackball() {}
+		public PadStickTrackball() {}
 
-		public PadTrackball(int sensitivity, bool hasInertia) {
+		public PadStickTrackball(double sensitivity, bool invertX, bool invertY) {
 			this.Sensitivity = sensitivity;
-			this.HasInertia = hasInertia;
+			this.InvertX = invertX;
+			this.InvertY = invertY;
+			this.HasInertia = false;
 		}
 
-		protected override void DoEventImpl(api.InputData e) {
+		public PadStickTrackball(double sensitivity,
+		                         double decceleration, 
+		                         bool invertX = false, bool invertY = false) : this(sensitivity, invertX, invertY) {
+			this.Decceleration = decceleration;
+			this.HasInertia = true;
+		}
+
+		protected override void DoEventImpl(InputData e) {
 			// if event is the initial press, then no movement has occured
 			if (isInitialPress) {
 				previous = e.Coordinates ?? throw new ArgumentException(e + " must be coordinal.");
 				isRolling = false;
 				isInitialPress = false;
-				this.ClearSmoothingBuffer((0, 0, 0));
 				stopwatch.Restart();
 				return;
 			}
@@ -52,9 +59,7 @@ namespace Backend {
 			stopwatch.Restart();
 
 			// compute mouse movement
-			//var delta = this.SmoothInput((x: coord.x - previous.x, y: coord.y - previous.y));
-			var delta = this.SoftTieredSmooth((x: coord.x - previous.x, y: coord.y - previous.y));
-			//var movement = (x: delta.x * sensitivity, y: delta.y * sensitivity);
+			var delta = (x: coord.x - previous.x, y: coord.y - previous.y);
 			var movement = this.AccelerateInput(delta.x, delta.y, sensitivity);
 			if (InvertX) movement.x = -movement.x;
 			if (InvertY) movement.y = -movement.y;
@@ -67,7 +72,6 @@ namespace Backend {
 			if ((e.Flags & api.Flags.Released) == api.Flags.Released) {
 				isInitialPress = true;
 				amountStore = (0, 0);
-				//this.coordsToSmooth.Clear();
 				stopwatch.Stop();
 
 				if (HasInertia) {
@@ -85,16 +89,14 @@ namespace Backend {
 								return;
 							}
 							// remove speed according to amount of decceleration
-							speedMagnitude.x -= speedMagnitude.x * decceleration;
-							speedMagnitude.y -= speedMagnitude.y * decceleration;
+							speedMagnitude.x -= speedMagnitude.x * Decceleration;
+							speedMagnitude.y -= speedMagnitude.y * Decceleration;
 							
 							var movement = (x: speedMagnitude.x * 10 * sensitivity * magnitudeSign.x,
 							                y: speedMagnitude.y * 10 * sensitivity * magnitudeSign.y);
 							//Console.WriteLine($"{speedMagnitude}");
 							this.Move(movement);
 							Thread.Sleep(10);
-							//flickDistance.x += (-(mu * g) * 0.1);
-							//flickDistance.y += (-(mu * g) * 0.1);
 						}
 					});
 				}
@@ -103,16 +105,13 @@ namespace Backend {
 
 		protected override void ReleaseAllImpl() {}
 
-		// sends input while storing fractional values in a store so that the amount isn't
-		// lost during the whole number conversion
-		private void Move(double x, double y) {
-			amountStore.x += x;
-			amountStore.y += y;
-			robot.MoveMouse((int)amountStore.x, (int)amountStore.y, relative: true);
+		private void Move((double x, double y) movement) {
+			amountStore.x += movement.x;
+			amountStore.y += movement.y;
+			robot.MoveLStick((short)amountStore.x, (short)amountStore.y);
 			amountStore.x -= (int)amountStore.x;
 			amountStore.y -= (int)amountStore.y;
 		}
-
-		private void Move((double x, double y) movement) => this.Move(movement.x, movement.y);
 	}
 }
+

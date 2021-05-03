@@ -18,8 +18,6 @@ namespace Backend {
 			}
 		}
 		public bool IncludeSwitchInRange { get; set; } = false;
-		[JsonIgnore]
-		public override string HardwareType => "Trigger";
 
 		private double pullThreshold = 0.5;
 		private const double softRange = 237;

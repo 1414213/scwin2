@@ -40,8 +40,6 @@ namespace Backend {
 				else this.outerRadius = value;
 			}
 		}
-		[JsonIgnore]
-		public override string HardwareType => "Thumbstick";
 
 		private double deadzone = 0.2;
 		private double innerRadius = 0.35;

@@ -21,8 +21,6 @@ namespace Backend {
 		}
 		public bool IncrementsLeftElseRight { get; set; } = true;
 		public bool TapsElseHolds { get; set; }
-		[JsonIgnore]
-		public override string HardwareType => "Thumbstick";
 
 		private double deadzone = 0.1;
 		private double angleOffset;

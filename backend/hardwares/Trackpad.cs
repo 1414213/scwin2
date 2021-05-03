@@ -7,8 +7,6 @@ namespace Backend {
 	public abstract class Trackpad : SmoothedHardware {
 		public Button DoubleTapButton { get; set; } = new ButtonKey();
 		public bool IsDoubleTapHeld { get; set; }
-		[JsonIgnore]
-		public override string HardwareType => "Trackpad";
 
 		private long tapTime = 250; // milliseconds
 		private Stopwatch stopwatch = new Stopwatch();
@@ -23,23 +21,19 @@ namespace Backend {
 						if ((e.Flags & api.Flags.Pressed) == api.Flags.Pressed) {
 							DoubleTapButton.Press();
 							stopwatch.Reset();
-						}
-						else {
+						} else {
 							DoubleTapButton.Release();
 							doingSecondTap = false;
 						}
-					}
-					else {
+					} else {
 						if (e.TimeHeld.HasValue) { // is release event
 							if (e.TimeHeld.Value < tapTime) DoubleTapButton.Tap();
 							stopwatch.Reset();
 							doingSecondTap = false;
 						}
 					}
-				}
-				else this.FirstPress(e);
-			}
-			else this.FirstPress(e);
+				} else this.FirstPress(e);
+			} else this.FirstPress(e);
 
 			// after performing shared functionality, execute specific function
 			this.DoEventImpl(e);

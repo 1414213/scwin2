@@ -10,8 +10,6 @@ namespace Backend {
 		public int Sensitivity { get; set; } = 50;
 		public bool Reversed { get; set; }
 		public double SwipeRotation { get => this.rotation; set => this.rotation = value; }
-		[JsonIgnore]
-		public override string HardwareType => "Trackpad";
 
 		private double rotation = 0;
 		private (short x, short y)? previous = null;

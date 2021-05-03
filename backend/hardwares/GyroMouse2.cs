@@ -13,8 +13,6 @@ namespace Backend {
 		public bool IsXYawElseRoll { get; set; } = true;
 		public bool InvertX { get; set; }
 		public bool InvertY { get; set; }
-		[JsonIgnore]
-		public override string HardwareType => "Gyro";
 
 		private double sensitivity = 0.2;
 

@@ -17,8 +17,6 @@ namespace Backend {
 		}
 		public bool Reversed { get; set; }
 		public bool ScrollAlongXElseY { get; set; } = true;
-		[JsonIgnore]
-		public override string HardwareType => "Thumbstick";
 
 		// ratio of the radius
 		private double deadzone = 0.2;

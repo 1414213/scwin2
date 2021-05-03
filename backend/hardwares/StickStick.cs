@@ -22,8 +22,6 @@ namespace Backend {
 		/// Sends inputs to either left or right virtual thumbstick.
 		/// <summary>
 		public bool IsLeftElseRight { get; set; }
-		[JsonIgnore]
-		public override string HardwareType => "Thumbstick";
 
 		private double deadzone = 0.2;
 

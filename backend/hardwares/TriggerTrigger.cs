@@ -6,8 +6,6 @@ namespace Backend {
 	public class TriggerTrigger : Hardware {
 		public bool IsLeftElseRight { get; set; }
 		public bool IncludeSwitchInRange { get; set; }
-		[JsonIgnore]
-		public override string HardwareType => "Trigger";
 
 		private const double softRange = 237;
 		
