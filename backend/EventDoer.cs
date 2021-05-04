@@ -9,7 +9,7 @@ using api = SteamControllerApi;
 
 namespace Backend {
 	public class EventDoer {
-		public InputMapper.Map Map { get; set; }
+		public LinkedList<ActionLayer> ActionLayering => actionLayering;
 
 		// dumb boilerplate
 		private class HeldLongPressEntry {
@@ -22,18 +22,19 @@ namespace Backend {
 			}
 		}
 
-		private class ActionLayer {
+		public class ActionLayer {
 			public string name = "";
-			public bool isLayered;
+			public bool isTransparent;
 			public Dictionary<string, InputMapper.InputTypeTable> map;
 
-			public ActionLayer(string name, bool isLayered, Dictionary<string, InputMapper.InputTypeTable> inputMap) {
+			public ActionLayer(string name, bool isTransparent, Dictionary<string, InputMapper.InputTypeTable> inputMap) {
 				this.name = name;
-				this.isLayered = isLayered;
+				this.isTransparent = isTransparent;
 				this.map = inputMap;
 			}
 		}
 
+		private InputMapper.Map map;
 		private Dictionary<api.Key, Task> heldLongPressTasks;
 		private Dictionary<api.Key, CancellationTokenSource> heldLongPressTaskTokens;
 		private LinkedList<ActionLayer> actionLayering = new LinkedList<ActionLayer>();
@@ -41,13 +42,13 @@ namespace Backend {
 		private ConcurrentQueue<SideEffect> sideEffectsPipe = new ConcurrentQueue<SideEffect>();
 
 		public EventDoer(InputMapper.Map inputMap, bool createVirtualGamepad = true) {
-			this.Map = inputMap;
+			this.map = inputMap;
 			this.heldLongPressTasks = new Dictionary<api.Key, Task>();
 			this.heldLongPressTaskTokens = new Dictionary<api.Key, CancellationTokenSource>();
 
-			actionLayering.AddLast(new ActionLayer(this.Map.Name, false, this.Map.InputMap));
+			actionLayering.AddLast(new ActionLayer(this.map.Name, false, this.map.InputMap));
 
-			Hardware.Init(createVirtualGamepad, this.sideEffectsPipe);
+			Hardware.Init(createVirtualGamepad, this.sideEffectsPipe, this.actionLayering);
 		}
 		~EventDoer() {
 			foreach (var layer in actionLayering) this.ReleaseAll(layer.map);
@@ -60,7 +61,7 @@ namespace Backend {
 					if (itr!.Value.map.ContainsKey(e.Key.ToString())) {
 						this.DoAction(e, itr.Value.map[e.Key.ToString()]);
 						break;
-					} else if (!itr.Value.isLayered) break;
+					} else if (!itr.Value.isTransparent) break;
 					itr = itr.Previous;
 				}
 			}
@@ -112,8 +113,8 @@ namespace Backend {
 				if (wasSuccessful) switch (sideEffect) {
 					// match for different side effects the event doer needs to produce
 					case ActionMapAddition a: {
-						if (Map.ActionMaps.ContainsKey(a.name)) {
-							actionLayering.AddLast(new ActionLayer(a.name, a.isLayered, Map.ActionMaps[a.name]));
+						if (map.ActionMaps.ContainsKey(a.name)) {
+							actionLayering.AddLast(new ActionLayer(a.name, a.isTransparent, map.ActionMaps[a.name]));
 						} else throw new ActionMapNotFoundException(a.name);
 						break;
 					}
