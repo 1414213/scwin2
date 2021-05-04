@@ -13,14 +13,15 @@ namespace Backend {
 		} }
 
 		private int waitTime = 10;
-		private Task onHold = null!;
+		private Task onPress = null!, onHold = null!;
 		private CancellationTokenSource cancelOnHold = null!;
 
 		protected override void PressImpl() {
-			this.DoMacros(Pressed);
+			onPress = Task.Run(() => this.DoMacros(Pressed));
 			this.cancelOnHold = new CancellationTokenSource();
 			onHold = Task.Run(() => {
 				while (true) {
+					
 					this.DoMacros(Held);
 					Thread.Sleep(waitTime);
 					cancelOnHold.Token.ThrowIfCancellationRequested();
@@ -30,7 +31,8 @@ namespace Backend {
 
 		protected override void ReleaseImpl() {
 			cancelOnHold.Cancel();
-			this.DoMacros(Released);
+			onPress.Wait();
+			Task.Run(() => this.DoMacros(Released));
 		}
 
 		private void DoMacros(Robot.Macro[] macros) {
