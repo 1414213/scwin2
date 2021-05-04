@@ -54,7 +54,6 @@ namespace Backend {
 			var map = JsonConvert.DeserializeObject<Map>(
 				jsonString,
 				new StringEnumConverter()
-				//new JsonSerializerSettings{ TypeNameHandling = TypeNameHandling.Auto }
 			);
 			if (map == null) throw new Exception("Input map couldn't be opened.");
 			else return (map, true);
