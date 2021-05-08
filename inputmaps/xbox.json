@@ -1,150 +1,106 @@
 {
   "InputMap": {
     "LTriggerPull": {
-      "Regular": {
-        "$type": "Backend.TriggerTrigger, scwin",
-        "IsLeftElseRight": true
-      }
+      "$type": "Backend.TriggerTrigger, scwin",
+      "IsLeftElseRight": true
     },
     "RTriggerPull": {
-      "Regular": {
-        "$type": "Backend.TriggerTrigger, scwin",
-        "IsLeftElseRight": false
-      }
+      "$type": "Backend.TriggerTrigger, scwin",
+      "IsLeftElseRight": false
     },
-    "LTriggerClick": {
-      "Regular": null
-    },
-    "RTriggerClick": {
-      "Regular": null
-    },
+    "LTriggerClick": null,
+    "RTriggerClick": null,
     "LBumper": {
-      "Regular": {
-        "$type": "Backend.ButtonKey, scwin",
-        "Key": "LBumper"
-      }
+      "$type": "Backend.ButtonKey, scwin",
+      "Key": "LBumper"
     },
     "RBumper": {
-      "Regular": {
-        "$type": "Backend.ButtonKey, scwin",
-        "Key": "RBumper"
-      }
+      "$type": "Backend.ButtonKey, scwin",
+      "Key": "RBumper"
     },
     "LGrip": {
-      "Regular": {
-        "$type": "Backend.ButtonKey, scwin",
-        "Key": "None"
-      }
+      "$type": "Backend.ButtonKey, scwin",
+      "Key": "None"
     },
     "RGrip": {
-      "Regular": {
+      "$type": "Backend.ButtonKey, scwin",
+      "Key": "None"
+    },
+    "StickPush": {
+      "$type": "Backend.StickStick, scwin",
+      "Deadzone": 0.1,
+      "IsLeftElseRight": true
+    },
+    "StickClick": {
+      "$type": "Backend.ButtonKey, scwin",
+      "Key": "LStickClick"
+    },
+    "B": {
+      "$type": "Backend.ButtonKey, scwin",
+      "Key": "Face_East"
+    },
+    "A": {
+      "$type": "Backend.ButtonKey, scwin",
+      "Key": "Face_South"
+    },
+    "X": {
+      "$type": "Backend.ButtonKey, scwin",
+      "Key": "Face_West"
+    },
+    "Y": {
+      "$type": "Backend.ButtonKey, scwin",
+      "Key": "Face_North"
+    },
+    "LPadTouch": {
+      "$type": "Backend.PadButtonCross, scwin",
+      "East": {
+        "$type": "Backend.ButtonKey, scwin",
+        "Key": "Dpad_Right"
+      },
+      "North": {
+        "$type": "Backend.ButtonKey, scwin",
+        "Key": "Dpad_Up"
+      },
+      "West": {
+        "$type": "Backend.ButtonKey, scwin",
+        "Key": "Dpad_Left"
+      },
+      "South": {
+        "$type": "Backend.ButtonKey, scwin",
+        "Key": "Dpad_Down"
+      },
+      "Inner": {
+        "$type": "Backend.ButtonKey, scwin",
+        "Key": "None"
+      },
+      "Outer": {
         "$type": "Backend.ButtonKey, scwin",
         "Key": "None"
       }
     },
-    "StickPush": {
-      "Regular": {
-        "$type": "Backend.StickStick, scwin",
-        "Deadzone": 0.1,
-        "IsLeftElseRight": true
-      }
-    },
-    "StickClick": {
-      "Regular": {
-        "$type": "Backend.ButtonKey, scwin",
-        "Key": "LStickClick"
-      }
-    },
-    "B": {
-      "Regular": {
-        "$type": "Backend.ButtonKey, scwin",
-        "Key": "Face_East"
-      }
-    },
-    "A": {
-      "Regular": {
-        "$type": "Backend.ButtonKey, scwin",
-        "Key": "Face_South"
-      }
-    },
-    "X": {
-      "Regular": {
-        "$type": "Backend.ButtonKey, scwin",
-        "Key": "Face_West"
-      }
-    },
-    "Y": {
-      "Regular": {
-        "$type": "Backend.ButtonKey, scwin",
-        "Key": "Face_North"
-      }
-    },
-    "LPadTouch": {
-      "Regular": {
-        "$type": "Backend.PadButtonCross, scwin",
-        "East": {
-          "$type": "Backend.ButtonKey, scwin",
-          "Key": "Dpad_Right"
-        },
-        "North": {
-          "$type": "Backend.ButtonKey, scwin",
-          "Key": "Dpad_Up"
-        },
-        "West": {
-          "$type": "Backend.ButtonKey, scwin",
-          "Key": "Dpad_Left"
-        },
-        "South": {
-          "$type": "Backend.ButtonKey, scwin",
-          "Key": "Dpad_Down"
-        },
-        "Inner": {
-          "$type": "Backend.ButtonKey, scwin",
-          "Key": "None"
-        },
-        "Outer": {
-          "$type": "Backend.ButtonKey, scwin",
-          "Key": "None"
-        }
-      }
-    },
-    "LPadClick": {
-      "Regular": null
-    },
+    "LPadClick": null,
     "RPadTouch": {
-      "Regular": {
-        "$type": "Backend.PadStick, scwin",
-        "Deadzone": 0.1,
-        "OuterLimit": 1,
-        "IsLeftElseRight": false
-      }
+      "$type": "Backend.PadStick, scwin",
+      "Deadzone": 0.1,
+      "OuterLimit": 1,
+      "IsLeftElseRight": false
     },
     "RPadClick": {
-      "Regular": {
-        "$type": "Backend.ButtonKey, scwin",
-        "Key": "RStickClick"
-      }
+      "$type": "Backend.ButtonKey, scwin",
+      "Key": "RStickClick"
     },
     "Forward": {
-      "Regular": {
-        "$type": "Backend.ButtonKey, scwin",
-        "Key": "Start"
-      }
+      "$type": "Backend.ButtonKey, scwin",
+      "Key": "Start"
     },
     "Back": {
-      "Regular": {
-        "$type": "Backend.ButtonKey, scwin",
-        "Key": "Back"
-      }
+      "$type": "Backend.ButtonKey, scwin",
+      "Key": "Back"
     },
     "Steam": {
-      "Regular": {
-        "$type": "Backend.ButtonKey, scwin",
-        "Key": "GamepadHome"
-      }
+      "$type": "Backend.ButtonKey, scwin",
+      "Key": "GamepadHome"
     },
-    "GyroMove": {
-      "Regular": null
-    }
+    "GyroMove": null
   }
 }

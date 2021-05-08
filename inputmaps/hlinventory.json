@@ -1,186 +1,50 @@
 {
   "ActionMaps": {},
-  "Name": null,
+  "Name": "HLInventory",
   "InputMap": {
-    "A": {
-      "Regular": null,
-      "ShortPress": null,
-      "LongPress": null,
-      "TemporalThreshold": 500
-    },
-    "B": {
-      "Regular": null,
-      "ShortPress": null,
-      "LongPress": null,
-      "TemporalThreshold": 500
-    },
-    "Back": {
-      "Regular": null,
-      "ShortPress": null,
-      "LongPress": null,
-      "TemporalThreshold": 500
-    },
-    "DPadRight": {
-      "Regular": null,
-      "ShortPress": null,
-      "LongPress": null,
-      "TemporalThreshold": 500
-    },
-    "Forward": {
-      "Regular": null,
-      "ShortPress": null,
-      "LongPress": null,
-      "TemporalThreshold": 500
-    },
-    "GyroMove": {
-      "Regular": null,
-      "ShortPress": null,
-      "LongPress": null,
-      "TemporalThreshold": 500
-    },
-    "LBumper": {
-      "Regular": null,
-      "ShortPress": null,
-      "LongPress": null,
-      "TemporalThreshold": 500
-    },
-    "LGrip": {
-      "Regular": null,
-      "ShortPress": null,
-      "LongPress": null,
-      "TemporalThreshold": 500
-    },
     "LPadClick": {
-      "Regular": {
-        "$type": "Backend.PadRadial, scwin",
-        "TapsElseHolds": true,
-        "Buttons": [
-          {
-            "$type": "Backend.ButtonKey, scwin",
-            "Key": 49
-          }, {
-            "$type":"Backend.ButtonKey, scwin",
-            "Key": 50
-          }, {
-            "$type":"Backend.ButtonKey, scwin",
-            "Key": 51
-          }, {
-            "$type":"Backend.ButtonKey, scwin",
-            "Key": 52
-          }, {
-            "$type":"Backend.ButtonKey, scwin",
-            "Key": 53
-          }
-        ]
-      },
-      "ShortPress": null,
-      "LongPress": null,
-      "TemporalThreshold": 500
+      "$type": "Backend.PadRadial, scwin",
+      "TapsElseHolds": true,
+      "Buttons": [
+        {
+          "$type": "Backend.ButtonKey, scwin",
+          "Key": 49
+        }, {
+          "$type":"Backend.ButtonKey, scwin",
+          "Key": 50
+        }, {
+          "$type":"Backend.ButtonKey, scwin",
+          "Key": 51
+        }, {
+          "$type":"Backend.ButtonKey, scwin",
+          "Key": 52
+        }, {
+          "$type":"Backend.ButtonKey, scwin",
+          "Key": 53
+        }
+      ]
     },
     "LPadTouch": {
-      "Regular": {
-        "$type": "Backend.PadRadial, scwin",
-        "TapsElseHolds": true,
-        "Buttons": [
-          {
-            "$type": "Backend.ButtonKey, scwin",
-            "Key": 49
-          }, {
-            "$type":"Backend.ButtonKey, scwin",
-            "Key": 50
-          }, {
-            "$type":"Backend.ButtonKey, scwin",
-            "Key": 51
-          }, {
-            "$type":"Backend.ButtonKey, scwin",
-            "Key": 52
-          }, {
-            "$type":"Backend.ButtonKey, scwin",
-            "Key": 53
-          }
-        ]
-      },
-      "ShortPress": null,
-      "LongPress": null,
-      "TemporalThreshold": 500
-    },
-    "LTriggerClick": {
-      "Regular": null,
-      "ShortPress": null,
-      "LongPress": null,
-      "TemporalThreshold": 500
-    },
-    "LTriggerPull": {
-      "Regular": null,
-      "ShortPress": null,
-      "LongPress": null,
-      "TemporalThreshold": 500
-    },
-    "RBumper": {
-      "Regular": null,
-      "ShortPress": null,
-      "LongPress": null,
-      "TemporalThreshold": 500
-    },
-    "RGrip": {
-      "Regular": null,
-      "ShortPress": null,
-      "LongPress": null,
-      "TemporalThreshold": 500
-    },
-    "RPadClick": {
-      "Regular": null,
-      "ShortPress": null,
-      "LongPress": null,
-      "TemporalThreshold": 500
-    },
-    "RPadTouch": {
-      "Regular": null,
-      "ShortPress": null,
-      "LongPress": null,
-      "TemporalThreshold": 500
-    },
-    "RTriggerClick": {
-      "Regular": null,
-      "ShortPress": null,
-      "LongPress": null,
-      "TemporalThreshold": 500
-    },
-    "RTriggerPull": {
-      "Regular": null,
-      "ShortPress": null,
-      "LongPress": null,
-      "TemporalThreshold": 500
-    },
-    "Steam": {
-      "Regular": null,
-      "ShortPress": null,
-      "LongPress": null,
-      "TemporalThreshold": 500
-    },
-    "StickClick": {
-      "Regular": null,
-      "ShortPress": null,
-      "LongPress": null,
-      "TemporalThreshold": 500
-    },
-    "StickPush": {
-      "Regular": null,
-      "ShortPress": null,
-      "LongPress": null,
-      "TemporalThreshold": 500
-    },
-    "X": {
-      "Regular": null,
-      "ShortPress": null,
-      "LongPress": null,
-      "TemporalThreshold": 500
-    },
-    "Y": {
-      "Regular": null,
-      "ShortPress": null,
-      "LongPress": null,
-      "TemporalThreshold": 500
+      "$type": "Backend.PadRadial, scwin",
+      "TapsElseHolds": true,
+      "Buttons": [
+        {
+          "$type": "Backend.ButtonKey, scwin",
+          "Key": 49
+        }, {
+          "$type":"Backend.ButtonKey, scwin",
+          "Key": 50
+        }, {
+          "$type":"Backend.ButtonKey, scwin",
+          "Key": 51
+        }, {
+          "$type":"Backend.ButtonKey, scwin",
+          "Key": 52
+        }, {
+          "$type":"Backend.ButtonKey, scwin",
+          "Key": 53
+        }
+      ]
     }
   }
 }
