@@ -5,25 +5,41 @@ using System.IO;
 namespace Robot {
 	public interface IRobot {
 		int ScrollWheelClickSize { get; }
+		(short x, short y) LStickPosition { get; }
+		(short x, short y) RStickPosition { get; }
 
 		void MoveMouse(long x, long y, bool relative = false);
 		void MoveMouse(int x, int y, bool relative = false);
 		void ScrollMouseWheel(int amount, bool asClicks = false);
 		void Press(params Key[] keys);
 		void Release(params Key[] keys);
-		void MoveLStick(short x, short y) {
-			MoveLStickX(x);
-			MoveLStickY(y);
+		void MoveLStick(short x, short y, bool relative = false) {
+			if (relative) {
+				MoveLStickX((short)(x + LStickPosition.x));
+				MoveLStickY((short)(y + LStickPosition.y));
+			} else {
+				MoveLStickX(x);
+				MoveLStickY(y);
+			}
 		}
 
+		/// <summary>Must set the field implementing LStickPosition to its given position</summary>
 		void MoveLStickX(short x);
+		/// <summary>Must set the field implementing LStickPosition to its given position</summary>
 		void MoveLStickY(short y);
-		void MoveRStick(short x, short y) {
-			MoveRStickX(x);
-			MoveRStickY(y);
+		void MoveRStick(short x, short y, bool relative = false) {
+			if (relative) {
+				MoveRStickX((short)(x + RStickPosition.x));
+				MoveRStickY((short)(y + RStickPosition.y));
+			} else {
+				MoveRStickX(x);
+				MoveRStickY(y);
+			}
 		}
-		
+
+		/// <summary>Must set the field implementing LStickPosition to its given position</summary>		
 		void MoveRStickX(short x);
+		/// <summary>Must set the field implementing LStickPosition to its given position</summary>
 		void MoveRStickY(short y);
 		void PullLTrigger(byte amount);
 		void PullRTrigger(byte amount);
@@ -31,12 +47,12 @@ namespace Robot {
 		void DoMacro(Macro macro) {
 			this.Press(macro.PressButtons);
 			this.Release(macro.ReleaseButtons);
-			if (macro.MoveMouse is (int, int, bool) mm)        this.MoveMouse(mm.x, mm.y, mm.relative);
-			if (macro.ScrollMouse is (int, bool) sm)           this.ScrollMouseWheel(sm.amount, sm.asClicks);
-			if (macro.PullLeftTrigger is byte plt)             this.PullLTrigger(plt);
-			if (macro.PullRightTrigger is byte prt)            this.PullRTrigger(prt);
-			if (macro.MoveLeftStickTo is (short, short) mlst)  this.MoveLStick(mlst.x, mlst.y);
-			if (macro.MoveRightStickTo is (short, short) mrst) this.MoveRStick(mrst.x, mrst.y);
+			if (macro.MoveMouse is (int, int, bool) mm)              this.MoveMouse(mm.x, mm.y, mm.relatively);
+			if (macro.ScrollMouse is (int, bool) sm)                 this.ScrollMouseWheel(sm.amount, sm.asClicks);
+			if (macro.PullLeftTrigger is byte plt)                   this.PullLTrigger(plt);
+			if (macro.PullRightTrigger is byte prt)                  this.PullRTrigger(prt);
+			if (macro.moveLeftStickTo is (short, short, bool) mlst)  this.MoveLStick(mlst.x, mlst.y, mlst.relatively);
+			if (macro.moveRightStickTo is (short, short, bool) mrst) this.MoveRStick(mrst.x, mrst.y, mrst.relatively);
 		}
 
 		public static void PrintKeycodes(string directory) {

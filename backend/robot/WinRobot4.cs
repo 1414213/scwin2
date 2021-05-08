@@ -10,12 +10,17 @@ using WindowsInput.Native;
 namespace Robot {
 	public class WindowsRobot : IRobot {
 		public int ScrollWheelClickSize { get; } = 120;
+		public (short x, short y) LStickPosition => lStickPosition;
+		public (short x, short y) RStickPosition => rStickPosition;
+
+		(short x, short y) lStickPosition = (0, 0);
+		(short x, short y) rStickPosition = (0, 0);
 
 		private InputSimulator sim = new InputSimulator();
 		// In this case throwing a null reference error when the event doer attempts to send gamepad input
 		// when the gamepad was commanded to not initialize is wanted since if there is no virtual gamepad
 		// to send input to then the event doer can't really do much with the keybinding.
-		private IXbox360Controller virtualGamepad = null!;
+		private IXbox360Controller? virtualGamepad;
 
 		public WindowsRobot(bool createVirtualGamepad = true) {
 			if (createVirtualGamepad) {
@@ -41,34 +46,34 @@ namespace Robot {
 		/// </summary>
 		public void MoveMouse(int x, int y, bool relative = false) {
 			if (relative) {
-				this.sim.Mouse.MoveMouseBy(x, -y);
+				sim.Mouse.MoveMouseBy(x, -y);
 			} else {
 				if (x < 0 || y < 0 || x > 0xFFFF || y > 0xFFFF) throw new ArgumentException(
 					"Absolute movement values must be between 0 and 0xFFFF (65,535)"
 				);
-				this.sim.Mouse.MoveMouseTo((double)x, -(double)y);
+				sim.Mouse.MoveMouseTo((double)x, -(double)y);
 			}
 		}
 
 		public void ScrollMouseWheel(int amount, bool asClicks = false) {
-			if (asClicks) this.sim.Mouse.VerticalScroll(amount * this.ScrollWheelClickSize);
-			else this.sim.Mouse.VerticalScroll(amount);
+			if (asClicks) sim.Mouse.VerticalScroll(amount * ScrollWheelClickSize);
+			else sim.Mouse.VerticalScroll(amount);
 		}
 
 		public void Press(params Key[] keys) {
 			foreach (var key in keys) switch (key) {
 				case Key.None:        break;
-				case Key.MouseLeft:   this.sim.Mouse.LeftButtonDown(); break;
-				case Key.MouseRight:  this.sim.Mouse.RightButtonDown(); break;
-				case Key.MouseMiddle: this.sim.Mouse.MiddleButtonDown(); break;
-				case Key.MouseFour:   this.sim.Mouse.XButtonDown(1); break;
-				case Key.MouseFive:   this.sim.Mouse.XButtonDown(2); break;
+				case Key.MouseLeft:   sim.Mouse.LeftButtonDown(); break;
+				case Key.MouseRight:  sim.Mouse.RightButtonDown(); break;
+				case Key.MouseMiddle: sim.Mouse.MiddleButtonDown(); break;
+				case Key.MouseFour:   sim.Mouse.XButtonDown(1); break;
+				case Key.MouseFive:   sim.Mouse.XButtonDown(2); break;
 				default: {
 					if ((int)key >= (int)Key.Tab && (int)key <= (int)Key.Pad_Period) {
-						this.sim.Keyboard.KeyDown(key.ToVirtualKeyCode());
+						sim.Keyboard.KeyDown(key.ToVirtualKeyCode());
 						break;
 					} else if ((int)key >= (int)Key.Face_South) {
-						this.virtualGamepad.SetButtonState(key.ToXbox360Button(), true);
+						virtualGamepad?.SetButtonState(key.ToXbox360Button(), true);
 						break;
 					}
 					break;
@@ -79,18 +84,18 @@ namespace Robot {
 		public void Release(params Key[] keys) {
 			foreach (var key in keys) switch (key) {
 				case Key.None:        break;
-				case Key.MouseLeft:   this.sim.Mouse.LeftButtonUp(); break;
-				case Key.MouseRight:  this.sim.Mouse.RightButtonUp(); break;
-				case Key.MouseMiddle: this.sim.Mouse.MiddleButtonUp(); break;
-				case Key.MouseFour:   this.sim.Mouse.XButtonUp(1); break;
-				case Key.MouseFive:   this.sim.Mouse.XButtonUp(2); break;
+				case Key.MouseLeft:   sim.Mouse.LeftButtonUp(); break;
+				case Key.MouseRight:  sim.Mouse.RightButtonUp(); break;
+				case Key.MouseMiddle: sim.Mouse.MiddleButtonUp(); break;
+				case Key.MouseFour:   sim.Mouse.XButtonUp(1); break;
+				case Key.MouseFive:   sim.Mouse.XButtonUp(2); break;
 				default: {
 					if ((int)key >= (int)Key.Tab && (int)key <= (int)Key.Pad_Period) {
-						this.sim.Keyboard.KeyUp(key.ToVirtualKeyCode());
+						sim.Keyboard.KeyUp(key.ToVirtualKeyCode());
 						break;
 					} else if ((int)key >= (int)Key.Face_East) {
 						Console.WriteLine(key);
-						this.virtualGamepad.SetButtonState(key.ToXbox360Button(), false);
+						virtualGamepad?.SetButtonState(key.ToXbox360Button(), false);
 						break;
 					}
 					break;
@@ -98,45 +103,29 @@ namespace Robot {
 			}
 		}
 
-		public void Press(params int[] keycodes) {
-			Key[] keys = new Key[keycodes.Length];
-			int i = 0;
-			foreach (int k in keycodes) {
-				if (k > (int)Key.Face_South) {
-					throw new ArgumentException("Keycode " + k + " could not be reasoned as a key.");
-				} else keys[i] = (Key)k;
-				i++;
-			}
-			this.Press(keys);
+		public void MoveLStickX(short x) {
+			lStickPosition.x = x;
+			virtualGamepad?.SetAxisValue(Xbox360Axis.LeftThumbX, x);
 		}
 
-		public void Release(params int[] keycodes) {
-			Key[] keys = new Key[keycodes.Length];
-			int i = 0;
-			foreach (int k in keycodes) {
-				if (k > (int)Key.Face_South) {
-					throw new ArgumentException("Keycode " + k + " could not be reasoned as a key.");
-				} else keys[i] = (Key)k;
-				i++;
-			}
-			this.Release(keys);
+		public void MoveLStickY(short y) {
+			lStickPosition.y = y;
+			virtualGamepad?.SetAxisValue(Xbox360Axis.LeftThumbY, y);
 		}
 
-		public void MoveLStickX(short x) => virtualGamepad.SetAxisValue(Xbox360Axis.LeftThumbX, x);
-
-		public void MoveLStickY(short y) => virtualGamepad.SetAxisValue(Xbox360Axis.LeftThumbY, y);
-
-		public void MoveRStickX(short x) => virtualGamepad.SetAxisValue(Xbox360Axis.RightThumbX, x);
-
-		public void MoveRStickY(short y) => virtualGamepad.SetAxisValue(Xbox360Axis.RightThumbY, y);
-
-		public void PullLTrigger(byte amount) {
-			this.virtualGamepad.SetSliderValue(Xbox360Slider.LeftTrigger, amount);
+		public void MoveRStickX(short x) {
+			rStickPosition.x = x;
+			virtualGamepad?.SetAxisValue(Xbox360Axis.RightThumbX, x);
 		}
 
-		public void PullRTrigger(byte amount) {
-			this.virtualGamepad.SetSliderValue(Xbox360Slider.RightTrigger, amount);
+		public void MoveRStickY(short y) {
+			rStickPosition.y = y;
+			virtualGamepad?.SetAxisValue(Xbox360Axis.RightThumbY, y);
 		}
+
+		public void PullLTrigger(byte amount) => virtualGamepad?.SetSliderValue(Xbox360Slider.LeftTrigger, amount);
+
+		public void PullRTrigger(byte amount) => virtualGamepad?.SetSliderValue(Xbox360Slider.RightTrigger, amount);
 	}
 
 	static class KeyExtensions {
@@ -219,24 +208,22 @@ namespace Robot {
 			};
 		}
 
-		public static Xbox360Button ToXbox360Button(this Key key) {
-			return key switch {
-				Key.LBumper     => Xbox360Button.LeftShoulder,
-				Key.RBumper     => Xbox360Button.RightShoulder,
-				Key.Dpad_Right  => Xbox360Button.Right,
-				Key.Dpad_Up     => Xbox360Button.Up,
-				Key.Dpad_Left   => Xbox360Button.Left,
-				Key.Dpad_Down   => Xbox360Button.Down,
-				Key.Back        => Xbox360Button.Back,
-				Key.Start       => Xbox360Button.Start,
-				Key.LStickClick => Xbox360Button.LeftThumb,
-				Key.RStickClick => Xbox360Button.RightThumb,
-				Key.Face_East   => Xbox360Button.B,
-				Key.Face_North  => Xbox360Button.Y,
-				Key.Face_West   => Xbox360Button.X,
-				Key.Face_South  => Xbox360Button.A,
-				_  => throw new ArgumentException($"Couldn't convert {key} into a Xbox gamepad button.")
-			};
-		}
+		public static Xbox360Button ToXbox360Button(this Key key) => key switch {
+			Key.LBumper     => Xbox360Button.LeftShoulder,
+			Key.RBumper     => Xbox360Button.RightShoulder,
+			Key.Dpad_Right  => Xbox360Button.Right,
+			Key.Dpad_Up     => Xbox360Button.Up,
+			Key.Dpad_Left   => Xbox360Button.Left,
+			Key.Dpad_Down   => Xbox360Button.Down,
+			Key.Back        => Xbox360Button.Back,
+			Key.Start       => Xbox360Button.Start,
+			Key.LStickClick => Xbox360Button.LeftThumb,
+			Key.RStickClick => Xbox360Button.RightThumb,
+			Key.Face_East   => Xbox360Button.B,
+			Key.Face_North  => Xbox360Button.Y,
+			Key.Face_West   => Xbox360Button.X,
+			Key.Face_South  => Xbox360Button.A,
+			_  => throw new ArgumentException($"Couldn't convert {key} into a Xbox gamepad button.")
+		};
 	}
 }
