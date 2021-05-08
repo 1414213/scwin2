@@ -5,7 +5,7 @@ This is a hobby project that aims to suppliment Steam Input by implementing feat
 
 ### Dependencies
 - [.NET 5](https://dotnet.microsoft.com/)
-- [ViGEm Bus Driver](https://github.com/ViGEm/ViGEmBus/releases/): Will run without this but *will crash* if steam controller input set to simulate gamepad inputs is activated
+- [ViGEm Bus Driver](https://github.com/ViGEm/ViGEmBus/releases/): Will run without this but inputs set to simulate a gamepad will do nothing
 
 
 ## How To Use
@@ -19,12 +19,7 @@ It is recommended to use this alongside the Steam client and Steam Input.&ensp;T
 The JSON file defines an *Map* object:
 - Field *Name* specifies the inputmap's name.&ensp;This is optional
 - Field *ActionMaps* contains Maps to be applied, similar to Steam Input's action sets.&ensp;Each Map *must* contain a name
-- Field *InputMap* defines the keymap.&ensp;Each field is some input on the controller and each input contains fields to define how that input is given:
-  - *Regular* is a straight binding of a simulated input to the specified input
-  - *TemporalThreshold* defines the timing for when a short press becomes a long press.&ensp;Note: temporal pressingsOnly applies to buttons
-  - *ShortPress* simulates input when the duration of the press is below the threshhold
-  - *LongPress* simulates input when the duration of the press is above the threshold
-  - *IsLongPressHeld* simulates the input of a *LongPress* exactly when the temporal threshold is passed if set to true.&ensp;When false input is decided when the button is released
+- Field *InputMap* defines the keymap.&ensp;Each field is some input on the controller which is assigned a simulated hardware.
 
 Each simulated input must include the *$type* field.&ensp;All other fields are optional and will be given a default value if omitted.&ensp;The value shown to the right of the field is its default value.
 
@@ -68,6 +63,16 @@ Simulates input from a button or key.&ensp;*Key* is the button or key to simulat
 "IsContinuous": false
 ```
 Scrolls the mouse wheel when pressed.&ensp;*Amount* specifies the amount to scroll.&ensp;*AsClicks* specifies whether or not *Amount* represents clicks of the mouse wheel.&ensp;*IsContinuous*, when set to false, will simulate input once for every press of the button.&ensp;When set to true holding the button will continuously scroll the mouse wheel; while held input is sent 100 times per second.
+
+### ButtonTemporal
+```
+"$type": "Backend.ButtonTemporal, scwin",
+"Short": Button,
+"Long": Button,
+"TemporalThreshold": 500,
+"IsLongPressHeld": false
+```
+Allows a single button to simulate two buttons, differentating between the two by how long the button is pressed.&ensp;*TemporalThreshold* defines the point in time when to differentiate between a short or long press.&ensp;Measured in milliseconds.&ensp;*Short* is a Button type activated by a short press.&ensp;*Long* is a Button type activated by a long press.&ensp;*IslongPressHeld*, when set to true, sets *Long* to activate exactly when the temporal threshold is passed.&ensp;When false simulation is differentiated when the button is released.
 
 ### ButtonMany
 ```
