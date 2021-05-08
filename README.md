@@ -19,7 +19,7 @@ It is recommended to use this alongside the Steam client and Steam Input.&ensp;T
 The JSON file defines an *Map* object:
 - Field *Name* specifies the inputmap's name.&ensp;This is optional
 - Field *ActionMaps* contains Maps to be applied, similar to Steam Input's action sets.&ensp;Each Map *must* contain a name
-- Field *InputMap* defines the keymap.&ensp;Each field is some input on the controller which is assigned a simulated hardware.
+- Field *InputMap* defines the keymap.&ensp;Each contained field is some input on the controller which is assigned a simulated hardware.
 
 Each simulated input must include the *$type* field.&ensp;All other fields are optional and will be given a default value if omitted.&ensp;The value shown to the right of the field is its default value.
 
