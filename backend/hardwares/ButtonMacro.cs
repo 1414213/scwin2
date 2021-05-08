@@ -21,7 +21,6 @@ namespace Backend {
 			this.cancelOnHold = new CancellationTokenSource();
 			onHold = Task.Run(() => {
 				while (true) {
-					
 					this.DoMacros(Held);
 					Thread.Sleep(waitTime);
 					cancelOnHold.Token.ThrowIfCancellationRequested();
@@ -31,18 +30,20 @@ namespace Backend {
 
 		protected override void ReleaseImpl() {
 			cancelOnHold.Cancel();
-			onPress.Wait();
-			Task.Run(() => this.DoMacros(Released));
+			Task.Run(() => {
+				onPress.Wait();
+				this.DoMacros(Released);
+			});
 		}
 
 		private void DoMacros(Robot.Macro[] macros) {
 			foreach (var macro in macros) {
 				robot.DoMacro(macro);
-				if (macro.AddActionLayer is string aal) sideEffectsPipe.Enqueue(new ActionMapAddition{
+				if (macro.AddActionLayer is string aal) SideEffectsPipe.Enqueue(new ActionMapAddition{
 					name = aal,
 					isTransparent = macro.AddActionLayerAsTransparent
 				});
-				if (macro.RemoveActionLayer is string ral) sideEffectsPipe.Enqueue(new ActionMapRemoval{ name = ral });
+				if (macro.RemoveActionLayer is string ral) SideEffectsPipe.Enqueue(new ActionMapRemoval{ name = ral });
 				Thread.Sleep(macro.Wait);
 			}
 		}

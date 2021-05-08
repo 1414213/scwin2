@@ -14,9 +14,11 @@ namespace Backend {
 		[JsonIgnore]
 		public bool IsSecondPress => isSecondPress;
 
-		private bool isPressed = false;
-		private bool isRepetitious = false;
-		private bool isSecondPress;
+		protected api.InputData? input;
+
+		bool isPressed = false;
+		bool isRepetitious = false;
+		bool isSecondPress;
 
 		public Button(bool isRepetitious = false) {
 			this.isRepetitious = isRepetitious;
@@ -64,6 +66,7 @@ namespace Backend {
 		public override void DoEvent(api.InputData e) {
 			if (!e.IsButton) throw new ArgumentException(e + " isn't a button.");
 
+			input = e;
 			if ((e.Flags & api.Flags.Pressed) == api.Flags.Pressed) this.Press();
 			else this.Release();
 		}
