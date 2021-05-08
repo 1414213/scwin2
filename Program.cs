@@ -73,7 +73,7 @@ class Program {
 			Console.WriteLine($"New input map {map.Name} created!");
 			return;
 		}
-		var doer = new Backend.EventDoer(map, createVirtualGamepad: !noGamepad);
+		var doer = new Backend.EventDoer(map, !noGamepad);
 
 		// read inputs from the HID device
 		ReadResult input;
