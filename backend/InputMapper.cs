@@ -14,17 +14,8 @@ namespace Backend {
 	public static class InputMapper {
 		public class Map {
 			public string Name { get; set; } = "";
-			public Dictionary<string, InputTypeTable> InputMap { get; set; } = CreateBlankInputMap();
-			public Dictionary<string, Dictionary<string, InputTypeTable>> ActionMaps
-				= new Dictionary<string, Dictionary<string, InputTypeTable>>();
-		}
-
-		public class InputTypeTable {
-			public Hardware? Regular { get; set; }
-			public Hardware? ShortPress { get; set; }
-			public Hardware? LongPress { get; set; }
-			public int TemporalThreshold { get; set; } = 500;
-			public bool IsLongPressHeld { get; set; }
+			public Dictionary<string, Hardware?> InputMap { get; set; } = CreateBlankInputMap();
+			public Dictionary<string, Dictionary<string, Hardware?>> ActionMaps = new ();
 		}
 
 		public static string Directory { get; set; } = @"inputmaps\";
@@ -65,44 +56,42 @@ namespace Backend {
 				Formatting.Indented,
 				new JsonSerializerSettings{ TypeNameHandling = TypeNameHandling.Auto }
 			);
-			FileInfo file = new FileInfo(Directory + mapName + ".json");
+			var file = new FileInfo(Directory + mapName + ".json");
 
 			file.Directory?.Create();
 			File.WriteAllText(file.FullName, jsonString);
 		}
 
-		public static void Print(Map inputMap) {
-			var im = inputMap.InputMap;
-			foreach (Key k in Enum.GetValues(typeof(Key))) {
-				Console.Write(k);
-				foreach (KeyValuePair<string, InputTypeTable> entry in im) {
-					Console.Write(entry.ToString());
+		public static void Print(this Map map) {
+			Action<Dictionary<string, Hardware?>> PrintInputMap = inputs => {
+				foreach (var entry in inputs) {
+					Console.WriteLine($"{entry.Key}: {entry.Value}");
 				}
+			};
+
+			Console.WriteLine(map.Name + ":");
+			PrintInputMap(map.InputMap);
+			Console.WriteLine();
+			foreach (var entry in map.ActionMaps) {
+				Console.WriteLine($"ActionMap {entry.Key}:");
+				PrintInputMap(entry.Value);
 				Console.WriteLine();
-			}
+			}			
 		}
 
-		private static Dictionary<string, InputTypeTable> CreateBlankInputMap() {
-			var inputMap = new Dictionary<string, InputTypeTable>();
+		private static Dictionary<string, Hardware?> CreateBlankInputMap() {
+			var inputMap = new Dictionary<string, Hardware?>();
 			// keys are stored as strings so that they can be indexed in alphabetical order
-			var keylist = new List<string>();
+			var keyStrings = new List<string>(20);
 
 			foreach (api.Key k in Enum.GetValues(typeof(api.Key))) {
-				if (k == api.Key.DPadLeft || k == api.Key.DPadUp || k == api.Key.DPadLeft || k == api.Key.DPadDown) {
+				if (k == api.Key.DPadLeft || k == api.Key.DPadUp || k == api.Key.DPadRight || k == api.Key.DPadDown) {
 					continue;
-				} else keylist.Add(k.ToString());
+				} else keyStrings.Add(k.ToString());
 			}
-			keylist.Sort();
-			
-			foreach (string s in keylist) {
-				api.Key key = api.Key.DPadDown; // placeholder
-				foreach (api.Key k in Enum.GetValues(typeof(api.Key))) {
-					if (k.ToString() == s) key = k;
-				}
 
-				InputTypeTable inputTypeTable = new InputTypeTable();
-				inputMap.Add(key.ToString(), inputTypeTable);
-			}
+			keyStrings.Sort();
+			foreach (string s in keyStrings) inputMap.Add(s, null);
 
 			return inputMap;
 		}

@@ -11,26 +11,19 @@ using Robot;
 namespace Backend {
 	public abstract class Hardware {
 		[JsonIgnore]
-		public static ConcurrentQueue<SideEffect> sideEffectsPipe = null!;
+		protected static ConcurrentQueue<SideEffect> SideEffectsPipe => eventDoer?.SideEffectsPipe
+			?? throw new InvalidOperationException("Hardware has yet to be initialized; call Hardware.Init().");
 		[JsonIgnore]
 		protected static IRobot robot = null!;
 		[JsonIgnore]
-		protected static LinkedList<EventDoer.ActionLayer> actionLayering = null!;
+		protected static LinkedList<EventDoer.ActionLayer> actionLayering => eventDoer?.ActionLayering
+			?? throw new InvalidOperationException("Hardware has yet to be initialized; call Hardware.Init().");
 
-		public static void Init(
-			bool createVirtualGamepad,
-			ConcurrentQueue<SideEffect> sideEffectsPipe,
-			LinkedList<EventDoer.ActionLayer> actionLayering
-		) {
+		static EventDoer? eventDoer;
+
+		public static void Init(bool createVirtualGamepad, EventDoer eventDoer) {
 			robot = new WindowsRobot(createVirtualGamepad);
-			Hardware.sideEffectsPipe = sideEffectsPipe;
-			Hardware.actionLayering = actionLayering;
-		}
-
-		protected Hardware() {
-			if (sideEffectsPipe == null || actionLayering == null) {
-				throw new InvalidOperationException("Hardware has yet to be initialized; call Hardware.Init().");
-			}
+			Hardware.eventDoer = eventDoer;
 		}
 
 		public abstract void DoEvent(api.InputData e);

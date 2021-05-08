@@ -9,8 +9,6 @@ using api = SteamControllerApi;
 
 namespace Backend {
 	public class EventDoer {
-		public LinkedList<ActionLayer> ActionLayering => actionLayering;
-
 		// dumb boilerplate
 		private class HeldLongPressEntry {
 			public Task task;
@@ -25,41 +23,50 @@ namespace Backend {
 		public class ActionLayer {
 			public string name = "";
 			public bool isTransparent;
-			public Dictionary<string, InputMapper.InputTypeTable> map;
+			public Dictionary<string, Hardware?> inputMap;
 
-			public ActionLayer(string name, bool isTransparent, Dictionary<string, InputMapper.InputTypeTable> inputMap) {
+			public ActionLayer(string name, bool isTransparent, Dictionary<string, Hardware?> inputMap) {
 				this.name = name;
 				this.isTransparent = isTransparent;
-				this.map = inputMap;
+				this.inputMap = inputMap;
 			}
 		}
 
-		private InputMapper.Map map;
-		private Dictionary<api.Key, Task> heldLongPressTasks;
-		private Dictionary<api.Key, CancellationTokenSource> heldLongPressTaskTokens;
-		private LinkedList<ActionLayer> actionLayering = new LinkedList<ActionLayer>();
+		public LinkedList<ActionLayer> ActionLayering { get; } = new ();
 
-		private ConcurrentQueue<SideEffect> sideEffectsPipe = new ConcurrentQueue<SideEffect>();
+		public ConcurrentQueue<SideEffect> SideEffectsPipe { get; } = new ();
+		// BUG
+		// public InputMapper.Map Map { get => Map; init {
+		// 	Map = value;
+		// 	ActionLayering.AddLast(new ActionLayer(this.Map.Name, false, this.Map.InputMap));
+		// } }
+		public InputMapper.Map Map { get => map; init {
+			map = value;
+			ActionLayering.AddLast(new ActionLayer(map.Name, false, map.InputMap));
+		} }
+		
+		Dictionary<api.Key, Task> heldLongPressTasks = new ();
+		Dictionary<api.Key, CancellationTokenSource> heldLongPressTaskTokens = new ();
+		InputMapper.Map map = new ();
 
-		public EventDoer(InputMapper.Map inputMap, bool createVirtualGamepad = true) {
-			this.map = inputMap;
-			this.heldLongPressTasks = new Dictionary<api.Key, Task>();
-			this.heldLongPressTaskTokens = new Dictionary<api.Key, CancellationTokenSource>();
+		public EventDoer(bool createVirtualGamepad) => Hardware.Init(createVirtualGamepad, this);
 
-			actionLayering.AddLast(new ActionLayer(this.map.Name, false, this.map.InputMap));
-
-			Hardware.Init(createVirtualGamepad, this.sideEffectsPipe, this.actionLayering);
+		public EventDoer(InputMapper.Map map, bool createVirtualGamepad) : this(createVirtualGamepad) {
+			this.Map = map;
 		}
+
 		~EventDoer() {
-			foreach (var layer in actionLayering) this.ReleaseAll(layer.map);
+			foreach (var layer in ActionLayering) foreach (var entry in layer.inputMap) entry.Value?.ReleaseAll();
 		}
+
+		//public void InitHardware(bool createVirtualGamepad) => Hardware.Init(createVirtualGamepad, this);
 
 		public void DoEvents(IList<api.InputData> events) {
 			foreach (api.InputData e in events) {
-				var itr = actionLayering.Last;
-				for (int i = 0; i < actionLayering.Count; i++) {
-					if (itr!.Value.map.ContainsKey(e.Key.ToString())) {
-						this.DoAction(e, itr.Value.map[e.Key.ToString()]);
+				var itr = ActionLayering.Last;
+				for (int i = 0; i < ActionLayering.Count; i++) {
+					if (itr!.Value.inputMap.ContainsKey(e.Key.ToString())) {
+						this.DoAction(e, itr.Value.inputMap[e.Key.ToString()]);
 						break;
 					} else if (!itr.Value.isTransparent) break;
 					itr = itr.Previous;
@@ -67,62 +74,27 @@ namespace Backend {
 			}
 		}
 
-		private void DoAction(api.InputData e, InputMapper.InputTypeTable mapEntry) {
-			var regular = mapEntry.Regular;
-			var shortpress = mapEntry.ShortPress;
-			var longpress = mapEntry.LongPress;
-
-			// handle regular actions (i.e. analog inputs, normal button presses)
-			regular?.DoEvent(e);
-
-			// handle short and long presses
-			// for now, this only performs input if applied to a button
-			if (shortpress != null || longpress != null) {
-				if ((e.Flags & api.Flags.Pressed) == api.Flags.Pressed) {
-					heldLongPressTaskTokens[e.Key] = new CancellationTokenSource();
-					if (mapEntry.IsLongPressHeld) {
-						// on press, starts task to measure if release occurs before given time
-						heldLongPressTasks[e.Key] = Task.Run(() => {
-							Thread.Sleep(mapEntry.TemporalThreshold);
-							// return if press time was shorter than threshold to trigger the long press button
-							heldLongPressTaskTokens[e.Key].Token.ThrowIfCancellationRequested();
-							if (longpress is Button b) b.Press();
-						}, heldLongPressTaskTokens[e.Key].Token);
-					}
-				} else if ((e.Flags & api.Flags.Released) == api.Flags.Released) {
-					// temporal binidngs only apply to things that can be pressed
-					long timeHeld = e.TimeHeld ?? 0;
-
-					if (mapEntry.IsLongPressHeld) {
-						if (timeHeld < mapEntry.TemporalThreshold) {
-							heldLongPressTaskTokens[e.Key].Cancel();
-							if (shortpress is Button b) { b.Tap(); }
-						} else { if (longpress is Button b) b.Release(); }
-					} else {
-						if (timeHeld < mapEntry.TemporalThreshold) { if (shortpress is Button b) b.Tap(); }
-						else { if (longpress is Button b) b.Tap(); }
-					}
-				}
-			}
+		private void DoAction(api.InputData e, Hardware? mapEntry) {
+			mapEntry?.DoEvent(e);
 
 			// Handle any side effects produced by the hardwares
 			bool wasSuccessful;
 			SideEffect sideEffect;
-			while (!sideEffectsPipe.IsEmpty) {
-				wasSuccessful = sideEffectsPipe.TryDequeue(out sideEffect!);
+			while (!SideEffectsPipe.IsEmpty) {
+				wasSuccessful = SideEffectsPipe.TryDequeue(out sideEffect!);
 				if (wasSuccessful) switch (sideEffect) {
 					// match for different side effects the event doer needs to produce
 					case ActionMapAddition a: {
-						if (map.ActionMaps.ContainsKey(a.name)) {
-							actionLayering.AddLast(new ActionLayer(a.name, a.isTransparent, map.ActionMaps[a.name]));
+						if (Map.ActionMaps.ContainsKey(a.name)) {
+							ActionLayering.AddLast(new ActionLayer(a.name, a.isTransparent, Map.ActionMaps[a.name]));
 						} else throw new ActionMapNotFoundException(a.name);
 						break;
 					}
 					case ActionMapRemoval r: {
-						var itr = actionLayering.First!.Next;
+						var itr = ActionLayering.First!.Next;
 						while (itr != null) {
 							if (itr.Value.name == r.name) {
-								actionLayering.Remove(itr);
+								ActionLayering.Remove(itr);
 								break;
 							}
 							itr = itr.Next;
@@ -133,16 +105,6 @@ namespace Backend {
 						$"SideEffect type {sideEffect.GetType().ToString()} doesn't exist."
 					);
 				}
-			}
-		}
-
-		private void ReleaseAll(InputMapper.Map map) => this.ReleaseAll(map.InputMap);
-
-		private void ReleaseAll(Dictionary<string, InputMapper.InputTypeTable> map) {
-			foreach (var entry in map) {
-				entry.Value.Regular?.ReleaseAll();
-				entry.Value.ShortPress?.ReleaseAll();
-				entry.Value.LongPress?.ReleaseAll();
 			}
 		}
 
