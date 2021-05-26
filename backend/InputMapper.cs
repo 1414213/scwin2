@@ -41,7 +41,10 @@ namespace Backend {
 			}
 			jsonString = File.ReadAllText(mapPath);
 
-			JsonConvert.DefaultSettings = () => new JsonSerializerSettings{ TypeNameHandling = TypeNameHandling.Auto };
+			JsonConvert.DefaultSettings = () => new JsonSerializerSettings{
+				TypeNameHandling = TypeNameHandling.Auto,
+				MissingMemberHandling = MissingMemberHandling.Error
+			};
 			var map = JsonConvert.DeserializeObject<Map>(
 				jsonString,
 				new StringEnumConverter()
@@ -85,9 +88,8 @@ namespace Backend {
 			var keyStrings = new List<string>(20);
 
 			foreach (api.Key k in Enum.GetValues(typeof(api.Key))) {
-				if (k == api.Key.DPadLeft || k == api.Key.DPadUp || k == api.Key.DPadRight || k == api.Key.DPadDown) {
-					continue;
-				} else keyStrings.Add(k.ToString());
+				if (k is api.Key.DPadLeft or api.Key.DPadUp or api.Key.DPadRight or api.Key.DPadDown) continue;
+				else keyStrings.Add(k.ToString());
 			}
 
 			keyStrings.Sort();
@@ -95,244 +97,6 @@ namespace Backend {
 
 			return inputMap;
 		}
-
-		// public static Map BuildSubnautica() {
-		// 	// var map = CreateBlankInputMap();
-		// 	// map[api.Key.LTriggerPull.ToString()]["Push"] = new TriggerButton(0.5, Key.MouseRight);
-		// 	// map[api.Key.RTriggerPull.ToString()]["Push"] = new TriggerButton(0.5, Key.MouseLeft);
-		// 	// map[api.Key.LBumper.ToString()]["Tap"] = new Button(Key.F);
-		// 	// map[api.Key.LGrip.ToString()]["Tap"] = new Button(Key.C);
-		// 	// map[api.Key.RGrip.ToString()]["Tap"] = new Button(Key.Space);
-		// 	// map[api.Key.StickPush.ToString()]["Push"] = new StickButtonCross(Key.D, Key.S, Key.A, Key.W, 0.3, hasOverlap: false);
-		// 	// map[api.Key.B.ToString()]["Tap"] = new Button(Key.E);
-		// 	// map[api.Key.A.ToString()]["Tap"] = new Button(Key.Q);
-		// 	// map[api.Key.X.ToString()]["Tap"] = new Button(Key.R);
-		// 	// map[api.Key.Y.ToString()]["Tap"] = new Button(Key.Tab);
-		// 	// map[api.Key.RPadTouch.ToString()]["Tap"] = new Trackball(0, 10, false);
-		// 	// map[api.Key.Forward.ToString()]["Tap"] = new Button(Key.Escape);
-		// 	// map[api.Key.Back.ToString()]["Tap"] = new Button(Key.Tab);  //tab
-
-		// 	// if I write it like above every key is bound to the last created button but using 
-		// 	// collection initializers works.  Help.
-
-		// 	var map2 = new Dictionary<string, Dictionary<string, Hardware>>{
-		// 		{ api.Key.LTriggerPull.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Push", new TriggerButton(Key.MouseRight, 0.5) },
-		// 		} },
-		// 		{ api.Key.RTriggerPull.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Push", new TriggerButton(Key.MouseLeft, 0.5) },
-		// 		} },
-		// 		{ api.Key.LTriggerClick.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", null }
-		// 		} },
-		// 		{ api.Key.RTriggerClick.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", null }
-		// 		} },
-		// 		{ api.Key.LBumper.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.F) }
-		// 		} },
-		// 		{ api.Key.RBumper.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", null }
-		// 		} },
-		// 		{ api.Key.LGrip.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.C) }
-		// 		} },
-		// 		{ api.Key.RGrip.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.Space) }
-		// 		} },
-		// 		{ api.Key.StickPush.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Push", new StickButtonCross(Key.D, Key.W, Key.A, Key.S, 0.3, hasOverlap: true) }
-		// 		} },
-		// 		{ api.Key.StickClick.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.LeftShift) }
-		// 		} },
-		// 		{ api.Key.B.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.E) }
-		// 		} },
-		// 		{ api.Key.A.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.Q) }
-		// 		} },
-		// 		{ api.Key.X.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.R) }
-		// 		} },
-		// 		{ api.Key.Y.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.Tab) }
-		// 		} },
-		// 		{ api.Key.LPadTouch.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new PadButtonCross(Key.D, Key.W, Key.A, Key.S, 0.4, hasOverlap: true) }
-		// 		} },
-		// 		{ api.Key.LPadClick.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", null }
-		// 		} },
-		// 		{ api.Key.RPadTouch.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new Trackball(100, 50, true) }
-		// 		} },
-		// 		{ api.Key.RPadClick.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new PadButtonCross{
-		// 				West = new ButtonScroll { Amount = -1, AsClicks = true },
-		// 				East = new ButtonScroll { Amount = 1, AsClicks = true }
-		// 			} }
-		// 		} },
-		// 		{ api.Key.Forward.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.Escape) }
-		// 		} },
-		// 		{ api.Key.Back.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.Tab) }
-		// 		} },
-		// 		{ api.Key.Steam.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", null }
-		// 		} },
-		// 		{ api.Key.GyroMove.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Push", null }
-		// 		} },
-		// 	};
-
-		// 	return new Map{ InputMap=map2 };
-		// }
-
-		// public static Map BuildXbox() {
-		// 	var map = new Dictionary<string, Dictionary<string, Hardware>> {
-		// 		{ api.Key.LTriggerPull.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Push", new TriggerTrigger{ IsLeftElseRight = true } },
-		// 		} },
-		// 		{ api.Key.RTriggerPull.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Push", new TriggerTrigger{ IsLeftElseRight = false } },
-		// 		} },
-		// 		{ api.Key.LTriggerClick.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", null }
-		// 		} },
-		// 		{ api.Key.RTriggerClick.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", null }
-		// 		} },
-		// 		{ api.Key.LBumper.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.LBumper) }
-		// 		} },
-		// 		{ api.Key.RBumper.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.RBumper) }
-		// 		} },
-		// 		{ api.Key.LGrip.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.None) }
-		// 		} },
-		// 		{ api.Key.RGrip.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.None) }
-		// 		} },
-		// 		{ api.Key.StickPush.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Push", new StickStick{ Deadzone = 0.1, IsLeftElseRight = true } }
-		// 		} },
-		// 		{ api.Key.StickClick.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.LStickClick) }
-		// 		} },
-		// 		{ api.Key.B.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.Face_East) }
-		// 		} },
-		// 		{ api.Key.A.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.Face_South) }
-		// 		} },
-		// 		{ api.Key.X.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.Face_West) }
-		// 		} },
-		// 		{ api.Key.Y.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.Face_North) }
-		// 		} },
-		// 		{ api.Key.LPadTouch.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new PadButtonCross(Key.Dpad_Right, Key.Dpad_Up, Key.Dpad_Left, Key.Dpad_Down, 0.4) }
-		// 		} },
-		// 		{ api.Key.LPadClick.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", null }
-		// 		} },
-		// 		{ api.Key.RPadTouch.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new PadStick { Deadzone = 0.1, OuterLimit = 0.7, IsLeftElseRight = false } }
-		// 		} },
-		// 		{ api.Key.RPadClick.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.RStickClick) }
-		// 		} },
-		// 		{ api.Key.Forward.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.Start) }
-		// 		} },
-		// 		{ api.Key.Back.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.Back) }
-		// 		} },
-		// 		{ api.Key.Steam.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.GamepadHome) }
-		// 		} },
-		// 		{ api.Key.GyroMove.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Push", null }
-		// 		} },
-		// 	};
-		// 	return new Map{ InputMap=map };
-		// }
-
-		// public static Map BuildXboxRelative() {
-		// 	var map = new Dictionary<string, Dictionary<string, Hardware>> {
-		// 		{ api.Key.LTriggerPull.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Push", new TriggerTrigger{ IsLeftElseRight = true } },
-		// 		} },
-		// 		{ api.Key.RTriggerPull.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Push", new TriggerTrigger{ IsLeftElseRight = false } },
-		// 		} },
-		// 		{ api.Key.LTriggerClick.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", null }
-		// 		} },
-		// 		{ api.Key.RTriggerClick.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", null }
-		// 		} },
-		// 		{ api.Key.LBumper.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.LBumper) }
-		// 		} },
-		// 		{ api.Key.RBumper.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.RBumper) }
-		// 		} },
-		// 		{ api.Key.LGrip.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.None) }
-		// 		} },
-		// 		{ api.Key.RGrip.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.None) }
-		// 		} },
-		// 		{ api.Key.StickPush.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Push", new StickStick{ IsLeftElseRight = true, Deadzone = 0.1 } }
-		// 		} },
-		// 		{ api.Key.StickClick.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.LStickClick) }
-		// 		} },
-		// 		{ api.Key.B.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.Face_East) }
-		// 		} },
-		// 		{ api.Key.A.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.Face_South) }
-		// 		} },
-		// 		{ api.Key.X.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.Face_West) }
-		// 		} },
-		// 		{ api.Key.Y.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.Face_North) }
-		// 		} },
-		// 		{ api.Key.LPadTouch.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new PadSlideStick{ RelativeSize = 0.4, Deadzone = 0.1, IsLeftElseRight = true } }
-		// 		} },
-		// 		{ api.Key.LPadClick.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new PadButtonCross(Key.Dpad_Right, Key.Dpad_Up, Key.Dpad_Left, Key.Dpad_Down, 0.5, hasOverlap: true) }
-		// 		} },
-		// 		{ api.Key.RPadTouch.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new PadStick { Deadzone = 0.1, OuterLimit = 0.7, IsLeftElseRight = false } }
-		// 		} },
-		// 		{ api.Key.RPadClick.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.RStickClick) }
-		// 		} },
-		// 		{ api.Key.Forward.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.Start) }
-		// 		} },
-		// 		{ api.Key.Back.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.Back) }
-		// 		} },
-		// 		{ api.Key.Steam.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Tap", new ButtonKey(Key.GamepadHome) }
-		// 		} },
-		// 		{ api.Key.GyroMove.ToString(), new Dictionary<string, Hardware> {
-		// 			{ "Push", null }
-		// 		} },
-		// 	};
-		// 	return new Map{ InputMap=map };
-		// }
 
 		// public class HardwareConverter : JsonConverter<Hardware> {
 		// 	public override bool CanConvert(Type typeToConvert) =>

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 
 using api = SteamControllerApi;
@@ -35,18 +34,11 @@ namespace Backend {
 		public LinkedList<ActionLayer> ActionLayering { get; } = new ();
 
 		public ConcurrentQueue<SideEffect> SideEffectsPipe { get; } = new ();
-		// BUG
-		// public InputMapper.Map Map { get => Map; init {
-		// 	Map = value;
-		// 	ActionLayering.AddLast(new ActionLayer(this.Map.Name, false, this.Map.InputMap));
-		// } }
 		public InputMapper.Map Map { get => map; init {
 			map = value;
 			ActionLayering.AddLast(new ActionLayer(map.Name, false, map.InputMap));
 		} }
 		
-		Dictionary<api.Key, Task> heldLongPressTasks = new ();
-		Dictionary<api.Key, CancellationTokenSource> heldLongPressTaskTokens = new ();
 		InputMapper.Map map = new ();
 
 		public EventDoer(bool createVirtualGamepad) => Hardware.Init(createVirtualGamepad, this);
@@ -63,13 +55,13 @@ namespace Backend {
 
 		public void DoEvents(IList<api.InputData> events) {
 			foreach (api.InputData e in events) {
-				var itr = ActionLayering.Last;
-				for (int i = 0; i < ActionLayering.Count; i++) {
-					if (itr!.Value.inputMap.ContainsKey(e.Key.ToString())) {
-						this.DoAction(e, itr.Value.inputMap[e.Key.ToString()]);
+				ActionLayer layer;
+				for (var n = ActionLayering.Last; n != null; n = n.Previous) {
+					layer = n!.Value;
+					if (layer.inputMap.ContainsKey(e.Key.ToString())) {
+						this.DoAction(e, layer.inputMap[e.Key.ToString()]);
 						break;
-					} else if (!itr.Value.isTransparent) break;
-					itr = itr.Previous;
+					} else if (!layer.isTransparent) break;
 				}
 			}
 		}
@@ -91,13 +83,9 @@ namespace Backend {
 						break;
 					}
 					case ActionMapRemoval r: {
-						var itr = ActionLayering.First!.Next;
-						while (itr != null) {
-							if (itr.Value.name == r.name) {
-								ActionLayering.Remove(itr);
-								break;
-							}
-							itr = itr.Next;
+						for (var n = ActionLayering.First!.Next; n != null; n = n.Next) if (n.Value.name == r.name) {
+							ActionLayering.Remove(n);
+							break;
 						}
 						break;
 					}
