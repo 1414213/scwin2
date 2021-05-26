@@ -17,9 +17,6 @@ namespace Robot {
 		(short x, short y) rStickPosition = (0, 0);
 
 		private InputSimulator sim = new InputSimulator();
-		// In this case throwing a null reference error when the event doer attempts to send gamepad input
-		// when the gamepad was commanded to not initialize is wanted since if there is no virtual gamepad
-		// to send input to then the event doer can't really do much with the keybinding.
 		private IXbox360Controller? virtualGamepad;
 
 		public WindowsRobot(bool createVirtualGamepad = true) {
@@ -29,9 +26,7 @@ namespace Robot {
 				this.virtualGamepad.Connect();
 			}
 		}
-		~WindowsRobot() {
-			if (this.virtualGamepad != null) this.virtualGamepad.Disconnect();
-		}
+		~WindowsRobot() => virtualGamepad?.Disconnect();
 
 		// A bug/oversite prevents InputSimulator from sending mouse movement as long integers despite Windows
 		// supporting this.
@@ -68,16 +63,16 @@ namespace Robot {
 				case Key.MouseMiddle: sim.Mouse.MiddleButtonDown(); break;
 				case Key.MouseFour:   sim.Mouse.XButtonDown(1); break;
 				case Key.MouseFive:   sim.Mouse.XButtonDown(2); break;
-				default: {
-					if ((int)key >= (int)Key.Tab && (int)key <= (int)Key.Pad_Period) {
-						sim.Keyboard.KeyDown(key.ToVirtualKeyCode());
-						break;
-					} else if ((int)key >= (int)Key.Face_South) {
-						virtualGamepad?.SetButtonState(key.ToXbox360Button(), true);
-						break;
-					}
+				case Key when (int)key is >= (int)Key.Tab and < (int)Key.GamepadHome: {
+					sim.Keyboard.KeyDown(key.ToVirtualKeyCode());
 					break;
 				}
+				case Key when (int)key >= (int)Key.GamepadHome: {
+					var k = key.ToXbox360Button();
+					virtualGamepad?.SetButtonState(k, true);
+					break;
+				}
+				default: break;
 			}
 		}
 
@@ -89,17 +84,15 @@ namespace Robot {
 				case Key.MouseMiddle: sim.Mouse.MiddleButtonUp(); break;
 				case Key.MouseFour:   sim.Mouse.XButtonUp(1); break;
 				case Key.MouseFive:   sim.Mouse.XButtonUp(2); break;
-				default: {
-					if ((int)key >= (int)Key.Tab && (int)key <= (int)Key.Pad_Period) {
-						sim.Keyboard.KeyUp(key.ToVirtualKeyCode());
-						break;
-					} else if ((int)key >= (int)Key.Face_East) {
-						Console.WriteLine(key);
-						virtualGamepad?.SetButtonState(key.ToXbox360Button(), false);
-						break;
-					}
+				case Key when (int)key is >= (int)Key.Tab and < (int)Key.GamepadHome: {
+					sim.Keyboard.KeyUp(key.ToVirtualKeyCode());
 					break;
 				}
+				case Key when (int)key >= (int)Key.GamepadHome: {
+					virtualGamepad?.SetButtonState(key.ToXbox360Button(), false);
+					break;
+				}
+				default: break;
 			}
 		}
 
@@ -130,12 +123,9 @@ namespace Robot {
 
 	static class KeyExtensions {
 		public static VirtualKeyCode ToVirtualKeyCode(this Key key) {
-			if ((int)key <= (int)Key.MouseFive || (int)key >= (int)Key.Face_South) {
+			if ((int)key is <= (int)Key.MouseFive or >= (int)Key.Face_South) {
 				throw new ArgumentException($"{key} isn't a keyboard key.");
-			} else if (
-				((int)key >= (int)Key.Row_0) && ((int)key <= (int)Key.Row_9)
-				|| ((int)key >= (int)Key.A) && ((int)key <= (int)Key.Z)
-			) {
+			} else if ((int)key is >= (int)Key.Row_0 and <= (int)Key.Row_9 or >= (int)Key.A and <= (int)Key.Z) {
 				return (VirtualKeyCode)((int)key);
 			} else return key switch {
 				Key.Tab            => VirtualKeyCode.TAB,

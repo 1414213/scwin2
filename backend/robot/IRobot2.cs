@@ -45,14 +45,15 @@ namespace Robot {
 		void PullRTrigger(byte amount);
 
 		void DoMacro(Macro macro) {
+			Console.WriteLine(macro.ToString(brief: true));
 			this.Press(macro.PressButtons);
 			this.Release(macro.ReleaseButtons);
-			if (macro.MoveMouse is (int, int, bool) mm)              this.MoveMouse(mm.x, mm.y, mm.relatively);
-			if (macro.ScrollMouse is (int, bool) sm)                 this.ScrollMouseWheel(sm.amount, sm.asClicks);
-			if (macro.PullLeftTrigger is byte plt)                   this.PullLTrigger(plt);
-			if (macro.PullRightTrigger is byte prt)                  this.PullRTrigger(prt);
-			if (macro.moveLeftStickTo is (short, short, bool) mlst)  this.MoveLStick(mlst.x, mlst.y, mlst.relatively);
-			if (macro.moveRightStickTo is (short, short, bool) mrst) this.MoveRStick(mrst.x, mrst.y, mrst.relatively);
+			if (macro.MoveMouse is Macro.Move2<int> mm)         this.MoveMouse(mm.x, mm.y, mm.relatively);
+			if (macro.ScrollMouse is Macro.Scroll sm)           this.ScrollMouseWheel(sm.amount, sm.asClicks);
+			if (macro.PullLeftTrigger is byte plt)              this.PullLTrigger(plt);
+			if (macro.PullRightTrigger is byte prt)             this.PullRTrigger(prt);
+			if (macro.moveLeftStick is Macro.Move2<short> mls)  this.MoveLStick(mls.x, mls.y, mls.relatively);
+			if (macro.moveRightStick is Macro.Move2<short> mrs) this.MoveRStick(mrs.x, mrs.y, mrs.relatively);
 		}
 
 		public static void PrintKeycodes(string directory) {
@@ -179,6 +180,7 @@ namespace Robot {
 		Pad_8,
 		Pad_9,
 		Pad_Period, // int value of 146
+		GamepadHome,
 		Face_East,
 		Face_North,
 		Face_West,
@@ -193,6 +195,5 @@ namespace Robot {
 		RBumper,
 		Start,
 		Back,
-		GamepadHome,
 	}
 }
