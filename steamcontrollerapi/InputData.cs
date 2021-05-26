@@ -73,8 +73,8 @@ namespace SteamControllerApi {
 
 			public static implicit operator (short, short)(Coords coords) => (coords.x, coords.y);
 			
-			public static
-			implicit operator (short, short, short, short)(Coords coords) => (coords.x, coords.y, coords.z, coords.a);
+			public static implicit operator (short, short, short, short)(Coords coords) =>
+				(coords.x, coords.y, coords.z, coords.a);
 
 			public static implicit operator Coords((short x, short y) coords) => new Coords{ x = coords.x, y = coords.y };
 
@@ -99,11 +99,10 @@ namespace SteamControllerApi {
 		public readonly long? TimeHeld = null;
 
 		public override DataType Type => DataType.Input;
-		public bool IsTriggerPull => this.Key == Key.LTriggerPull || this.Key == Key.RTriggerPull;
+		public bool IsTriggerPull => this.Key is Key.LTriggerPull or Key.RTriggerPull;
 
-		public bool IsDuallyCoordinal => this.Key == Key.LPadTouch || this.Key == Key.LPadClick
-		    || this.Key == Key.RPadTouch || this.Key == Key.RPadClick
-			|| this.Key == Key.StickPush;
+		public bool IsDuallyCoordinal => this.Key is Key.LPadTouch
+			or Key.LPadClick or Key.RPadTouch or Key.RPadClick or Key.StickPush;
 
 		public bool IsButton => ((this.Flags & Flags.Pressed) == Flags.Pressed)
 			|| ((this.Flags & Flags.Released) == Flags.Released);
