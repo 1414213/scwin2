@@ -26,7 +26,7 @@ namespace Backend {
 		}
 
 		protected override void ReleaseImpl() {
-			var timeHeld = base.input?.TimeHeld ?? 0;
+			var timeHeld = base.Input?.TimeHeld ?? 0;
 			if (IsLongPressHeld) {
 				if (timeHeld < TemporalThreshold) {
 					cancel?.Cancel(); // shouldn't be null

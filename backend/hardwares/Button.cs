@@ -14,8 +14,9 @@ namespace Backend {
 		[JsonIgnore]
 		public bool IsSecondPress => isSecondPress;
 
-		protected api.InputData? input;
+		protected api.InputData? Input => input;
 
+		api.InputData? input;
 		bool isPressed = false;
 		bool isRepetitious = false;
 		bool isSecondPress;
