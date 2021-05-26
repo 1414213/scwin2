@@ -9,7 +9,7 @@ using WindowsInput.Native;
 
 namespace Robot {
 	public class WindowsRobot : IRobot {
-		public int ScrollWheelClickSize { get; } = 120;
+		public int ScrollWheelClickSize => 120;
 		public (short x, short y) LStickPosition => lStickPosition;
 		public (short x, short y) RStickPosition => rStickPosition;
 
@@ -57,12 +57,6 @@ namespace Robot {
 
 		public void Press(params Key[] keys) {
 			foreach (var key in keys) switch (key) {
-				case Key.None:        break;
-				case Key.MouseLeft:   sim.Mouse.LeftButtonDown(); break;
-				case Key.MouseRight:  sim.Mouse.RightButtonDown(); break;
-				case Key.MouseMiddle: sim.Mouse.MiddleButtonDown(); break;
-				case Key.MouseFour:   sim.Mouse.XButtonDown(1); break;
-				case Key.MouseFive:   sim.Mouse.XButtonDown(2); break;
 				case Key when (int)key is >= (int)Key.Tab and < (int)Key.GamepadHome: {
 					sim.Keyboard.KeyDown(key.ToVirtualKeyCode());
 					break;
@@ -72,18 +66,18 @@ namespace Robot {
 					virtualGamepad?.SetButtonState(k, true);
 					break;
 				}
-				default: break;
+				case Key.None:        break;
+				case Key.MouseLeft:   sim.Mouse.LeftButtonDown(); break;
+				case Key.MouseRight:  sim.Mouse.RightButtonDown(); break;
+				case Key.MouseMiddle: sim.Mouse.MiddleButtonDown(); break;
+				case Key.MouseFour:   sim.Mouse.XButtonDown(1); break;
+				case Key.MouseFive:   sim.Mouse.XButtonDown(2); break;
+				default:              break;
 			}
 		}
 
 		public void Release(params Key[] keys) {
 			foreach (var key in keys) switch (key) {
-				case Key.None:        break;
-				case Key.MouseLeft:   sim.Mouse.LeftButtonUp(); break;
-				case Key.MouseRight:  sim.Mouse.RightButtonUp(); break;
-				case Key.MouseMiddle: sim.Mouse.MiddleButtonUp(); break;
-				case Key.MouseFour:   sim.Mouse.XButtonUp(1); break;
-				case Key.MouseFive:   sim.Mouse.XButtonUp(2); break;
 				case Key when (int)key is >= (int)Key.Tab and < (int)Key.GamepadHome: {
 					sim.Keyboard.KeyUp(key.ToVirtualKeyCode());
 					break;
@@ -92,7 +86,13 @@ namespace Robot {
 					virtualGamepad?.SetButtonState(key.ToXbox360Button(), false);
 					break;
 				}
-				default: break;
+				case Key.None:        break;
+				case Key.MouseLeft:   sim.Mouse.LeftButtonUp(); break;
+				case Key.MouseRight:  sim.Mouse.RightButtonUp(); break;
+				case Key.MouseMiddle: sim.Mouse.MiddleButtonUp(); break;
+				case Key.MouseFour:   sim.Mouse.XButtonUp(1); break;
+				case Key.MouseFive:   sim.Mouse.XButtonUp(2); break;
+				default:              break;
 			}
 		}
 
@@ -122,81 +122,82 @@ namespace Robot {
 	}
 
 	static class KeyExtensions {
-		public static VirtualKeyCode ToVirtualKeyCode(this Key key) {
-			if ((int)key is <= (int)Key.MouseFive or >= (int)Key.Face_South) {
-				throw new ArgumentException($"{key} isn't a keyboard key.");
-			} else if ((int)key is >= (int)Key.Row_0 and <= (int)Key.Row_9 or >= (int)Key.A and <= (int)Key.Z) {
-				return (VirtualKeyCode)((int)key);
-			} else return key switch {
-				Key.Tab            => VirtualKeyCode.TAB,
-				Key.Space          => VirtualKeyCode.SPACE,
-				Key.Quotation      => VirtualKeyCode.OEM_7,
-				Key.Comma          => VirtualKeyCode.OEM_COMMA,
-				Key.Dash           => VirtualKeyCode.OEM_MINUS,
-				Key.Dot            => VirtualKeyCode.OEM_PERIOD,
-				Key.ForwardSlash   => VirtualKeyCode.OEM_2,
-				Key.Semicolon      => VirtualKeyCode.OEM_1,
-				Key.Equal          => VirtualKeyCode.OEM_PLUS, // might be wrong idk
-				Key.OpenBracket    => VirtualKeyCode.OEM_4,
-				Key.Backslash      => VirtualKeyCode.OEM_5,
-				Key.CloseBracket   => VirtualKeyCode.OEM_6,
-				Key.Grave          => VirtualKeyCode.OEM_3,
-				Key.Escape         => VirtualKeyCode.ESCAPE,
-				Key.F1             => VirtualKeyCode.F1,
-				Key.F2             => VirtualKeyCode.F2,
-				Key.F3             => VirtualKeyCode.F3,
-				Key.F4             => VirtualKeyCode.F4,
-				Key.F5             => VirtualKeyCode.F5,
-				Key.F6             => VirtualKeyCode.F6,
-				Key.F7             => VirtualKeyCode.F7,
-				Key.F8             => VirtualKeyCode.F8,
-				Key.F9             => VirtualKeyCode.F9,
-				Key.F10            => VirtualKeyCode.F10,
-				Key.F11            => VirtualKeyCode.F11,
-				Key.F12            => VirtualKeyCode.F12,
-				Key.Backspace      => VirtualKeyCode.BACK,
-				Key.CapsLock       => VirtualKeyCode.CAPITAL,
-				Key.Enter          => VirtualKeyCode.RETURN,
-				Key.LeftControl    => VirtualKeyCode.LCONTROL,
-				Key.LeftSystem     => VirtualKeyCode.LWIN,
-				// left and right alt seem to use the same keycode
-				Key.LeftAlternate  => VirtualKeyCode.MENU,
-				Key.LeftShift      => VirtualKeyCode.LSHIFT,
-				Key.RightControl   => VirtualKeyCode.RCONTROL,
-				// left and right alt seem to use the same keycode
-				Key.RightAlternate => VirtualKeyCode.MENU,
-				Key.RightShift     => VirtualKeyCode.RSHIFT,
-				Key.Insert         => VirtualKeyCode.INSERT,
-				Key.Home           => VirtualKeyCode.HOME,
-				Key.PageUp         => VirtualKeyCode.PRIOR,
-				Key.PageDown       => VirtualKeyCode.NEXT,
-				Key.Delete         => VirtualKeyCode.DELETE,
-				Key.End            => VirtualKeyCode.END,
-				Key.LeftArrow      => VirtualKeyCode.LEFT,
-				Key.UpArrow        => VirtualKeyCode.UP,
-				Key.DownArrow      => VirtualKeyCode.DOWN,
-				Key.RightArrow     => VirtualKeyCode.RIGHT,
-				Key.NumberLock     => VirtualKeyCode.NUMLOCK,
-				Key.Pad_Backslash  => VirtualKeyCode.DIVIDE,
-				Key.Pad_Star       => VirtualKeyCode.MULTIPLY,
-				Key.Pad_Dash       => VirtualKeyCode.SUBTRACT,
-				Key.Pad_Add        => VirtualKeyCode.ADD,
-				// can't find the keycode for this one
-				//case Keyboard::Pad_Enter: return num
-				Key.Pad_0          => VirtualKeyCode.NUMPAD0,
-				Key.Pad_1          => VirtualKeyCode.NUMPAD1,
-				Key.Pad_2          => VirtualKeyCode.NUMPAD2,
-				Key.Pad_3          => VirtualKeyCode.NUMPAD3,
-				Key.Pad_4          => VirtualKeyCode.NUMPAD4,
-				Key.Pad_5          => VirtualKeyCode.NUMPAD5,
-				Key.Pad_6          => VirtualKeyCode.NUMPAD6,
-				Key.Pad_7          => VirtualKeyCode.NUMPAD7,
-				Key.Pad_8          => VirtualKeyCode.NUMPAD8,
-				Key.Pad_9          => VirtualKeyCode.NUMPAD9,
-				Key.Pad_Period     => VirtualKeyCode.DECIMAL,
-				_ => throw new ArgumentException($"Couldn't convert {key} into a keycode")
-			};
-		}
+		public static VirtualKeyCode ToVirtualKeyCode(this Key key) => key switch {
+			Key.Tab            => VirtualKeyCode.TAB,
+			Key.Space          => VirtualKeyCode.SPACE,
+			Key.Quotation      => VirtualKeyCode.OEM_7,
+			Key.Comma          => VirtualKeyCode.OEM_COMMA,
+			Key.Dash           => VirtualKeyCode.OEM_MINUS,
+			Key.Dot            => VirtualKeyCode.OEM_PERIOD,
+			Key.ForwardSlash   => VirtualKeyCode.OEM_2,
+			Key.Semicolon      => VirtualKeyCode.OEM_1,
+			Key.Equal          => VirtualKeyCode.OEM_PLUS, // might be wrong idk
+			Key.OpenBracket    => VirtualKeyCode.OEM_4,
+			Key.Backslash      => VirtualKeyCode.OEM_5,
+			Key.CloseBracket   => VirtualKeyCode.OEM_6,
+			Key.Grave          => VirtualKeyCode.OEM_3,
+			Key.Escape         => VirtualKeyCode.ESCAPE,
+			Key.F1             => VirtualKeyCode.F1,
+			Key.F2             => VirtualKeyCode.F2,
+			Key.F3             => VirtualKeyCode.F3,
+			Key.F4             => VirtualKeyCode.F4,
+			Key.F5             => VirtualKeyCode.F5,
+			Key.F6             => VirtualKeyCode.F6,
+			Key.F7             => VirtualKeyCode.F7,
+			Key.F8             => VirtualKeyCode.F8,
+			Key.F9             => VirtualKeyCode.F9,
+			Key.F10            => VirtualKeyCode.F10,
+			Key.F11            => VirtualKeyCode.F11,
+			Key.F12            => VirtualKeyCode.F12,
+			Key.Backspace      => VirtualKeyCode.BACK,
+			Key.CapsLock       => VirtualKeyCode.CAPITAL,
+			Key.Enter          => VirtualKeyCode.RETURN,
+			Key.LeftControl    => VirtualKeyCode.LCONTROL,
+			Key.LeftSystem     => VirtualKeyCode.LWIN,
+			// left and right alt seem to use the same keycode
+			Key.LeftAlternate  => VirtualKeyCode.MENU,
+			Key.LeftShift      => VirtualKeyCode.LSHIFT,
+			Key.RightControl   => VirtualKeyCode.RCONTROL,
+			// left and right alt seem to use the same keycode
+			Key.RightAlternate => VirtualKeyCode.MENU,
+			Key.RightShift     => VirtualKeyCode.RSHIFT,
+			Key.Insert         => VirtualKeyCode.INSERT,
+			Key.Home           => VirtualKeyCode.HOME,
+			Key.PageUp         => VirtualKeyCode.PRIOR,
+			Key.PageDown       => VirtualKeyCode.NEXT,
+			Key.Delete         => VirtualKeyCode.DELETE,
+			Key.End            => VirtualKeyCode.END,
+			Key.LeftArrow      => VirtualKeyCode.LEFT,
+			Key.UpArrow        => VirtualKeyCode.UP,
+			Key.DownArrow      => VirtualKeyCode.DOWN,
+			Key.RightArrow     => VirtualKeyCode.RIGHT,
+			Key.NumberLock     => VirtualKeyCode.NUMLOCK,
+			Key.Pad_Backslash  => VirtualKeyCode.DIVIDE,
+			Key.Pad_Star       => VirtualKeyCode.MULTIPLY,
+			Key.Pad_Dash       => VirtualKeyCode.SUBTRACT,
+			Key.Pad_Add        => VirtualKeyCode.ADD,
+			// can't find the keycode for this one
+			//case Keyboard::Pad_Enter: return num
+			Key.Pad_0          => VirtualKeyCode.NUMPAD0,
+			Key.Pad_1          => VirtualKeyCode.NUMPAD1,
+			Key.Pad_2          => VirtualKeyCode.NUMPAD2,
+			Key.Pad_3          => VirtualKeyCode.NUMPAD3,
+			Key.Pad_4          => VirtualKeyCode.NUMPAD4,
+			Key.Pad_5          => VirtualKeyCode.NUMPAD5,
+			Key.Pad_6          => VirtualKeyCode.NUMPAD6,
+			Key.Pad_7          => VirtualKeyCode.NUMPAD7,
+			Key.Pad_8          => VirtualKeyCode.NUMPAD8,
+			Key.Pad_9          => VirtualKeyCode.NUMPAD9,
+			Key.Pad_Period     => VirtualKeyCode.DECIMAL,
+			Key.Pad_Enter      => throw new NotImplementedException("Windows keycode for numberpad enter is unknown."),
+			Key when (int)key is >= (int)Key.Row_0 and <= (int)Key.Row_9 or >= (int)Key.A and <= (int)Key.Z
+				               => (VirtualKeyCode)((int)key),
+			Key when (int)key is <= (int)Key.MouseFive
+			                   => throw new ArgumentException($"Mouse input {key} isn't a keyboard key."),
+			Key when (int)key is >= (int)Key.GamepadHome
+			                   => throw new ArgumentException($"Gamepad input {key} isn't a keyboard key."),
+			_                  => throw new ArgumentException($"Couldn't convert {key} into a keyboard key.")
+		};
 
 		public static Xbox360Button ToXbox360Button(this Key key) => key switch {
 			Key.LBumper     => Xbox360Button.LeftShoulder,
@@ -213,7 +214,7 @@ namespace Robot {
 			Key.Face_North  => Xbox360Button.Y,
 			Key.Face_West   => Xbox360Button.X,
 			Key.Face_South  => Xbox360Button.A,
-			_  => throw new ArgumentException($"Couldn't convert {key} into a Xbox gamepad button.")
+			_  => throw new ArgumentException($"Couldn't convert {key} into a Xbox 360 gamepad button.")
 		};
 	}
 }
