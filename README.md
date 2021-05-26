@@ -1,5 +1,5 @@
 # scwin2
-User-level driver for steam controllers built in .NET.&ensp;Allows for functionality to be defined using key-mappings written in JSON and inputted using a command line interface.
+User-level driver for steam controllers.&ensp;Allows for functionality to be defined using key-mappings written in JSON and inputted using a command line interface.
 
 This is a hobby project that aims to suppliment Steam Input by implementing features in a more simple and naïve way to allow for more flexibility when configuring the steam controller.&ensp;For example when a button assigned as a mouse scroll can be set to click the scroll wheel or scroll it while held, and touches and clicks of the trackpads can be configured seperately.
 
@@ -356,7 +356,7 @@ Pad_6          142
 Pad_7          143
 Pad_8          144
 Pad_9          145
-Pad_Period     146
+GamepadHome    146
 Face_East      147
 Face_North     148
 Face_West      149
@@ -371,5 +371,4 @@ LBumper        157
 RBumper        158
 Start          159
 Back           160
-GamepadHome    161
 ```
