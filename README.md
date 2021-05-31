@@ -158,10 +158,10 @@ Translates sliding input on the trackpad into thumbstick input.&ensp;For example
 ```
 "$type": "Backend.PadStick, scwin",
 "Deadzone": 0.2,
-"OuterLimit": 0.8,
+"Gradingzone": 0.8,
 "IsLeftElseRight": false
 ```
-Sets a trackpad to simulate a thumbstick of a gamepad.&ensp;*Deadzone* sets an area extending from the center where simulated input is always 0.&ensp;Measured as a proportion of its radius.&ensp;*OuterLimit* specifies an area extending from the edge where entered input will simulate the thumbstick being pushed to its maximum degree of tilt.&ensp;Measured as a proportion of the radius from its center.&ensp;*IsLeftElseRight* specifies whether to simulate a left or right thumbstick.
+Sets a trackpad to simulate a thumbstick of a gamepad; works the same as StickStick.&ensp;*Deadzone* sets a radius extending from its center where input is always 0.&ensp;Measured as a proportion of the thumbstick's radius.&ensp;*Gradingzone* specifies an area measuring from the center of the thumbstick to simulate the degree of tilt of a controller's thumbstick; any input beyond this radius simulates maximum tilt of a thumbstick.&ensp;*IsLeftElseRight* specifies whether to simulate a left or right thumbstick.
 
 ### PadSwipe
 ```
@@ -228,9 +228,10 @@ Sets the thumbstick to scroll the mouse wheel.&ensp;*Sensitivity* sets how quick
 ```
 "$type": "Backend.StickStick, scwin",
 "Deadzone": 0.2,
+"Gradingzone": 1.0
 "IsLeftElseRight": false
 ```
-Translates thumbstick input into thumbstick input of a gamepad.&ensp;*Deadzone* sets a radius extending from its center where input is always 0.&ensp;Measured as a proportion of the thumbstick's radius.&ensp;*IsLeftElseRight* specifies whether to simulate a left or right thumbstick.
+Translates thumbstick input into thumbstick input of a gamepad.&ensp;*Deadzone* sets a radius extending from its center where input is always 0.&ensp;Measured as a proportion of the thumbstick's radius.&ensp;*Gradingzone* specifies an area measuring from the center of the thumbstick to simulate the degree of tilt of a controller's thumbstick; any input beyond this radius simulates maximum tilt of a thumbstick.&ensp;*IsLeftElseRight* specifies whether to simulate a left or right thumbstick.
 
 ### TriggerButton
 ```
