@@ -29,6 +29,7 @@
     "StickPush": {
       "$type": "Backend.StickStick, scwin",
       "Deadzone": 0.1,
+      "Gradingzone": 1,
       "IsLeftElseRight": true
     },
     "StickClick": {
@@ -82,7 +83,7 @@
     "RPadTouch": {
       "$type": "Backend.PadStick, scwin",
       "Deadzone": 0.1,
-      "OuterLimit": 1,
+      "Gradingzone": 1,
       "IsLeftElseRight": false
     },
     "RPadClick": {
