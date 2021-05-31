@@ -5,55 +5,62 @@ using System.IO;
 namespace Robot {
 	public interface IRobot {
 		int ScrollWheelClickSize { get; }
-		(short x, short y) LStickPosition { get; }
-		(short x, short y) RStickPosition { get; }
 
 		void MoveMouse(long x, long y, bool relative = false);
 		void MoveMouse(int x, int y, bool relative = false);
 		void ScrollMouseWheel(int amount, bool asClicks = false);
 		void Press(params Key[] keys);
 		void Release(params Key[] keys);
-		void MoveLStick(short x, short y, bool relative = false) {
-			if (relative) {
-				MoveLStickX((short)(x + LStickPosition.x));
-				MoveLStickY((short)(y + LStickPosition.y));
-			} else {
-				MoveLStickX(x);
-				MoveLStickY(y);
-			}
+		void MoveLStick(short x, short y) {
+			MoveLStickX(x);
+			MoveLStickY(y);
 		}
 
-		/// <summary>Must set the field implementing LStickPosition to its given position</summary>
 		void MoveLStickX(short x);
-		/// <summary>Must set the field implementing LStickPosition to its given position</summary>
 		void MoveLStickY(short y);
-		void MoveRStick(short x, short y, bool relative = false) {
-			if (relative) {
-				MoveRStickX((short)(x + RStickPosition.x));
-				MoveRStickY((short)(y + RStickPosition.y));
-			} else {
-				MoveRStickX(x);
-				MoveRStickY(y);
-			}
+		void MoveRStick(short x, short y) {
+			MoveRStickX(x);
+			MoveRStickY(y);
 		}
-
-		/// <summary>Must set the field implementing LStickPosition to its given position</summary>		
+		
 		void MoveRStickX(short x);
-		/// <summary>Must set the field implementing LStickPosition to its given position</summary>
 		void MoveRStickY(short y);
 		void PullLTrigger(byte amount);
 		void PullRTrigger(byte amount);
+		void DoMacro(params InputEvent[] events) {
+			foreach (InputEvent e in events) {
+				if ((e.types & InputEvent.Types.None) == InputEvent.Types.None) continue;
+				else if ((e.types & InputEvent.Types.Key) == InputEvent.Types.Key) {
+					if (e.isPressElseRelease) this.Press(e.keys);
+					else this.Release(e.keys);
+				} else if ((e.types & InputEvent.Types.Key) == InputEvent.Types.MouseMove) {
+					this.MoveMouse(e.coordinates.x, e.coordinates.y, relative: e.isRelative);
+				} else if ((e.types & InputEvent.Types.MouseScroll) == InputEvent.Types.MouseScroll) {
+					this.ScrollMouseWheel(e.scrollAmount, asClicks: e.scrollAsClicks);
+				} else if ((e.types & InputEvent.Types.TriggerPull) == InputEvent.Types.TriggerPull) {
+					if (e.isLeftElseRight) this.PullLTrigger(e.pullDistance);
+					else this.PullRTrigger(e.pullDistance);
+				} else if ((e.types & InputEvent.Types.ThumbstickMove) == InputEvent.Types.ThumbstickMove) {
+					if (e.isLeftElseRight)
+						this.MoveLStick((short)e.coordinates.x, (short)e.coordinates.y);
+					else this.MoveRStick((short)e.coordinates.x, (short)e.coordinates.y);
+				}
+			}
+		}
+
+		void DoMacro(Macro[] macros) {
+			foreach (var m in macros) this.DoMacro(m);
+		}
 
 		void DoMacro(Macro macro) {
-			Console.WriteLine(macro.ToString(brief: true));
 			this.Press(macro.PressButtons);
 			this.Release(macro.ReleaseButtons);
-			if (macro.MoveMouse is Macro.Move2<int> mm)         this.MoveMouse(mm.x, mm.y, mm.relatively);
-			if (macro.ScrollMouse is Macro.Scroll sm)           this.ScrollMouseWheel(sm.amount, sm.asClicks);
-			if (macro.PullLeftTrigger is byte plt)              this.PullLTrigger(plt);
-			if (macro.PullRightTrigger is byte prt)             this.PullRTrigger(prt);
-			if (macro.moveLeftStick is Macro.Move2<short> mls)  this.MoveLStick(mls.x, mls.y, mls.relatively);
-			if (macro.moveRightStick is Macro.Move2<short> mrs) this.MoveRStick(mrs.x, mrs.y, mrs.relatively);
+			this.MoveMouse(macro.MoveMouse.x, macro.MoveMouse.y, macro.MoveMouse.relative);
+			this.ScrollMouseWheel(macro.ScrollMouse.amount, macro.ScrollMouse.asClicks);
+			this.PullLTrigger(macro.PullLeftTrigger);
+			this.PullRTrigger(macro.PullRightTrigger);
+			this.MoveLStick(macro.MoveLeftStickTo.x, macro.MoveLeftStickTo.y);
+			this.MoveRStick(macro.MoveRightStickTo.x, macro.MoveRightStickTo.y);
 		}
 
 		public static void PrintKeycodes(string directory) {
@@ -180,7 +187,6 @@ namespace Robot {
 		Pad_8,
 		Pad_9,
 		Pad_Period, // int value of 146
-		GamepadHome,
 		Face_East,
 		Face_North,
 		Face_West,
@@ -195,5 +201,6 @@ namespace Robot {
 		RBumper,
 		Start,
 		Back,
+		GamepadHome,
 	}
 }
