@@ -5,7 +5,7 @@ using api = SteamControllerApi;
 
 namespace Backend {
 	public class StickRadial : Hardware {
-		public IList<Button> Buttons { get; set; } = new List<Button>();
+		public Button[] Buttons { get; set; } = {};
 		public double Deadzone {
 			get => this.deadzone;
 			set {
@@ -53,20 +53,20 @@ namespace Backend {
 			if (theta < 0) theta += 2 * Math.PI;
 
 			// find the radial slice which the user has pressed
-			double sliceSize = (2 * Math.PI) / Buttons.Count;
+			double sliceSize = (2 * Math.PI) / Buttons.Length;
 			if (Double.IsNaN(sliceSize)) return;
 			int indexOfPressed = (int)(theta / sliceSize);
 
 			// press the pressed slice while releasing all else
 			if (!IncrementsLeftElseRight) {
-				indexOfPressed = Buttons.Count - 1 - indexOfPressed;
+				indexOfPressed = Buttons.Length - 1 - indexOfPressed;
 			}
 			if (TapsElseHolds) {
 				if (!previousSliceIndex.HasValue || previousSliceIndex != indexOfPressed)
 					Buttons[indexOfPressed].Tap();
 				previousSliceIndex = indexOfPressed;
 			} else {
-				for (int i = 0; i < Buttons.Count; i++) {
+				for (int i = 0; i < Buttons.Length; i++) {
 					if (i == indexOfPressed) Buttons[i].Press();
 					else Buttons[i].Release();
 				}

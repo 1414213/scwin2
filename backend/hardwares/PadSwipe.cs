@@ -10,12 +10,10 @@ using Robot;
 
 namespace Backend {
 	public class PadSwipe : Trackpad {
-		public double MinimunDistance {
-			get => this.minimumDistance;
+		public double MinimunDistance { get => minimumDistance;
 			set {
 				if (value < 0 || value > 1d) throw new SettingNotProportionException(
-					"MinimumDistance must be a proportion of the trackpad's diameter (range [0, 1])."
-				);
+					"MinimumDistance must be a proportion of the trackpad's diameter (range [0, 1]).");
 				this.minimumDistance = value;
 			}
 		}
@@ -23,8 +21,7 @@ namespace Backend {
 			get => this.angleOffset;
 			set => this.angleOffset = value % 2;
 		}
-		public double LongSwipeThreshold {
-			get => this.longSwipeThreshold;
+		public double LongSwipeThreshold { get => longSwipeThreshold;
 			set {
 				if (value < 0) throw new SettingInvalidException("LongSwipeThreshold must be a multiple > 0");
 				this.longSwipeThreshold = value;
@@ -57,19 +54,25 @@ namespace Backend {
 			this.LongSwipeThreshold = longSwipeThreshold;
 		}
 
-		public PadSwipe(double angleOffset, 
-		                double minimumDistance, double longSwipeThreshold) : this(angleOffset, minimumDistance) {
-			this.LongSwipeThreshold = longSwipeThreshold;
-		}
+		public PadSwipe(
+			double angleOffset, 
+			double minimumDistance,
+			double longSwipeThreshold
+		) : this(angleOffset, minimumDistance) { this.LongSwipeThreshold = longSwipeThreshold; }
 
-		public PadSwipe(double angleOffset,
-		                double minimumDistance, params Key[] keys): this(angleOffset, minimumDistance) {
-			this.Buttons = new List<Button>();
+		public PadSwipe(
+			double angleOffset,
+			double minimumDistance,
+			params Key[] keys
+		) : this(angleOffset, minimumDistance) {
+			this.Buttons = new List<Button>(keys.Length);
 			foreach (Key k in keys) this.Buttons.Add(new ButtonKey(k));
 		}
 
-		public PadSwipe(double angleOffset, double minimumDistance, double longSwipeThreshold,
-		                Key[] keys, Key[] longKeys) : this(angleOffset, minimumDistance, longSwipeThreshold) {
+		public PadSwipe(
+			double angleOffset, double minimumDistance, double longSwipeThreshold,
+			Key[] keys, Key[] longKeys
+		) : this(angleOffset, minimumDistance, longSwipeThreshold) {
 			this.Buttons = new List<Button>(keys.Length);
 			this.LongSwipeButtons = new List<Button?>(keys.Length);
 			for (int i = 0; i < keys.Length; i++) {
@@ -126,8 +129,8 @@ namespace Backend {
 			double theta = 0;
 
 			if (delta.y >= 0 && r != 0) theta = Math.Acos(delta.x / r);
-			else if (delta.y < 0) theta = -Math.Acos(delta.x / r);
-			else if (r == 0) theta = Double.NaN;
+			else if (delta.y < 0)       theta = -Math.Acos(delta.x / r);
+			else if (r == 0)            theta = Double.NaN;
 			theta = theta / Math.PI;
 			if (theta < 0) theta += 2;
 

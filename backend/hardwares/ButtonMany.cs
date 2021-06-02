@@ -1,25 +1,19 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
-
-using api = SteamControllerApi;
 using Robot;
-
 
 namespace Backend {
 	class ButtonMany : Button, IEnumerable {
-		public IList<Button> Buttons { get; set; } = new List<Button>();
+		public Button[] Buttons { get; set; } = {};
 
 		public ButtonMany() {}
 
-		public ButtonMany(IList<Button> buttons) {
+		public ButtonMany(Button[] buttons) {
 			this.Buttons = buttons;
 		}
 
 		public ButtonMany(params Key[] keys) {
-			foreach (Key k in keys) {
-				Buttons.Add(new ButtonKey{ Key = k });
-			}
+			this.Buttons = new Button[keys.Length];
+			for (int i = 0; i < keys.Length; i++) this.Buttons[i] = new ButtonKey(keys[i]);
 		}
 
 		public IEnumerator GetEnumerator() => Buttons.GetEnumerator();
