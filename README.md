@@ -103,7 +103,7 @@ Defines functionality shared by all simulation using a trackpad; these fields ca
 "OuterRadius": 0.1,
 "OverlapIgnoranceRadius": 0.5
 ```
-Works the same as *StickButtonCross*.&ensp;*OverlapIgnoranceRadius* specifies a distance, measured as a proportion of the trackpad's radius from its center to its edge, within which to not simulate diagonal input.&ensp;Its purpose is to hopefully make swiping feel more precise.
+Works the same as *StickButtonCross*.
 
 ### PadRadial
 ```
@@ -136,13 +136,14 @@ Sets a trackpad to simulate scrolling the mouse wheel.&ensp;*IsWheelElseSwipe* s
 "Inner": Button,
 "Outer": Button,
 "HasOverlap": true,
+"OverlapIgnoranceRadius": 0,
 "Deadzone": 0.2,
 "InnerRadius": 0.35,
 "OuterRadius": 0.1,
 "RelativeSize": 0.5,
 "Anchored": false
 ```
-Works the same as *PadSlideStick* but simuates a button cross instead of a thumbstick.
+Works the same as *PadSlideStick* but simuates a sliding *PadButtonCross* instead of a thumbstick.&ensp;Implements all the properties of a *PadButtonCross*.
 
 ### PadSlideStick
 ```
@@ -197,11 +198,12 @@ Sets a trackpad to act as a trackball.&ensp;*HasInertia* sets whether the trackb
 "Inner": Button,
 "Outer": Button,
 "HasOverlap": true,
+"OverlapIgnoranceRadius": 0,
 "Deadzone": 0.2,
 "InnerRadius": 0.35,
 "OuterRadius": 0.0
 ```
-Allows the thumbstick to be used like a directional pad.&ensp;*East*, *North*, *West*, and *South* bind a Button type to their respective direction.&ensp;*Inner* is a Button type pressed when input is within a certain distance from the center; distance is specified by *InnerRadius* as a proportion of the radius of the thumbstick's range measuring from the center.&ensp;*Outer* is a Button type pressed when input is a certain distance from the edge of the thumbstick's range; distance is specified by *OuterRadius* as a proportion of the radius of the thumbstick's range measured from its edge.&ensp;*HasOverlap* specifies whether there is overlap in the transition between buttons.&ensp;*Deadzone* specifies a distance from the center within which to stop creating input, measured as a proportion of the radius of the thumbstick's range from its center.
+Allows the thumbstick to be used like a directional pad.&ensp;*East*, *North*, *West*, and *South* bind a Button type to their respective direction.&ensp;*Inner* is a Button type pressed when input is within a certain distance from the center; distance is specified by *InnerRadius* as a proportion of the radius of the thumbstick's range measuring from the center.&ensp;*Outer* is a Button type pressed when input is a certain distance from the edge of the thumbstick's range; distance is specified by *OuterRadius* as a proportion of the radius of the thumbstick's range measured from its edge.&ensp;*HasOverlap* specifies whether there is overlap in the transition between buttons.&ensp;*OverlapIgnoranceRadius* specifies a distance, measured as a proportion of the trackpad's radius from its center to its edge, within which to not simulate diagonal input.&ensp;Its purpose is to hopefully make swiping feel more precise.&ensp;*Deadzone* specifies a distance from the center within which to stop creating input, measured as a proportion of the radius of the thumbstick's range from its center.
 
 ### StickRadial
 ```
