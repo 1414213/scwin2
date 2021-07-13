@@ -18,7 +18,7 @@ It is recommended to use this alongside the Steam client and Steam Input.&ensp;T
     - 1: raw input
     - 2: generated input events
     - 3: generated input events minus motion data
-    - \> 3: custom output
+    - \> 9: custom output
 
 
 ## Creating Keymaps
