@@ -31,8 +31,8 @@ namespace Backend {
 		}
 
 		protected (int x, int y) SmoothInput((int x, int y) vector) {
-			var v = SmoothInput((vector.x, vector.y, 0));
-			return (v.x, v.y);
+			var (x, y, _) = SmoothInput((vector.x, vector.y, 0));
+			return (x, y);
 		}
 
 		protected void ClearSmoothingBuffer((int x, int y, int z) toClearTo) {
@@ -89,6 +89,98 @@ namespace Backend {
 		public double Acceleration { get; set; } = 2;
 		public int AccelerationLowerBoundary { get; set; } = 2000;
 		public int AccelerationUpperBoundary { get; set; } = 1700;
+
+		protected (double x, double y) AccelerateInput(int x, int y, double startingSensitivity) {
+			double finalSensitivity = startingSensitivity * Acceleration;
+			double magnitude = Math.Sqrt(x * x + y * y);
+			double weight = (magnitude - AccelerationLowerBoundary) / (AccelerationUpperBoundary - AccelerationLowerBoundary);
+			weight = Math.Clamp(weight, 0, 1);
+
+			double newSensitivity = startingSensitivity * weight + finalSensitivity * (1d - weight);
+
+			return (x * newSensitivity, y * newSensitivity);
+		}
+	}
+
+	public interface MSmoothing {
+		int Smoothing { get; set; } // 900
+
+		protected (int x, int y, int z)[] Buffer { get; set; } // new (int x, int y, int z)[16];
+		protected int BufferIndex { get; set; }
+
+		protected (int x, int y, int z) SmoothInput((int x, int y, int z) vector) {
+			Buffer[BufferIndex] = vector;
+
+			var average = (x: 0, y: 0, z: 0);
+			foreach (var v in Buffer) {
+				average.x += v.x;
+				average.y += v.y;
+				average.z += v.z;
+			}
+
+			BufferIndex = (BufferIndex + 1) % Buffer.Length;
+			return (average.x / Buffer.Length, average.y / Buffer.Length, average.z / Buffer.Length);
+		}
+
+		protected (int x, int y) SmoothInput((int x, int y) vector) {
+			var v = SmoothInput((vector.x, vector.y, 0));
+			return (v.x, v.y);
+		}
+
+		protected void ClearSmoothingBuffer((int x, int y, int z) toClearTo) {
+			for (int i = 0; i < Buffer.Length; i++) Buffer[i] = toClearTo;
+		}
+
+		protected (int x, int y, int z) SoftTieredSmooth((int x, int y, int z) vector) {
+			double lowerThreshold = Smoothing / 2d;
+			double upperThreshold = Smoothing;
+			double magnitude = Math.Sqrt(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
+
+			// if magnitude is lower that threshold result is < 0 and so clamped value is zero.
+			double directWeight = (magnitude - lowerThreshold) / (upperThreshold - lowerThreshold);
+			directWeight = Math.Clamp(directWeight, 0, 1);
+
+			(double x, double y, double z) smoothed = this.SmoothInput(vector);
+			smoothed.x *= 1d - directWeight;
+			smoothed.y *= 1d - directWeight;
+			smoothed.z *= 1d - directWeight;
+			var weightedVector = (x: vector.x * directWeight, y: vector.y * directWeight, z: vector.z * directWeight);
+			//Console.WriteLine($"dw {directWeight}, ma {magnitude}");
+
+			return ((short, short, short))(weightedVector.x + smoothed.x,
+			                               weightedVector.y + smoothed.y,
+			                               weightedVector.z + smoothed.z);
+		}
+
+		protected (int x, int y) SoftTieredSmooth((int x, int y) vector) {
+			var (x, y, _) = SoftTieredSmooth((vector.x, vector.y, 0));
+			return (x, y);
+		}
+
+		// private (short x, short y) SmoothCoords(short x, short y) {
+		// 	if (queueCapacity <= 0) return (x, y);
+		// 	else if (coordsToSmooth.Count < queueCapacity) coordsToSmooth.Enqueue((x, y));
+		// 	else {
+		// 		coordsToSmooth.Dequeue();
+		// 		coordsToSmooth.Enqueue((x, y));
+		// 	}
+			
+		// 	(int x, int y) smoothed = (0, 0);
+		// 	foreach (var coord in coordsToSmooth) {
+		// 		smoothed.x += coord.x;
+		// 		smoothed.y += coord.y;
+		// 	}
+		// 	smoothed.x = smoothed.x / coordsToSmooth.Count;
+		// 	smoothed.y = smoothed.y / coordsToSmooth.Count;
+		// 	return ((short)smoothed.x, (short)smoothed.y);
+		// }
+	}
+
+	public interface MAcceleration {
+		// multiple of the existing sensitivity
+		public double Acceleration { get; set; } // = 2;
+		public int AccelerationLowerBoundary { get; set; } // = 2000;
+		public int AccelerationUpperBoundary { get; set; } // = 1700;
 
 		protected (double x, double y) AccelerateInput(int x, int y, double startingSensitivity) {
 			double finalSensitivity = startingSensitivity * Acceleration;

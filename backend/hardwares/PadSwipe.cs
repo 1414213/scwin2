@@ -81,9 +81,8 @@ namespace Backend {
 			}
 		}
 
-		protected override void DoEventImpl(api.InputData e) {
-			(short x, short y) coord = e.Coordinates ?? throw new ArgumentException(e + " must be coordinal.");
-			if (!e.IsButton) throw new ArgumentException(e + " isn't a button press.");
+		protected override void DoEventImpl(api.ITrackpadData input) {
+			(short x, short y) coord = input.Position;
 
 			// saves the position of the initial press event
 			if (isInitialPress) {
@@ -92,7 +91,7 @@ namespace Backend {
 				isInitialPress = false;
 				stopwatch.Restart();
 				return;
-			} else if ((e.Flags & api.Flags.Released) == api.Flags.Released) {
+			} else if (input.IsRelease) {
 				stopwatch.Stop();
 				isInitialPress = true;
 				this.DoTap(coord);

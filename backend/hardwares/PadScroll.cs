@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using api = SteamControllerApi;
 
 namespace Backend {
@@ -14,17 +13,15 @@ namespace Backend {
 		private double previousTheta;
 		private double amountStore;
 
-		protected override void DoEventImpl(api.InputData e) {
-			(short x, short y) coord = e.Coordinates ?? throw new ArgumentException(e + " isn't coordinal.");
+		protected override void DoEventImpl(api.ITrackpadData input) {
+			(short x, short y) coord = input.Position;
 
 			// if e is an initial press
 			if (isInitialPress) {
 				previous = coord;
 				isInitialPress = false;
-				double r = Math.Sqrt((coord.x * coord.x) + (coord.y * coord.y));
-				if (coord.y >= 0 && r != 0) this.previousTheta = Math.Acos(coord.x / r);
-				else if (coord.y < 0) this.previousTheta = -Math.Acos(coord.x / r);
-				else if (r == 0) this.previousTheta = Double.NaN;
+				var (_, theta) = base.CartesianToPolar(coord.x, coord.y);
+				this.previousTheta = theta;
 				return;
 			}
 
@@ -82,7 +79,7 @@ namespace Backend {
 			previous = coord;
 
 			// if e is the final press
-			if ((e.Flags & api.Flags.Released) == api.Flags.Released) {
+			if (input.IsRelease) {
 				isInitialPress = true;
 				amountStore = 0;
 			}

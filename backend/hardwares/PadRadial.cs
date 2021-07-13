@@ -13,8 +13,8 @@ namespace Backend {
 
 		private StickRadial radial = new StickRadial{ Deadzone = 0 };
 
-		protected override void DoEventImpl(api.InputData e) {
-			radial.DoEvent(e);
+		protected override void DoEventImpl(api.ITrackpadData input) {
+			radial.DoEvent(input);
 		}
 
 		protected override void ReleaseAllImpl() { foreach (var b in radial.Buttons) b.Release(); }

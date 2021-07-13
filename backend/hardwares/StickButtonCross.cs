@@ -42,24 +42,16 @@ namespace Backend {
 			this.Deadzone = deadzone;
 		}
 
-		public override void DoEvent(api.InputData e) {
-			var coord = e.Coordinates ?? throw new ArgumentException(e + " is not coordinal.");
+		public override void DoEvent(api.IInputData input) {
+			var coord = (input as api.IPositional ?? throw new ArgumentException(input + " is not coordinal."))
+			            .Position;
 
 			// convert event's cartesian coordinates into polar
-			double r = Math.Sqrt(coord.x * coord.x + coord.y * coord.y);
-			double theta = 0;
-			if (coord.y >= 0 && r != 0) theta = Math.Acos(coord.x / r);
-			else if (coord.y < 0)       theta = -Math.Acos(coord.x / r);
-			else if (r == 0)            theta = Double.NaN;
+			var (r, theta) = base.CartesianToPolar(coord.x, coord.y);
 			if (Double.IsNaN(theta) || (r < Deadzone * Int16.MaxValue)) {
 				// If r is 0, then stick was reset to position 0,0.  No input occurs so all buttons are released.
 				// Also checks if the input event occured inside of the deadzone.
-				East.Release();
-				North.Release();
-				West.Release();
-				South.Release();
-				Inner.Release();
-				Outer.Release();
+				this.ReleaseAll();
 				return;
 			}
 

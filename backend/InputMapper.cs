@@ -87,9 +87,14 @@ namespace Backend {
 			// keys are stored as strings so that they can be indexed in alphabetical order
 			var keyStrings = new List<string>(20);
 
-			foreach (api.Key k in Enum.GetValues(typeof(api.Key))) {
-				if (k is api.Key.DPadLeft or api.Key.DPadUp or api.Key.DPadRight or api.Key.DPadDown) continue;
-				else keyStrings.Add(k.ToString());
+			foreach (api.KeyInternal k in Enum.GetValues(typeof(api.KeyInternal))) {
+				if (k is api.KeyInternal.DPadLeft
+					or api.KeyInternal.DPadUp
+					or api.KeyInternal.DPadRight
+					or api.KeyInternal.DPadDown
+				) { 
+					continue; 
+				} else keyStrings.Add(k.ToString());
 			}
 
 			keyStrings.Sort();

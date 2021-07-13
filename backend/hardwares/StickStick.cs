@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Newtonsoft.Json;
 using api = SteamControllerApi;
 
@@ -11,8 +10,7 @@ namespace Backend {
 		/// </summary>
 		public double Deadzone { get => deadzone; set {
 			if (value < 0 || value > 1.0) throw new SettingNotProportionException(
-				"Deadzone must be proportion of the thumbstick's radius [0, 1]."
-			);
+				"Deadzone must be proportion of the thumbstick's radius [0, 1].");
 			this.deadzone = value;
 		} }
 		/// <summary>
@@ -31,11 +29,11 @@ namespace Backend {
 
 		double deadzone = 0.2, gradingzone = 1;
 
-		public override void DoEvent(api.InputData e) {
-			var coord = e.Coordinates ?? throw new ArgumentException(e + " must be a coordinal event.");
-			double r = Math.Sqrt(coord.x * coord.x + coord.y * coord.y);
-			double coordCos = coord.x / r;
-			double coordSin = coord.y / r;
+		public override void DoEvent(api.IInputData input) {
+			var stickInput = input as api.IPositional
+			                 ?? throw new ArgumentException(input + " must be a coordinal event.");
+
+			var (r, coordCos, coordSin) = base.CartesianToAngle(stickInput.Position.x, stickInput.Position.y);
 
 			// check if coordinate is inside the thumbstick's deadzone
 			if (r < Deadzone * Int16.MaxValue || r == 0) {
@@ -45,7 +43,11 @@ namespace Backend {
 			}
 
 			// proportion simulated input to be inside of the grading zone
-			double r_graded = r / Gradingzone;
+			double r_graded = 0;
+			{
+				double temp = (r / Int16.MaxValue) / Gradingzone;
+				r_graded = (temp >= 1 ? 0.999 : temp) * Int16.MaxValue;
+			}
 
 			// var coord_graded = (x: (short)Math.Clamp(
 			//                     	(int)(r_graded * coordCos),
@@ -57,8 +59,10 @@ namespace Backend {
 			// 	                	Int16.MinValue,
 			// 	                	Int16.MaxValue
 			//                     ));
-			var coord_graded = (x: (short)Math.Clamp((int)(r_graded * coordCos), Int16.MinValue, Int16.MaxValue),
-			                    y: (short)Math.Clamp((int)(r_graded * coordSin), Int16.MinValue, Int16.MaxValue));
+			var coord_graded = (
+				x: (short)Math.Clamp((int)(r_graded * coordCos), Int16.MinValue, Int16.MaxValue),
+				y: (short)Math.Clamp((int)(r_graded * coordSin), Int16.MinValue, Int16.MaxValue)
+			);
 
 			// send the steam controller's stick data to the virtual gamepad
 			if (IsLeftElseRight) robot.MoveLStick(coord_graded.x, coord_graded.y);

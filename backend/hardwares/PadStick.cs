@@ -9,17 +9,17 @@ namespace Backend {
 
 		private StickStick stick = new StickStick{ Deadzone = 0.2, Gradingzone = 0.8 };
 
-		protected override void DoEventImpl(api.InputData e) {
-			var (x, y) = e.Coordinates ?? throw new ArgumentException(e + " must be a coordinal event.");
+		protected override void DoEventImpl(api.ITrackpadData input) {
+			var position = input.Position;
 
 			// handle press or release event
-			if ((e.Flags & api.Flags.Pressed) == api.Flags.Pressed) {
-				stick.DoEvent(new api.InputData(api.Key.StickPush, x, y, api.Flags.AbsoluteMove));
-			} else if ((e.Flags & api.Flags.Released) == api.Flags.Released) {
-				stick.DoEvent(new api.InputData(api.Key.StickPush, x, y, api.Flags.AbsoluteMove));
-				stick.DoEvent(new api.InputData(api.Key.StickPush, 0, 0, api.Flags.AbsoluteMove));
+			if (input.IsPress) {
+				stick.DoEvent(input);
+			} else if (input.IsRelease) {
+				stick.DoEvent(input);
+				stick.DoEvent(new api.StickData((0, 0), api.Flags.None));
 			} else {
-				throw new ArgumentException(e + " isn't a trackpad press.");
+				throw new ArgumentException(input + " isn't a trackpad press.");
 			}
 		}
 

@@ -1,26 +1,22 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-
 using Device.Net;
 using Hid.Net.Windows;
-using DevDecoder.HIDDevices;
-
 using api = SteamControllerApi;
-
 
 class Program {
 	public static async Task Main(string[] args) {
 		// parse given arguments
 		bool noGamepad = false;
-		int debugType = 0;
+		int debugType = 0, debugGui = 0;
 		string? inputMapName = null;
 		for (int i = 0; i < args.Length; i++) {
 			Action<Action<string>, string> DoFlag = (action, errorMessage) => {
 				i++;
 				if (i >= args.Length) {
-					Console.WriteLine("ERROR: No directory given.");
+					Console.WriteLine("ERROR: " + errorMessage);
 					Environment.Exit(1);
 				}
 				action(args[i]);
@@ -43,9 +39,21 @@ class Program {
 				}
 				case "--debug": {
 					DoFlag(level => {
-						try { debugType = Math.Clamp(Int32.Parse(level), 0, 3); }
+						try { debugType = Int32.Parse(level); }
 						catch {
 							Console.WriteLine("ERROR: debug level isn't a number");
+							Environment.Exit(1);
+							return;
+						}
+						if (debugType < 0) debugType = 0;
+					}, "No debug level given.");
+					break;
+				}
+				case "--debug-gui": {
+					DoFlag(level => {
+						try { debugGui = Math.Clamp(Int32.Parse(level), 0, 3); }
+						catch {
+							Console.WriteLine("ERROR: debug gui level isn't a number");
 							Environment.Exit(1);
 							return;
 						}
@@ -90,11 +98,11 @@ class Program {
 			Console.WriteLine($"New input map {map.Name} created!");
 			return;
 		}
-		var doer = new Backend.EventDoer(map, !noGamepad);
+		var doer = new Backend.EventDoer(map, !noGamepad){ Debug = debugType };
 
 		// read inputs from the HID device
 		ReadResult input;
-		IList<api.InputData> events;
+		IList<api.IInputData> events;
 
 		// app loop
 		while (true) {
@@ -105,8 +113,7 @@ class Program {
 			if (input.Data[2] == 0x01) {
 				events = steamcon.GenerateEvents(input);
 				if (debugType is 2) foreach (var e in events) Console.WriteLine(e);
-				if (debugType is 3) foreach (var e in events) if (e.Key != api.Key.GyroMove) Console.WriteLine(e);
-				//foreach (var e in events) if (e.Key == api.Key.GyroMove) Console.WriteLine(e);
+				if (debugType is 3) foreach (var e in events) if (e is not api.IMotionData) Console.WriteLine(e);
 				doer.DoEvents(events);
 			}
 		}

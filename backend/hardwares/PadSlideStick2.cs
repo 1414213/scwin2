@@ -45,8 +45,8 @@ namespace Backend {
 		private (short x, short y) previousCoord;
 		private bool isInitialPress = true;
 
-		protected override void DoEventImpl(api.InputData e) {
-			(short x, short y) coord = e.Coordinates ?? throw new ArgumentException(e + " must be coordinal.");
+		protected override void DoEventImpl(api.ITrackpadData input) {
+			(short x, short y) coord = input.Position;
 			
 			// if e is an initial press, no movement has occured
 			if (isInitialPress) {
@@ -117,7 +117,7 @@ namespace Backend {
 			Console.WriteLine();
 
 			// if e is being released reset the respective thumbstick
-			if ((e.Flags & api.Flags.Released) == api.Flags.Released) {
+			if (input.IsRelease) {
 				isInitialPress = true;
 				position = (0, 0);
 				if (IsLeftElseRight) robot.MoveLStick(0, 0);

@@ -30,13 +30,13 @@ namespace Backend {
 			this.IncludeSwitchInRange = includeSwitchInRange;
 		}
 
-		public override void DoEvent(api.InputData e) {
+		public override void DoEvent(api.IInputData input) {
 			// TriggerButton will always repeat press and release inputs to the wrapped button, so that
 			// that button's logic can then decide whether to be repetitious
-			byte pullDistance = e.TriggerPull ?? throw new ArgumentException(e + " isn't a trigger pull.");
+			byte pullDistance = (input as api.ITriggerData
+			                     ?? throw new ArgumentException(input + " isn't a trigger pull.")).Trigger;
 
-			if (!IncludeSwitchInRange)
-				pullDistance = (byte)Math.Clamp((pullDistance / softRange) * 255, 0, 255);
+			if (!IncludeSwitchInRange) pullDistance = (byte)Math.Clamp((pullDistance / softRange) * 255, 0, 255);
 
 			if (pullDistance > (PullThreshold * 255)) {
 				// else if trigger is below its threshold

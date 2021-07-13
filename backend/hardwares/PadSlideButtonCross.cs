@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 using Newtonsoft.Json;
 
@@ -82,8 +81,8 @@ namespace Backend {
 			this.HasOverlap = hasOverlap;
 		}
 
-		protected override void DoEventImpl(api.InputData e) {
-			(short x, short y) coord = e.Coordinates ?? throw new ArgumentException(e + " isn't coordinal.");
+		protected override void DoEventImpl(api.ITrackpadData input) {
+			(short x, short y) coord = input.Position;
 			
 			// if e is an initial press, no movement has occured
 			if (!previousCoord.HasValue) {
@@ -123,16 +122,13 @@ namespace Backend {
 			roundCoord.x = Convert.ToInt16(roundCoord.x * movementMultiple);
 			roundCoord.y = Convert.ToInt16(roundCoord.y * movementMultiple);
 
-			buttonCross.DoEvent(new api.InputData(api.Key.StickPush,
-			                                       roundCoord.x,
-			                                       roundCoord.y,
-			                                       api.Flags.AbsoluteMove));
+			buttonCross.DoEvent(new api.StickData(roundCoord, api.Flags.None));
 
 			// if e is being released reset the respective thumbstick
-			if ((e.Flags & api.Flags.Released) == api.Flags.Released) {
+			if (input.IsRelease) {
 				previousCoord = null;
 				position = (0, 0);
-				buttonCross.DoEvent(new api.InputData(api.Key.StickPush, 0, 0, api.Flags.AbsoluteMove));
+				buttonCross.DoEvent(new api.StickData((0, 0), api.Flags.None));
 			}
 		}
 

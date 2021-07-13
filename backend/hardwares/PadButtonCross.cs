@@ -29,10 +29,10 @@ namespace Backend {
 			this.buttonCross = new StickButtonCross(east, north, west, south, deadzone, hasOverlap);
 		}
 
-		protected override void DoEventImpl(api.InputData e) {
-			var coord = e.Coordinates ?? throw new ArgumentException(e + " isn't coordinal.");
+		protected override void DoEventImpl(api.ITrackpadData input) {
+			var coord = input.Position;
 
-			// check if the event occurred within the radius where overlap is ignored.
+			// Check if the event occurred within the radius where overlap is ignored.
 			// If the overlap value needs to be changed, then change it
 			double r = Math.Sqrt(coord.x * coord.x + coord.y * coord.y) / Int16.MaxValue;
 			if (buttonCross.HasOverlap && r < overlapIgnoranceRadius) {
@@ -41,10 +41,10 @@ namespace Backend {
 				if (!buttonCross.HasOverlap) buttonCross.HasOverlap = true;
 			}
 
-			// handle event.  If e is a release event, reset thumbstick
-			buttonCross.DoEvent(e);
-			if ((e.Flags & api.Flags.Released) == api.Flags.Released) {
-				buttonCross.DoEvent(new api.InputData(api.Key.StickPush, 0, 0, api.Flags.AbsoluteMove));
+			// Handle event.  If e is a release event, reset thumbstick
+			buttonCross.DoEvent(input);
+			if (input.IsRelease) {
+				buttonCross.DoEvent(new api.StickData((0, 0), api.Flags.None));
 			}
 		}
 

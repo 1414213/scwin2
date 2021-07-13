@@ -9,8 +9,9 @@ namespace Backend {
 
 		private const double softRange = 237;
 		
-		public override void DoEvent(api.InputData e) {
-			var pull = e.TriggerPull ?? throw new ArgumentException(e + " must be a trigger pull.");
+		public override void DoEvent(api.IInputData input) {
+			var pull = (input as api.ITriggerData ?? throw new ArgumentException(input + " must be a trigger pull."))
+			           .Trigger;
 
 			if (!IncludeSwitchInRange) pull = (byte)Math.Clamp((pull / softRange) * 255, 0, 255);
 

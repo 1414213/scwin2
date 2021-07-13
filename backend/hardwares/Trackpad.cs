@@ -12,7 +12,9 @@ namespace Backend {
 		private Stopwatch stopwatch = new Stopwatch();
 		private bool doingSecondTap;
 
-		public override void DoEvent(api.InputData e) {
+		public override void DoEvent(api.IInputData input) {
+			var e = input as api.ITrackpadData ?? throw new ArgumentException("Not trackpad data.");
+			
 			// code for double tapping to press a button
 			// this is a mess of state checks, not sure how else to do this
 			if (doingSecondTap) {
@@ -44,10 +46,10 @@ namespace Backend {
 			this.ReleaseAllImpl();
 		}
 
-		protected abstract void DoEventImpl(api.InputData e);
+		protected abstract void DoEventImpl(api.ITrackpadData e);
 		protected abstract void ReleaseAllImpl();
 
-		private void FirstPress(api.InputData e) {
+		private void FirstPress(api.ITrackpadData e) {
 			if (e.TimeHeld.HasValue) { // is release event
 				if (e.TimeHeld.Value < tapTime) {
 					doingSecondTap = true;

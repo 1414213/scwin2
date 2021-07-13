@@ -1,24 +1,16 @@
 using System;
-using System.Collections.Generic;
 using Newtonsoft.Json;
 using api = SteamControllerApi;
 
 namespace Backend {
 	public class StickRadial : Hardware {
 		public Button[] Buttons { get; set; } = {};
-		public double Deadzone {
-			get => this.deadzone;
-			set {
-				if (value < 0 || value > 1d) throw new SettingNotProportionException(
-					"Deadzone must be a ratio of the trackpad's radius ([0, 1])."
-				);
-				this.deadzone = value;
-			}
-		}
-		public double AngleOffset {
-			get => this.angleOffset / Math.PI;
-			set => this.angleOffset = value * Math.PI;
-		}
+		public double Deadzone { get => deadzone; set {
+			if (value < 0 || value > 1d) throw new SettingNotProportionException(
+				"Deadzone must be a ratio of the trackpad's radius ([0, 1]).");
+			this.deadzone = value;
+		} }
+		public double AngleOffset { get => angleOffset / Math.PI; set => angleOffset = value * Math.PI; }
 		public bool IncrementsLeftElseRight { get; set; } = true;
 		public bool TapsElseHolds { get; set; }
 
@@ -26,22 +18,17 @@ namespace Backend {
 		private double angleOffset;
 		private int? previousSliceIndex;
 
-		public override void DoEvent(api.InputData e) {
-			var coord = e.Coordinates ?? throw new ArgumentException(e + " isn't coordinal.");
+		public override void DoEvent(api.IInputData input) {
+			var positional = input as api.IPositional ?? throw new ArgumentException(input + " isn't coordinal.");
 
-			if ((e.Flags & api.Flags.Released) == api.Flags.Released) {
+			if (positional.IsRelease) {
 				if (!TapsElseHolds) foreach (var b in Buttons) b.Release();
 				previousSliceIndex = null;
 				return;
 			}
 			
 			// compute polar coordinates
-			double r = Math.Sqrt(coord.x * coord.x + coord.y * coord.y);
-			double theta = Double.NaN;
-			if (coord.y >= 0 && r != 0) theta = Math.Acos(coord.x / r);
-			else if (coord.y < 0) theta = -Math.Acos(coord.x / r);
-			else if (r == 0) theta = Double.NaN;
-			if (theta < 0) theta += 2 * Math.PI;
+			var (r, theta) = base.CartesianToPolar(positional.Position.x, positional.Position.y);
 
 			if (r < deadzone * Int16.MaxValue) {
 				foreach (var b in Buttons) b.Release();

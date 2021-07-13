@@ -1,10 +1,6 @@
 using System;
-using System.Collections.Generic;
-
 using Newtonsoft.Json;
-
 using api = SteamControllerApi;
-
 
 namespace Backend {
 	public abstract class Button : Hardware {
@@ -14,9 +10,8 @@ namespace Backend {
 		[JsonIgnore]
 		public bool IsSecondPress => isSecondPress;
 
-		protected api.InputData? Input => input;
+		protected api.IButtonData? Input { get; private set; }
 
-		api.InputData? input;
 		bool isPressed = false;
 		bool isRepetitious = false;
 		bool isSecondPress;
@@ -64,12 +59,12 @@ namespace Backend {
 		protected abstract void PressImpl();
 		protected abstract void ReleaseImpl();
 
-		public override void DoEvent(api.InputData e) {
-			if (!e.IsButton) throw new ArgumentException(e + " isn't a button.");
+		public override void DoEvent(api.IInputData input) {
+			var e = input as api.IButtonData ?? throw new ArgumentException(input + " isn't a button.");
 
-			input = e;
-			if ((e.Flags & api.Flags.Pressed) == api.Flags.Pressed) this.Press();
-			else this.Release();
+			Input = e;
+			if (e.IsPress) this.Press();
+			else if (e.IsRelease) this.Release();
 		}
 
 		public override void ReleaseAll() => this.Release();

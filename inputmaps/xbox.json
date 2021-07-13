@@ -1,10 +1,10 @@
 {
   "InputMap": {
-    "LTriggerPull": {
+    "LTrigger": {
       "$type": "Backend.TriggerTrigger, scwin",
       "IsLeftElseRight": true
     },
-    "RTriggerPull": {
+    "RTrigger": {
       "$type": "Backend.TriggerTrigger, scwin",
       "IsLeftElseRight": false
     },
@@ -26,10 +26,9 @@
       "$type": "Backend.ButtonKey, scwin",
       "Key": "None"
     },
-    "StickPush": {
+    "Stick": {
       "$type": "Backend.StickStick, scwin",
       "Deadzone": 0.1,
-      "Gradingzone": 1,
       "IsLeftElseRight": true
     },
     "StickClick": {
@@ -83,7 +82,7 @@
     "RPadTouch": {
       "$type": "Backend.PadStick, scwin",
       "Deadzone": 0.1,
-      "Gradingzone": 1,
+      "GradingZone": 1,
       "IsLeftElseRight": false
     },
     "RPadClick": {
@@ -102,6 +101,6 @@
       "$type": "Backend.ButtonKey, scwin",
       "Key": "GamepadHome"
     },
-    "GyroMove": null
+    "Motion": null
   }
 }

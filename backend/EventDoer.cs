@@ -31,6 +31,7 @@ namespace Backend {
 			}
 		}
 
+		public int Debug { get; init; }
 		public LinkedList<ActionLayer> ActionLayering { get; } = new ();
 
 		public ConcurrentQueue<SideEffect> SideEffectsPipe { get; } = new ();
@@ -53,20 +54,20 @@ namespace Backend {
 
 		//public void InitHardware(bool createVirtualGamepad) => Hardware.Init(createVirtualGamepad, this);
 
-		public void DoEvents(IList<api.InputData> events) {
-			foreach (api.InputData e in events) {
+		public void DoEvents(IList<api.IInputData> events) {
+			foreach (var e in events) {
 				ActionLayer layer;
 				for (var n = ActionLayering.Last; n != null; n = n.Previous) {
 					layer = n!.Value;
-					if (layer.inputMap.ContainsKey(e.Key.ToString())) {
-						this.DoAction(e, layer.inputMap[e.Key.ToString()]);
+					if (layer.inputMap.ContainsKey(e.Identity)) {
+						this.DoAction(e, layer.inputMap[e.Identity]);
 						break;
 					} else if (!layer.isTransparent) break;
 				}
 			}
 		}
 
-		private void DoAction(api.InputData e, Hardware? mapEntry) {
+		private void DoAction(api.IInputData e, Hardware? mapEntry) {
 			mapEntry?.DoEvent(e);
 
 			// Handle any side effects produced by the hardwares
@@ -95,13 +96,5 @@ namespace Backend {
 				}
 			}
 		}
-
-		private static bool IsKeyButton(api.Key key) => key switch {
-			api.Key.LTriggerPull => false,
-			api.Key.RTriggerPull => false,
-			api.Key.StickPush    => false,
-			api.Key.GyroMove     => false,
-			_                    => true
-		};
 	}
 }
