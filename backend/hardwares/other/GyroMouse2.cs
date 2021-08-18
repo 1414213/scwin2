@@ -1,5 +1,6 @@
 using System;
 using Newtonsoft.Json;
+using SteamControllerApi;
 using api = SteamControllerApi;
 
 namespace Backend {
@@ -25,6 +26,8 @@ namespace Backend {
 		}
 
 		public override void ReleaseAll() {}
+
+		public override void Unfreeze(IInputData newInput) => this.DoEvent(newInput);
 
 		private void Move((double x, double y) movement) {
 			amountStore.x += movement.x;

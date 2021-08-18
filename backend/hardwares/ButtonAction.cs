@@ -6,14 +6,12 @@ namespace Backend {
 		public bool IsTransparent { get; set; } = true;
 		public string Name { get; set; } = "";
 
-		protected override void PressImpl()
-		{
-			SideEffectsPipe.Enqueue(new ActionMapAddition{ name = Name, isTransparent = IsTransparent });
+		protected override void PressImpl() {
+			EventDoer.AddActionLayer(Name, IsTransparent);
 		}
 
-		protected override void ReleaseImpl()
-		{
-			SideEffectsPipe.Enqueue(new ActionMapRemoval{ name = Name });
+		protected override void ReleaseImpl() {
+			EventDoer.RemoveActionLayer(Name);
 		}
 	}
 }

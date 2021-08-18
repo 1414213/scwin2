@@ -1,7 +1,5 @@
 using System;
-using Newtonsoft.Json;
 using api = SteamControllerApi;
-
 
 namespace Backend {
 	public class StickStick : Hardware {
@@ -70,5 +68,7 @@ namespace Backend {
 		}
 
 		public override void ReleaseAll() {}
+
+		public override void Unfreeze(api.IInputData newInput) => this.DoEvent(newInput);
 	}
 }

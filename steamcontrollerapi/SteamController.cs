@@ -103,14 +103,14 @@ namespace SteamControllerApi {
 			events.Add(KeyInternal.RTrigger, new TriggerData(data[12], false, Flags.None));
 			events.Add(KeyInternal.Motion, new MotionData(
 				(
-					BitConverter.ToInt16(data.SliceNew(44, 45), 0), // orientation
-					BitConverter.ToInt16(data.SliceNew(42, 43), 0),
-					BitConverter.ToInt16(data.SliceNew(46, 47), 0),
-					BitConverter.ToInt16(data.SliceNew(40, 41), 0)
+					roll:  BitConverter.ToInt16(data.SliceNew(44, 45), 0),
+					pitch: BitConverter.ToInt16(data.SliceNew(42, 43), 0),
+					yaw:   BitConverter.ToInt16(data.SliceNew(46, 47), 0),
+					w:     BitConverter.ToInt16(data.SliceNew(40, 41), 0)
 				), (
-					BitConverter.ToInt16(data.SliceNew(38, 39), 0), // acceleration
-					BitConverter.ToInt16(data.SliceNew(36, 37), 0),
-					BitConverter.ToInt16(data.SliceNew(34, 35), 0)
+					x: BitConverter.ToInt16(data.SliceNew(38, 39), 0), // acceleration
+					y: BitConverter.ToInt16(data.SliceNew(36, 37), 0),
+					z: BitConverter.ToInt16(data.SliceNew(34, 35), 0)
 				),
 				Flags.None
 			));
@@ -160,7 +160,7 @@ namespace SteamControllerApi {
 				State[KeyInternal.RTrigger] = newEvents[KeyInternal.RTrigger];
 				generatedEvents.Add(newEvents[KeyInternal.RTrigger]);
 			}
-			this.State[KeyInternal.Motion] = newEvents[KeyInternal.Motion];
+			State[KeyInternal.Motion] = newEvents[KeyInternal.Motion];
 			generatedEvents.Add(newEvents[KeyInternal.Motion]);
 
 			if (hasStick) {
@@ -179,7 +179,7 @@ namespace SteamControllerApi {
 				if (State.ContainsKey(k)) {
 					// A corresponding new event, the button was held.
 					if (newEvents.ContainsKey(k)) {
-						// track pads carry a continuous state so their held press cannot be ignored
+						// Track pads carry a continuous state so their held press cannot be ignored.
 						if (k is KeyInternal.LPadClick
 							or KeyInternal.RPadClick
 							or KeyInternal.LPadTouch
@@ -191,8 +191,8 @@ namespace SteamControllerApi {
 						// it that some keys are still being pressed.
 						this.State[k] = newEvents[k];
 					} else {
-					// no corresponding new event, the key was released
-					// the state of the release event would be the released key's last known state
+					// No corresponding new event, the key was released.
+					// The state of the release event would be the released key's last known state.
 						if (k == KeyInternal.LPadTouch && isOscillating) continue;
 						else if (State[k] is not IButtonData) continue;
 						else {

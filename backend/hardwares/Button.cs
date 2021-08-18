@@ -68,5 +68,9 @@ namespace Backend {
 		}
 
 		public override void ReleaseAll() => this.Release();
+
+		public override void Unfreeze(api.IInputData newInput) {
+			this.DoEvent(newInput);
+		}
 	}
 }

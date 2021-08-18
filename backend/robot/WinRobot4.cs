@@ -9,6 +9,11 @@ using WindowsInput.Native;
 
 namespace Robot {
 	public class WindowsRobot : IRobot {
+		public void foo() {
+			if (virtualGamepad is not null) {
+			
+			}
+		}
 		public int ScrollWheelClickSize => 120;
 		public (short x, short y) LStickPosition => lStickPosition;
 		public (short x, short y) RStickPosition => rStickPosition;

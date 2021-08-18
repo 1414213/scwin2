@@ -1,4 +1,5 @@
 using System;
+using SteamControllerApi;
 using api = SteamControllerApi;
 
 namespace Backend {
@@ -12,7 +13,7 @@ namespace Backend {
 		protected override void DoEventImpl(api.ITrackpadData input) {
 			var position = input.Position;
 
-			// handle press or release event
+			// Handle press or release event.
 			if (input.IsPress) {
 				stick.DoEvent(input);
 			} else if (input.IsRelease) {
@@ -24,6 +25,8 @@ namespace Backend {
 		}
 
 		protected override void ReleaseAllImpl() {}
+
+		public override void Unfreeze(IInputData newInput) => this.DoEvent(newInput);
 
 		public void SetStick(StickStick stick) => this.stick = stick;
 	}

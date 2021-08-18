@@ -47,5 +47,7 @@ namespace Backend {
 		}
 
 		public override void ReleaseAll() => Button.ReleaseAll();
+
+		public override void Unfreeze(api.IInputData newInput) => this.DoEvent(newInput);
 	}
 }

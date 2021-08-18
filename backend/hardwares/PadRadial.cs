@@ -1,3 +1,4 @@
+using SteamControllerApi;
 using api = SteamControllerApi;
 
 namespace Backend {
@@ -18,5 +19,7 @@ namespace Backend {
 		}
 
 		protected override void ReleaseAllImpl() { foreach (var b in radial.Buttons) b.Release(); }
+
+		public override void Unfreeze(IInputData newInput) => this.DoEvent(newInput);
 	}
 }

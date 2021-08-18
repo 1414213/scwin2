@@ -8,8 +8,14 @@
       "$type": "Backend.TriggerTrigger, scwin",
       "IsLeftElseRight": false
     },
-    "LTriggerClick": null,
-    "RTriggerClick": null,
+    "LTriggerClick": {
+      "$type": "Backend.ButtonKey, scwin",
+      "Key": "None"
+    },
+    "RTriggerClick": {
+      "$type": "Backend.ButtonKey, scwin",
+      "Key": "None"
+    },
     "LBumper": {
       "$type": "Backend.ButtonKey, scwin",
       "Key": "LBumper"
@@ -69,14 +75,9 @@
         "$type": "Backend.ButtonKey, scwin",
         "Key": "Dpad_Down"
       },
-      "Inner": {
-        "$type": "Backend.ButtonKey, scwin",
-        "Key": "None"
-      },
-      "Outer": {
-        "$type": "Backend.ButtonKey, scwin",
-        "Key": "None"
-      }
+      "HasOverlap": true,
+      "OverlapIgnoranceRadius": 0.333,
+      "Deadzone": 0.1
     },
     "LPadClick": null,
     "RPadTouch": {

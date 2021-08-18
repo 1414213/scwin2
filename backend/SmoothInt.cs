@@ -3,16 +3,13 @@
 using System;
 
 namespace Backend {
-	abstract public class SmoothedHardware : Hardware {
+	abstract public class SmoothInt : Hardware {
 		public int Smoothing { get; set; } = 900;
 
 		private (int x, int y, int z)[] buffer = new (int x, int y, int z)[16];
 		private int bufferIndex;
 
-		//private int queueCapacity = 4;
-		//private Queue<(short x, short y)> coordsToSmooth;
-
-		public SmoothedHardware(int bufferSize = 16) {
+		public SmoothInt(int bufferSize = 16) {
 			this.buffer = new (int x, int y, int z)[bufferSize];
 		}
 
@@ -84,22 +81,6 @@ namespace Backend {
 		// 	smoothed.y = smoothed.y / coordsToSmooth.Count;
 		// 	return ((short)smoothed.x, (short)smoothed.y);
 		// }
-
-		// multiple of the existing sensitivity
-		public double Acceleration { get; set; } = 2;
-		public int AccelerationLowerBoundary { get; set; } = 2000;
-		public int AccelerationUpperBoundary { get; set; } = 1700;
-
-		protected (double x, double y) AccelerateInput(int x, int y, double startingSensitivity) {
-			double finalSensitivity = startingSensitivity * Acceleration;
-			double magnitude = Math.Sqrt(x * x + y * y);
-			double weight = (magnitude - AccelerationLowerBoundary) / (AccelerationUpperBoundary - AccelerationLowerBoundary);
-			weight = Math.Clamp(weight, 0, 1);
-
-			double newSensitivity = startingSensitivity * weight + finalSensitivity * (1d - weight);
-
-			return (x * newSensitivity, y * newSensitivity);
-		}
 	}
 
 	public interface MSmoothing {
@@ -123,8 +104,8 @@ namespace Backend {
 		}
 
 		protected (int x, int y) SmoothInput((int x, int y) vector) {
-			var v = SmoothInput((vector.x, vector.y, 0));
-			return (v.x, v.y);
+			var (x, y, _) = SmoothInput((vector.x, vector.y, 0));
+			return (x, y);
 		}
 
 		protected void ClearSmoothingBuffer((int x, int y, int z) toClearTo) {
@@ -174,23 +155,5 @@ namespace Backend {
 		// 	smoothed.y = smoothed.y / coordsToSmooth.Count;
 		// 	return ((short)smoothed.x, (short)smoothed.y);
 		// }
-	}
-
-	public interface MAcceleration {
-		// multiple of the existing sensitivity
-		public double Acceleration { get; set; } // = 2;
-		public int AccelerationLowerBoundary { get; set; } // = 2000;
-		public int AccelerationUpperBoundary { get; set; } // = 1700;
-
-		protected (double x, double y) AccelerateInput(int x, int y, double startingSensitivity) {
-			double finalSensitivity = startingSensitivity * Acceleration;
-			double magnitude = Math.Sqrt(x * x + y * y);
-			double weight = (magnitude - AccelerationLowerBoundary) / (AccelerationUpperBoundary - AccelerationLowerBoundary);
-			weight = Math.Clamp(weight, 0, 1);
-
-			double newSensitivity = startingSensitivity * weight + finalSensitivity * (1d - weight);
-
-			return (x * newSensitivity, y * newSensitivity);
-		}
 	}
 }
