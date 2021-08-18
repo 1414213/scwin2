@@ -1,8 +1,6 @@
 using System;
-using Newtonsoft.Json;
 using api = SteamControllerApi;
 using Robot;
-
 
 namespace Backend {
 	public class StickButtonCross : Hardware {
@@ -13,6 +11,11 @@ namespace Backend {
 		public Button Inner { get; set; } = new ButtonKey();
 		public Button Outer { get; set; } = new ButtonKey();
 		public bool HasOverlap { get; set; } = true;
+		public double OverlapIgnoranceRadius { get => overlapIgnoranceRadius; set {
+			if (value is < 0 or > 1.0) throw new SettingNotProportionException(
+				"OverlapIgnorance radius should be bewteen 0 and 1, inclusively.");
+			else this.overlapIgnoranceRadius = value;
+		} }
 		public double Deadzone { get => deadzone; set {
 			if (value > 1.0 || value < 0) throw new SettingNotProportionException(
 				"Deadzone must be proportion of the thumbstick's radius ([0, 1]).");
@@ -29,7 +32,7 @@ namespace Backend {
 			else this.outerRadius = value;
 		} }
 
-		private double deadzone = 0.2, innerRadius = 0.35, outerRadius = 0;
+		private double deadzone = 0.2, innerRadius = 0.35, outerRadius = 0, overlapIgnoranceRadius = 0;
 
 		public StickButtonCross() {}
 
@@ -46,7 +49,7 @@ namespace Backend {
 			var coord = (input as api.IPositional ?? throw new ArgumentException(input + " is not coordinal."))
 			            .Position;
 
-			// convert event's cartesian coordinates into polar
+			// Convert event's cartesian coordinates into polar.
 			var (r, theta) = base.CartesianToPolar(coord.x, coord.y);
 			if (Double.IsNaN(theta) || (r < Deadzone * Int16.MaxValue)) {
 				// If r is 0, then stick was reset to position 0,0.  No input occurs so all buttons are released.
@@ -55,20 +58,23 @@ namespace Backend {
 				return;
 			}
 
-			// transform theta into units of PI (range of [0,2)).
+			// Transform theta into units of PI (range of [0,2)).
 			theta = theta / Math.PI;
 			if (theta < 0) theta += 2;
 
-			// check if event is within the trigger range for the inner button
+			// Check if input is within range to trigger the inner button.
 			if (r < innerRadius * Int16.MaxValue) Inner.Press();
 			else Inner.Release();
 
-			// check if event is within the trigger range for the outer button
+			// Check if input is within range to trigger the outer button.
 			if (r > (1d - outerRadius) * Int16.MaxValue) Outer.Press();
 			else Outer.Release();
 
-			// determine the angle of the event and activate its respective button
-			if (HasOverlap) {
+			// Check if overlapping should be ignored.
+			var hasOverlap = HasOverlap && (r > OverlapIgnoranceRadius * Int16.MaxValue);
+
+			// Determine the angle of the event and activate its respective button.
+			if (hasOverlap) {
 				if ((theta >= 13d/8 && theta < 2.0) || (theta >= 0 && theta < 3d/8)) East.Press();
 				else East.Release();
 				if (theta >= 1d/8 && theta < 7d/8)  North.Press();
@@ -97,5 +103,7 @@ namespace Backend {
 			Inner.ReleaseAll();
 			Outer.ReleaseAll();
 		}
+
+		public override void Unfreeze(api.IInputData newInput) => this.DoEvent(newInput);
 	}
 }

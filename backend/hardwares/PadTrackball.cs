@@ -20,7 +20,7 @@ namespace Backend {
 		private (short x, short y) previous;
 		private (double x, double y) amountStore;
 
-		//field for calculating rolling
+		// Fields for calculating rolling:
 		private Task? doInertia;
 		private bool isRolling = false;
 		private Stopwatch stopwatch = new Stopwatch();
@@ -36,7 +36,8 @@ namespace Backend {
 
 		protected override void DoEventImpl(api.ITrackpadData input) {
 			var e = input as api.ITrackpadData ?? throw new ArgumentException(input + " must be of trackpad.");
-			// if event is the initial press, then no movement has occured
+			
+			// If event is the initial press, then no movement has occured -
 			if (isInitialPress) {
 				previous = e.Position;
 				isRolling = false;
@@ -46,25 +47,25 @@ namespace Backend {
 				return;
 			}
 
-			// else move the mouse relative to the previously touched location
+			// - else move the mouse relative to the previously touched location.
 			stopwatch.Stop();
 			elapsedTime = stopwatch.ElapsedMilliseconds;
 			stopwatch.Restart();
 
-			// compute mouse movement
+			// Compute mouse movement:
 			var coord = e.Position;
 			//var delta = this.SmoothInput((x: coord.x - previous.x, y: coord.y - previous.y));
 			var delta = this.SoftTieredSmooth((x: coord.x - previous.x, y: coord.y - previous.y));
 			//var movement = (x: delta.x * sensitivity, y: delta.y * sensitivity);
-			var movement = this.AccelerateInput(delta.x, delta.y, sensitivity);
+			var movement = base.AccelerateInput(delta.x, delta.y, sensitivity);
 			if (InvertX) movement.x = -movement.x;
 			if (InvertY) movement.y = -movement.y;
 
-			// extract whole values so fractional input isn't lost and store previous
+			// Extract whole values so fractional input isn't lost and store previous.
 			this.Move(movement);
 			previous = coord;
 			
-			// clean up after the trackpad is released
+			// Clean up after the trackpad is released.
 			if (e.IsRelease) {
 				isInitialPress = true;
 				amountStore = (0, 0);
@@ -79,13 +80,15 @@ namespace Backend {
 						var speedMagnitude = (x: Math.Abs(speed.x), y: Math.Abs(speed.y));
 						var magnitudeSign = (x: speed.x > 0 ? 1 : -1, y: speed.y > 0 ? 1 : -1);
 						Thread.Sleep(10);
-						// while guardian is a sanity check; stops rolling by simulating when the trackball loses
-						// the momentum needed to overcum friction.  Constant is measured in velocity per millisecond
+
+						// While guardian is a sanity check; stops rolling by simulating when the trackball loses
+						// the momentum needed to overcum friction.  Constant is measured in velocity per millisecond.
 						while (Math.Sqrt(speed.x * speed.x + speed.y * speed.y) > 5) {
 							if (!isRolling) {
 								return;
 							}
-							// remove speed according to amount of decceleration
+
+							// Remove speed according to amount of decceleration.
 							speedMagnitude.x -= speedMagnitude.x * decceleration;
 							speedMagnitude.y -= speedMagnitude.y * decceleration;
 							
@@ -104,8 +107,16 @@ namespace Backend {
 
 		protected override void ReleaseAllImpl() {}
 
-		// sends input while storing fractional values in a store so that the amount isn't
-		// lost during the whole number conversion
+		public override void Unfreeze(api.IInputData newInput) {
+			// Reset previous input.
+			isInitialPress = true;
+			base.ClearSmoothingBuffer((0, 0, 0));
+
+			this.DoEvent(newInput);
+		}
+
+		// Sends input while storing fractional values in a store so that the amount isn't
+		// lost during the whole number conversion.
 		private void Move(double x, double y) {
 			amountStore.x += x;
 			amountStore.y += y;

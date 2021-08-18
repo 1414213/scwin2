@@ -39,11 +39,10 @@ namespace Backend {
 		private void DoMacros(Robot.Macro[] macros) {
 			foreach (var macro in macros) {
 				robot.DoMacro(macro);
-				if (macro.AddActionLayer is string aal) SideEffectsPipe.Enqueue(new ActionMapAddition{
-					name = aal,
-					isTransparent = macro.AddActionLayerAsTransparent
-				});
-				if (macro.RemoveActionLayer is string ral) SideEffectsPipe.Enqueue(new ActionMapRemoval{ name = ral });
+				if (macro.AddActionLayer is string aal) {
+					EventDoer.AddActionLayer(aal, macro.AddActionLayerAsTransparent);
+				}
+				if (macro.RemoveActionLayer is string ral) EventDoer.RemoveActionLayer(ral);
 				Thread.Sleep(macro.Wait);
 			}
 		}

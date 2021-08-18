@@ -86,5 +86,13 @@ namespace Backend {
 		}
 
 		protected override void ReleaseAllImpl() {}
+
+		public override void Unfreeze(api.IInputData newInput) {
+			// Reset input intake so that previous inputs from before freezing the collection 
+			// of input don't cause any jumping.
+			isInitialPress = true;
+			amountStore = 0;
+			this.DoEvent(newInput);
+		}
 	}
 }

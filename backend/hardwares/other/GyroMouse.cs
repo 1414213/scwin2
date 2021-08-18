@@ -1,45 +1,63 @@
 using System;
-using Newtonsoft.Json;
+using System.Numerics;
 using api = SteamControllerApi;
 
-// x = roll   = heading
+// x = roll  = heading
 // y = pitch = attitude
-// z = yaw  = bank
+// z = yaw   = bank
 
 namespace Backend {
-	public class GyroMouse : Hardware {
+	public class GyroMouse : SmoothFloat {
 		/// <summary>Amount of pixels covered by the entire range of rotation.</summary>
-		public double Sensitivity { get => sensitivity; set => sensitivity = value; }
+		public float Sensitivity { get => sensitivity; set => sensitivity = value; }
 		public bool XIsYawElseRoll { get; set; } = true;
 		public bool InvertX { get; set; }
 		public bool InvertY { get; set; }
 
-		private double sensitivity = 2000;
+		private float sensitivity = 10000;
 
-		private (double x, double y) previous;
+		private Quaternion previous = Quaternion.Identity;
 		private (double x, double y) amountStore;
 
 		public override void DoEvent(api.IInputData input) {
-			var gyroscope = (input as api.IMotionData ?? throw new ArgumentException("Data not motion.")).Gyroscope;
+			var (x, y, z, w) = (input as api.IMotionData ?? throw new ArgumentException("Data not motion.")).Gyroscope;
 
-			var (roll, pitch, yaw) = this.QuaternionToEuler(gyroscope);
-			var x = XIsYawElseRoll ? yaw : roll;
-			var y = pitch;
-			var delta = (x: (x - previous.x) / Math.PI * sensitivity,
-			             y: (y - previous.y) / Math.PI * sensitivity);
-			if (Hardware.EventDoer is not null) {
-				if (Hardware.EventDoer.Debug == 4)
-					Console.WriteLine($"x: {x} y: {y} {delta}");
+			var quaternion = new Quaternion(
+				(float)x / (x > 0 ? Int16.MaxValue : Int16.MinValue),
+				(float)y / (y > 0 ? Int16.MaxValue : Int16.MinValue),
+				(float)z / (z > 0 ? Int16.MaxValue : Int16.MinValue),
+				(float)w / (w > 0 ? Int16.MaxValue : Int16.MinValue));
+			var delta = Quaternion.Subtract(quaternion, previous);
+			var movement = (
+				x: (XIsYawElseRoll ? delta.Z : delta.X) * (InvertX ? -1 : 1) * sensitivity,
+				y: delta.Y * (InvertY ? -1 : 1) * sensitivity
+			);
+			movement = base.SoftTieredSmooth(movement);
+			if (Hardware.EventDoer.Debug == 4) {
+				Console.WriteLine("" + quaternion + " " + movement);
 			}
+			this.Move(movement);
 
-			if (InvertX) delta.x = -delta.x;
-			if (InvertY) delta.y = -delta.y;
-			this.Move(delta);
-			
-			previous = (x, y);
+			previous = quaternion;
 		}
 
 		public override void ReleaseAll() {}
+
+		public override void Unfreeze(api.IInputData newInput) {
+			var (x, y, z, w) = (newInput as api.IMotionData ?? throw new ArgumentException("Data not motion."))
+			                   .Gyroscope;
+			// Update previous.
+			previous = new Quaternion(
+				(float)x / (x > 0 ? Int16.MaxValue : Int16.MinValue),
+				(float)y / (y > 0 ? Int16.MaxValue : Int16.MinValue),
+				(float)z / (z > 0 ? Int16.MaxValue : Int16.MinValue),
+				(float)w / (w > 0 ? Int16.MaxValue : Int16.MinValue));
+			
+			// Clear smoothing buffer since previous input has been reset.
+			base.ClearSmoothingBuffer((0, 0));
+
+			this.DoEvent(newInput);
+		}
 
 		private void Move((double x, double y) movement) {
 			amountStore.x += movement.x;

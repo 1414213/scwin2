@@ -89,7 +89,7 @@ namespace SteamControllerApi {
 
 	public interface IInputData {
 		Flags Flags { get; init; }
-		/// <summary> Returns a string identifying what input this is (A, LTrigger, et cetera). </summary>
+		/// <summary>Returns a string identifying what input this is (A, LTrigger, et cetera).</summary>
 		string Identity { get; }
 		bool IsPress => (Flags & Flags.Pressed) == Flags.Pressed;
 		bool IsRelease => (Flags & Flags.Released) == Flags.Released;

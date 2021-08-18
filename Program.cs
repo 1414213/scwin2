@@ -8,7 +8,7 @@ using api = SteamControllerApi;
 
 class Program {
 	public static async Task Main(string[] args) {
-		// parse given arguments
+		// Parse given arguments.
 		bool noGamepad = false;
 		int debugType = 0, debugGui = 0;
 		string? inputMapName = null;
@@ -92,19 +92,47 @@ class Program {
 		var device = devices[0];
 		await device.InitializeAsync();
 
-		// prepare to handle input events from steam controller
+		// Prepare to handle input events from steam controller.
 		var (map, isNotBlank) = Backend.InputMapper.Open(inputMapName);
 		if (!isNotBlank) {
 			Console.WriteLine($"New input map {map.Name} created!");
 			return;
 		}
-		var doer = new Backend.EventDoer(map, !noGamepad){ Debug = debugType };
+		var doer = new Backend.EventDoer(map, steamcon, !noGamepad){ Debug = debugType };
 
-		// read inputs from the HID device
+		// Haptic tests:
+		// var haptic = new byte[64] {
+		// 	0x8F,
+		// 	0x07,
+		// 	0x00, // Left (1) or right (0) trackpad.
+		// 	0xFF, // LSB pulse high duration
+		// 	0xFF, // MSB pulse high duration
+		// 	0xFF, // LSB pulse low duration
+		// 	0xFF, // MSB pulse low duration
+		// 	0xFF, // LSB pulse repeat count
+		// 	0x04, // MSB pulse repeat count
+		// 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		// 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		// 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		// 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		// 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		// 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		// 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		// };
+		// var factor = 495483.0;
+
+		// haptic[3] = 128;
+		// haptic[4] = 20;
+		// haptic[5] = 128;
+		// haptic[6] = 20;
+
+		// await device.WriteAsync(haptic);
+		// await device.WriteAsync(haptic);
+		// return;
+
+		// App loop:
 		ReadResult input;
 		IList<api.IInputData> events;
-
-		// app loop
 		while (true) {
 			input = await device.ReadAsync();
 

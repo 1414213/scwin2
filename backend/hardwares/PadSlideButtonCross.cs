@@ -1,49 +1,28 @@
 using System;
-
 using Newtonsoft.Json;
-
 using api = SteamControllerApi;
 using Robot;
 
-
 namespace Backend {
 	public class PadSlideButtonCross : Trackpad {
-		public Button East {
-			get => buttonCross.East;
-			set => buttonCross.East = value;
+		// Wrap a StickButtonCross object.
+		public Button East         { get => buttonCross.East;        set => buttonCross.East = value; }
+		public Button North        { get => buttonCross.North;       set => buttonCross.North = value; }
+		public Button West         { get => buttonCross.West;        set => buttonCross.West = value; }
+		public Button South        { get => buttonCross.South;       set => buttonCross.South = value; }
+		public Button Inner        { get => buttonCross.Inner;       set => buttonCross.Inner = value; }
+		public Button Outer        { get => buttonCross.Outer;       set => buttonCross.Outer = value; }
+		public bool HasOverlap     { get => buttonCross.HasOverlap;  set => buttonCross.HasOverlap = value; }
+		public double OverlapIgnoranceRadius {
+			get => buttonCross.OverlapIgnoranceRadius;
+			set => buttonCross.OverlapIgnoranceRadius = value;
 		}
-		public Button North {
-			get => buttonCross.North;
-			set => buttonCross.North = value;
-		}
-		public Button West {
-			get => buttonCross.West;
-			set => buttonCross.West = value;
-		}
-		public Button South {
-			get => buttonCross.South;
-			set => buttonCross.South = value;
-		}
-		public Button Inner {
-			get => buttonCross.Inner;
-			set => buttonCross.Inner = value;
-		}
-		public Button Outer {
-			get => buttonCross.Outer;
-			set => buttonCross.Outer = value;
-		}
-		public bool HasOverlap {
-			get => buttonCross.HasOverlap;
-			set => buttonCross.HasOverlap = value;
-		}
-		public double InnerRadius {
-			get => buttonCross.InnerRadius;
-			set => buttonCross.InnerRadius = value;
-		}
-		public double OuterRadius {
-			get => buttonCross.OuterRadius;
-			set => buttonCross.OuterRadius = value;
-		}
+		public double InnerRadius  { get => buttonCross.InnerRadius; set => buttonCross.InnerRadius = value; }
+		public double OuterRadius  { get => buttonCross.OuterRadius; set => buttonCross.OuterRadius = value; }
+		public double Deadzone     { get => buttonCross.Deadzone;    set => buttonCross.Deadzone = value; }
+
+		private StickButtonCross buttonCross = new StickButtonCross();
+
 		public double RelativeSize {
 			get => this.relativeSize;
 			set {
@@ -52,11 +31,8 @@ namespace Backend {
 				this.relativeSize = value;
 			}
 		}
-		public double Deadzone {
-			get => buttonCross.Deadzone;
-			set => buttonCross.Deadzone = value;
-		}
 		public bool Anchored { get; set; }
+
 		[JsonIgnore]
 		public short X => (short)Math.Clamp(this.RealX, Int16.MinValue, Int16.MaxValue);
 		[JsonIgnore]
@@ -66,7 +42,6 @@ namespace Backend {
 		[JsonIgnore]
 		public long RealY => (long)(this.position.y * (1 / this.relativeSize));
 
-		private StickButtonCross buttonCross = new StickButtonCross();
 		private double relativeSize = 0.5;
 		private (long x, long y) position;
 		private (short x, short y)? previousCoord;
@@ -140,5 +115,7 @@ namespace Backend {
 			Inner.ReleaseAll();
 			Outer.ReleaseAll();
 		}
+
+		public override void Unfreeze(api.IInputData newInput) => this.DoEvent(newInput);
 	}
 }

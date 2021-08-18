@@ -35,14 +35,14 @@ namespace Backend {
 		public int Amount => this.Buttons.Count;
 
 		private double minimumDistance = 0.25;
-		// defaults to an impossible input value (1.5 times the diameter of the trackpad)
-		// so if the property is never assigned all swipes will be treated as regular swipes
+		// Defaults to an impossible input value (1.5 times the diameter of the trackpad)
+		// so if the property is never assigned then all swipes will be treated as regular swipes.
 		private double longSwipeThreshold = 1.5;
 		private double angleOffset = 0;
 		private (short x, short y) startingPosition;
 		private bool isInitialPress;
 
-		// fields for continuous setting
+		// Fields for continuous settings:
 		private Stopwatch stopwatch = new Stopwatch();
 		private (short x, short y) previous;
 
@@ -54,11 +54,12 @@ namespace Backend {
 			this.LongSwipeThreshold = longSwipeThreshold;
 		}
 
-		public PadSwipe(
-			double angleOffset, 
-			double minimumDistance,
-			double longSwipeThreshold
-		) : this(angleOffset, minimumDistance) { this.LongSwipeThreshold = longSwipeThreshold; }
+		public PadSwipe(double angleOffset, double minimumDistance,	double longSwipeThreshold) : this(
+			angleOffset,
+			minimumDistance
+		) {
+			this.LongSwipeThreshold = longSwipeThreshold;
+		}
 
 		public PadSwipe(
 			double angleOffset,
@@ -120,25 +121,26 @@ namespace Backend {
 			foreach (var b in LongSwipeButtons) b?.ReleaseAll();
 		}
 
-		private bool DoTap((short x, short y) releaseCoord) {
-			// compute drawn vector with angle of radians (range [0, 2))
-			(long x, long y) delta = (releaseCoord.x - startingPosition.x,
-			                          releaseCoord.y - startingPosition.y);
-			double r = Math.Sqrt((delta.x * delta.x) + (delta.y * delta.y));
-			double theta = 0;
+		public override void Unfreeze(api.IInputData newInput) {
+			// Receive newInput as a new beginning for a swipe if input is being send to the trackpad 
+			// when the object is unfrozen.
+			isInitialPress = true;
+			this.DoEvent(newInput);
+		}
 
-			if (delta.y >= 0 && r != 0) theta = Math.Acos(delta.x / r);
-			else if (delta.y < 0)       theta = -Math.Acos(delta.x / r);
-			else if (r == 0)            theta = Double.NaN;
+		private bool DoTap((short x, short y) releaseCoord) {
+			// Compute drawn vector with angle of radians (range [0, 2)).
+			var (r, theta) = base.CartesianToPolar(
+				releaseCoord.x - startingPosition.x, releaseCoord.y - startingPosition.y);
 			theta = theta / Math.PI;
 			if (theta < 0) theta += 2;
 
 			if (!Double.IsNaN(theta) && r > minimumDistance * (-Int16.MinValue + Int16.MaxValue)) {
-				// adjust angle to measure starting from the offset
+				// Adjust angle to measure starting from the offset.
 				theta = (theta - angleOffset) % 2;
 				if (theta < 0) theta += 2;
 
-				// compute size of each section
+				// Compute size of each section.
 				var sliceSize = 2d / Amount;
 				if (Double.IsNaN(sliceSize)) return false;
 				var indexOfButtonToTap = (int)(theta / sliceSize);
@@ -153,7 +155,9 @@ namespace Backend {
 				}
 				Buttons[indexOfButtonToTap].Tap();
 				return true;
-			} else return false;
+			} else {
+				return false;
+			}
 		}
 	}
 }

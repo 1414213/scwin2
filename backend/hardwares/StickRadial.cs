@@ -29,7 +29,6 @@ namespace Backend {
 			
 			// compute polar coordinates
 			var (r, theta) = base.CartesianToPolar(positional.Position.x, positional.Position.y);
-
 			if (r < deadzone * Int16.MaxValue) {
 				foreach (var b in Buttons) b.Release();
 				return;
@@ -61,5 +60,7 @@ namespace Backend {
 		}
 
 		public override void ReleaseAll() { foreach (var b in Buttons) b.ReleaseAll(); }
+
+		public override void Unfreeze(api.IInputData newInput) => this.DoEvent(newInput);
 	}
 }

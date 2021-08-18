@@ -60,7 +60,7 @@ namespace Backend {
 
 			// compute mouse movement
 			var delta = (x: coord.x - previous.x, y: coord.y - previous.y);
-			var movement = this.AccelerateInput(delta.x, delta.y, sensitivity);
+			var movement = base.AccelerateInput(delta.x, delta.y, sensitivity);
 			if (InvertX) movement.x = -movement.x;
 			if (InvertY) movement.y = -movement.y;
 
@@ -104,6 +104,14 @@ namespace Backend {
 		}
 
 		protected override void ReleaseAllImpl() {}
+
+		public override void Unfreeze(IInputData newInput) {
+			// Reset previous input.
+			isInitialPress = true;
+			base.ClearSmoothingBuffer((0, 0, 0));
+
+			this.DoEvent(newInput);
+		}
 
 		private void Move((double x, double y) movement) {
 			amountStore.x += movement.x;
