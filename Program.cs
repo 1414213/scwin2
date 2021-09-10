@@ -8,7 +8,7 @@ using api = SteamControllerApi;
 
 class Program {
 	public static async Task Main(string[] args) {
-		// Parse given arguments.
+		// Parse given arguments:
 		bool noGamepad = false;
 		int debugType = 0, debugGui = 0;
 		string? inputMapName = null;
@@ -61,7 +61,16 @@ class Program {
 					break;
 				}
 				default:
-					if (inputMapName == null) inputMapName = args[i];
+					if (args[i][0] == '-') {
+						Console.WriteLine($"ERROR: Command {args[i]} not known.");
+						Environment.Exit(1);
+					}
+					if (inputMapName == null) {
+						inputMapName = args[i];
+					} else {
+						Console.WriteLine(
+							$"ERROR: Inputmap {args[i]} cannot be opened because {inputMapName} was already given.");
+					}
 					break;
 			}
 		}
@@ -70,6 +79,7 @@ class Program {
 			return;
 		}
 
+		// Connect to controller via HID driver.
 		var logger = new DebugLogger();
 		var tracer = new DebugTracer();
 		var steamcon = new api.Controller();

@@ -37,7 +37,7 @@ namespace SteamControllerApi {
 			// initialize continuous states to their neutral position
 			this.State.Add(KeyInternal.LTrigger, new TriggerData(0, true, Flags.None));
 			this.State.Add(KeyInternal.RTrigger, new TriggerData(0, false, Flags.None));
-			this.State.Add(KeyInternal.Motion, new MotionData((0, 0, 0, 0), (0, 0, 0), Flags.None));
+			this.State.Add(KeyInternal.Motion, new MotionData((0, 0, 0), (0, 0, 0), (0, 0, 0, 0), Flags.None));
 			this.State.Add(KeyInternal.Stick, new StickData((0, 0), Flags.None));
 			foreach (KeyInternal k in Enum.GetValues(typeof(KeyInternal))) {
 				this.amountOfKeys++;
@@ -103,14 +103,18 @@ namespace SteamControllerApi {
 			events.Add(KeyInternal.RTrigger, new TriggerData(data[12], false, Flags.None));
 			events.Add(KeyInternal.Motion, new MotionData(
 				(
-					roll:  BitConverter.ToInt16(data.SliceNew(44, 45), 0),
-					pitch: BitConverter.ToInt16(data.SliceNew(42, 43), 0),
-					yaw:   BitConverter.ToInt16(data.SliceNew(46, 47), 0),
-					w:     BitConverter.ToInt16(data.SliceNew(40, 41), 0)
+					x: BitConverter.ToInt16(data.SliceNew(28, 29), 0), // acceleration
+					y: BitConverter.ToInt16(data.SliceNew(30, 31), 0),
+					z: BitConverter.ToInt16(data.SliceNew(32, 33), 0)
 				), (
-					x: BitConverter.ToInt16(data.SliceNew(38, 39), 0), // acceleration
-					y: BitConverter.ToInt16(data.SliceNew(36, 37), 0),
-					z: BitConverter.ToInt16(data.SliceNew(34, 35), 0)
+					roll:  BitConverter.ToInt16(data.SliceNew(34, 35), 0), // gyroscope euler
+					pitch: BitConverter.ToInt16(data.SliceNew(36, 37), 0),
+					yaw:   BitConverter.ToInt16(data.SliceNew(38, 39), 0)
+				), (
+					w: BitConverter.ToInt16(data.SliceNew(40, 41), 0), // gyroscope quaternion
+					x: BitConverter.ToInt16(data.SliceNew(42, 43), 0),
+					y: BitConverter.ToInt16(data.SliceNew(44, 45), 0),
+					z: BitConverter.ToInt16(data.SliceNew(46, 47), 0)
 				),
 				Flags.None
 			));

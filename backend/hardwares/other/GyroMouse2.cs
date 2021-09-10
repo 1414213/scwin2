@@ -16,18 +16,36 @@ namespace Backend {
 		private double sensitivity = 0.2;
 
 		// yaw, pitch, and roll, respectively
-		private (short x, short y, short z) previous;
+		private (double x, double y, double z) previous = (0, 0, 0);
 		private (double x, double y) amountStore;
 
 		public override void DoEvent(api.IInputData input) {
-			var (x, y, z, a) = (input as api.IMotionData ?? throw new ArgumentException("Data not motion.")).Gyroscope;
-			
-			
+			// x = roll  = heading
+			// y = pitch = attitude
+			// z = yaw   = bank
+			var (x, y, z) = (input as api.IMotionData ?? throw new ArgumentException("Data not motion.")).Euler;
+			var e = this.GetEuler(x, y, z);
+			var movement = (
+				x: (IsXYawElseRoll ? e.z - previous.z : e.x - previous.x) * (InvertX ? -1 : 1) * sensitivity,
+				y: (e.y - previous.y) * (InvertY ? -1 : 1) * sensitivity
+			);
+			this.Move(movement);
+			previous = e;
 		}
 
 		public override void ReleaseAll() {}
 
-		public override void Unfreeze(IInputData newInput) => this.DoEvent(newInput);
+		public override void Unfreeze(IInputData newInput) {
+			// Update previous.
+			var (x, y, z) = (newInput as api.IMotionData ?? throw new ArgumentException("Data not motion.")).Euler;
+			previous = this.GetEuler(x, y, z);
+		}
+
+		private (double x, double y, double z) GetEuler(short x, short y, short z) => (
+			x: x / (x > 0 ? Int16.MaxValue : Int16.MinValue),
+			y: y / (y > 0 ? Int16.MaxValue : Int16.MinValue),
+			z: z / (z > 0 ? Int16.MaxValue : Int16.MinValue)
+		);
 
 		private void Move((double x, double y) movement) {
 			amountStore.x += movement.x;

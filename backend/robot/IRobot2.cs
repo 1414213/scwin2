@@ -45,7 +45,7 @@ namespace Robot {
 		void PullRTrigger(byte amount);
 
 		void DoMacro(Macro macro) {
-			Console.WriteLine(macro.ToString(brief: true));
+			//Console.WriteLine(macro.ToString(brief: true));
 			this.Press(macro.PressButtons);
 			this.Release(macro.ReleaseButtons);
 			if (macro.MoveMouse is Macro.Move2<int> mm)         this.MoveMouse(mm.x, mm.y, mm.relatively);

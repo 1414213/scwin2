@@ -108,8 +108,9 @@ namespace SteamControllerApi {
 	public interface ITrackpadData : IButtonData, IPositional {}
 
 	public interface IMotionData : IInputData {
-		(short roll, short pitch, short yaw, short w) Gyroscope { get; init; }
 		(short x, short y, short z) Accelerometer { get; init; }
+		(short roll, short pitch, short yaw) Euler { get; init; }
+		(short w, short x, short y, short z) Quaternion { get; init; }
 	}
 
 	public record ButtonData(Key Key, Flags Flags, long? TimeHeld = null) : IButtonData {
@@ -140,8 +141,9 @@ namespace SteamControllerApi {
 	}
 
 	public record MotionData(
-		(short roll, short pitch, short yaw, short w) Gyroscope,
 		(short x, short y, short z) Accelerometer,
+		(short roll, short pitch, short yaw) Euler,
+		(short w, short x, short y, short z) Quaternion,
 		Flags Flags
 	) : IMotionData {
 		public string Identity => KeyInternal.Motion.ToString();
