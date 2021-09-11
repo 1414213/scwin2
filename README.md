@@ -38,14 +38,14 @@ Any type beginning with the name "Button" is a type of a button type.  Any butto
 "IsLayered": true,
 "Name": ""
 ```
-Functions like action layers in Steam Input.  Layers an action map when it is pressed and removes it when released.  `Name` specifies the action map to choose.  `IsLayered` sets transparency; when true if an input in the layer is unbound the program will then try to use the equivalent input from the layer below.$ensp;When false an input with no simulated input bound to it will do nothing.  It is recommended to keep this true.
+Functions like action layers in Steam Input.  Layers an action map when pressed and removes it when released.  `Name` specifies the action map to choose.  `IsLayered` sets transparency; when true if an input in the layer is unbound the program will then try to use the equivalent input from the layer below.  When false an input with no simulated input bound to it will do nothing.  It is recommended to keep this true.
 
 ### ButtonDoubler
 ```
 "$type": "Backend.ButtonDoubler, scwin",
 "Button": Button
 ```
-Taps `Button` when pressed and taps it again when released.
+Taps `Button` when pressed and taps it again when it is released.
 
 ### ButtonDualStage
 ```
@@ -54,12 +54,50 @@ Taps `Button` when pressed and taps it again when released.
 ```
 Presses `Button` when pressed and released and then released `Button` when pressed and released again.
 
+### ButtonMacro
+```
+"$type": "Backend.ButtonMacro, scwin",
+"Pressed": [Macro],
+"Held": [Macro],
+"Released": [Macro],
+"RepetitionsPerSecond": 100
+```
+Defines simulated input for a button to perform.  `Pressed` and `Released` are lists of `Macro`s which are performed when the button is pressed or released, respectively.  `Held` will repeat its given macros while the button is held.  `RepetitionsPerSecond` defines how many times per second `Held`'s `Macro`s are performed.
+
+The order of which `Macro`s in a list are performed is not guarenteed, save that button presses will always occur before releases and waiting will always occur last.  If order is important then define the simulated inputs as seperate `Macro` objects.
+
+### Macro
+```
+"PressButtons": [Key]
+"ReleaseButtons" [Key]
+"MoveMouse": {"x": 0, "y": 0, "relatively": false},
+"ScrollMouse": {"amount": 0, "asClicks": false"},
+"PullLeftTrigger": 0,
+"PullRightTrigger": 0,
+"MoveLeftStick": {"x": 0, "y": 0, "relatively": false},
+"MoveRightStick": {"x": 0, "y": 0, "relatively": false},
+"AddActionLayer": "",
+"RemoveActionLayer": "",
+"AddActionLayerAsTransparent": true,
+"Wait": 0
+```
+Defines input to simulate.
+- `PressButtons` and `ReleaseButtons` are lists containing type `Key` that will press and release those `Key`s, respectively.  Each `Key` can be defined as either it's keycode or it's name.
+- `MoveMouse` simulates mouse movement.  `x` and `y` define how many pixels to move the mouse cursur and `relatively` defines whether to move from the current position when true or to move to that coordinate on the display when false.
+- `ScrollMouse` simulates scrolling the mouse.  `amount` defines how far to scroll and `asClicks` defines whether the amount is measured as clicks of the scroll wheel.
+- `PullLeftTrigger` and `PullRightTrigger` define an amount to pull the left and right triggers of the virtual gamepad, respectively.  Their values must be in the range of \[0, 1].
+- `MoveLeftStick` and `MoveRightStick` define an amount by which to move the left and right thumbsticks of the virtual gamepad, respectively.  `x` and `y` define the x and y coordinates of the thumbsticks and must be in the range of \[-1, 1].  `relatively` defines whether to move a thumbstick from it's current position when true or to that coordinate when false.
+- `AddActionLayer` adds a given action layer.
+- `RemoveActionLayer` removes a given action layer.
+- `AddActionLayerAsTransparent` defines whether blank inputs in the action layer activate the input beneath themselves in the layering when true or do nothing when false.
+- `Wait` defines an amount of time, measured in milliseconds, to wait before performing more `Macro`s.
+
 ### ButtonKey
 ```
 "$type": "Backend.ButtonKey, scwin",
 "Key": "None"
 ```
-Simulates input from a button or key.  `Key` is the button or key to simulate and can be its name or code.
+Simulates input from a key.  `Key` is the key to simulate and can be defined as its name or key code.
 
 ### ButtonScroll
 ```
@@ -68,7 +106,7 @@ Simulates input from a button or key.  `Key` is the button or key to simulate an
 "AsClicks": true,
 "IsContinuous": false
 ```
-Scrolls the mouse wheel when pressed.  `Amount` specifies the amount to scroll.  `AsClicks` specifies whether or not `Amount` represents clicks of the mouse wheel.  `IsContinuous`, when set to false, will simulate input once for every press of the button.  When set to true holding the button will continuously scroll the mouse wheel; while held input is sent 100 times per second.
+Scrolls the mouse wheel when pressed.  `Amount` specifies the amount to scroll.  `AsClicks` specifies whether or not `Amount` represents clicks of the mouse wheel.  `IsContinuous` will continuously scroll the mouse wheel while held when true and scroll a distance of one `Amount` when pressed when false.  While held and `IsContinuous` is true input is sent 100 times per second.
 
 ### ButtonTemporal
 ```
@@ -78,21 +116,21 @@ Scrolls the mouse wheel when pressed.  `Amount` specifies the amount to scroll. 
 "TemporalThreshold": 500,
 "IsLongPressHeld": false
 ```
-Allows a single button to simulate two buttons, differentating between the two by how long the button is pressed.  `TemporalThreshold` defines the point in time when to differentiate between a short or long press.  Measured in milliseconds.  `Short` is a Button type activated by a short press.  `Long` is a Button type activated by a long press.  `IslongPressHeld`, when set to true, sets `Long` to activate exactly when the temporal threshold is passed.  When false simulation is differentiated when the button is released.
+Allows a single button to simulate two buttons, differentating between the two by how long the button is pressed.  `TemporalThreshold` defines the point in time when to differentiate between a short or long press and is measured in milliseconds.  `Short` is a `Button` activated by a short press.  `Long` is a `Button` activated by a long press.  When `IslongPressHeld` is true `Long` is pressed when the time held surpasses the `TemporalThreshold` and is then released on release.  If the duration of the hold is shorter than the `TemporalThreshold` then `Short` is tapped on release.  When `IsLongPressHeld` is false `TemporalThreshold` is measured as the duration of the hold.  On release if the duration of the hold is shorter than the `TemporalThreshold` then `Short` is tapped else `Long` is tapped.
 
 ### ButtonMany
 ```
 "$type": "Backend.ButtonMany, scwin",
 "Buttons": [Button]
 ```
-Presses every button in `Buttons` when pressed and releases every button when released.  `Buttons` is a list of Button types.
+Presses and releases every `Button` in `Buttons` when pressed and released, respectively.  `Buttons` is a list of `Button` types.
 
 ### Trackpad
 ```
 "DoubleTapButton": Button,
 "IsDoubleTapHeld": false
 ```
-Defines functionality shared by all simulation using a trackpad; these fields can be given to any input prefixed with "Pad".  `DoubleTapButton` specifies a Button type to be activated when the applied trackpad is touched twice in a quick succession.  `IsDoubleTapHeld` sets whether the button is held during the second touch and released when that input stops or is immediately tapped when the second touch is recieved.
+Defines functionality shared by all simulation using a trackpad; these JSON fields can be added to any input type whose name is prefixed with "Pad".  `DoubleTapButton` defines a `Button` type to be activated when the trackpad is touched twice in a quick succession.  `IsDoubleTapHeld` sets whether `DoubleTapButton` is held during the second touch and released when that input stops when true or is immediately tapped when the second touch is received when false.
 
 ### PadButtonCross
 ```
@@ -120,7 +158,7 @@ Works the same as `StickButtonCross`.
 "IncrementsLeftElseRight": true
 "TapsElseHolds": false
 ```
-Works the same as `StickRadial`.  All buttons in `Buttons` are released when input to the trackpad stops.
+Works the same as `StickRadial`.  All `Button`s in `Buttons` are released when input to the trackpad stops.
 
 ### PadScroll
 ```
@@ -130,7 +168,7 @@ Works the same as `StickRadial`.  All buttons in `Buttons` are released when inp
 "Reversed": false,
 "SwipeAlongXElseY": true
 ```
-Sets a trackpad to simulate scrolling the mouse wheel.  `IsWheelElseSwipe` sets whether input is given by swiveling the trackpad or by swiping it.  `Sensitivity` sets how much a swivel or swipe scrolls the mouse.  `Reversed` reverses the direction swivels and swipes scroll.  `SwipeAlongXElseY` specifies whether swipes should travel horizontally or vertically.
+Sets a trackpad to simulate scrolling the mouse wheel.  `IsWheelElseSwipe` sets whether input is given by swiveling the trackpad or by swiping it.  `Sensitivity` sets how much a swivel or swipe scrolls the mouse.  `Reversed` reverses the direction swivels and swipes scroll.  `SwipeAlongXElseY` specifies whether swipes should travel horizontally or vertically when true and false, respectively.
 
 ### PadSlideButtonCross
 ```
@@ -159,7 +197,7 @@ Works the same as `PadSlideStick` but simuates a sliding `PadButtonCross` instea
 "IsLeftElseRight": false,
 "Anchored": false
 ```
-Translates sliding input on the trackpad into thumbstick input.  For example sliding leftwards will push the simulated thumbstick left and then sliding northwards will push it into a more north-facing position.  `RelativeSize` sets how big the simulated thumbstick is relative to the diameter of the trackpad.  `Deadzone` sets the deadzone of the simulated thumbstick.  `IsLeftElseRight` specifies whether to simulate a left or right thumbstick.  `Anchored` sets what happens when input leaves the area of the simulated thumbstick.  When set to false the center of the simulated thumbstick is dragged along the surface of the trackpad.  When true leaving its area simulates pushing the thumbstick to its maximum degree of tilt.
+Translates sliding input on the trackpad into thumbstick input.  For example sliding leftwards will push the simulated thumbstick left and then sliding northwards will push it into a more north-facing position.  `RelativeSize` sets how big the simulated thumbstick is relative to the diameter of the trackpad, with a range of \[0, 1].  `Deadzone` sets the deadzone of the simulated thumbstick, with a range of \[0, 1].  `IsLeftElseRight` specifies whether to simulate a left or right thumbstick when true and false, respectively.  `Anchored` defines what happens when input leaves the area of the simulated thumbstick.  When set to false the center of the simulated thumbstick is dragged along the surface of the trackpad.  When true leaving its area simulates pushing the thumbstick to its maximum degree of tilt.
 
 ### PadStick
 ```
@@ -168,7 +206,7 @@ Translates sliding input on the trackpad into thumbstick input.  For example sli
 "Gradingzone": 0.8,
 "IsLeftElseRight": false
 ```
-Sets a trackpad to simulate a thumbstick of a gamepad; works the same as StickStick.  `Deadzone` sets a radius extending from its center where input is always 0.  Measured as a proportion of the thumbstick's radius.  `Gradingzone` specifies an area measuring from the center of the thumbstick to simulate the degree of tilt of a controller's thumbstick; any input beyond this radius simulates maximum tilt of a thumbstick.  `IsLeftElseRight` specifies whether to simulate a left or right thumbstick.
+Sets a trackpad to simulate a thumbstick of the virtual gamepad; works the same as `StickStick`.  `Deadzone` sets a radius extending from the trackpad's center where input is always 0 and is measured as a proportion of the thumbstick's radius, with a range of \[0, 1].  `Gradingzone` specifies an area measuring from the center of the thumbstick to simulate the degree of tilt of a controller's thumbstick; any input beyond this radius simulates maximum tilt of a thumbstick.  Value has a range of \[0, 1].  `IsLeftElseRight` specifies whether to simulate a left or right thumbstick when true and false, respectively.
 
 ### PadSwipe
 ```
@@ -181,7 +219,7 @@ Sets a trackpad to simulate a thumbstick of a gamepad; works the same as StickSt
 "IsContinuous": false,
 "MinimumSpeed": 80.0
 ```
-Translates lines drawn as swipes on a trackpad into button input based on the direction of the line.  For example, with a list of two buttons and an offset of 0.5 pi's a northward swipe would tap the first button and a southward swipe would tap the second.  `MinimumDistance` sets the minimum length a detected swipe needs to be to activate a button.  It is recommended to keep this above the default value.  `AngleOffset` specifies at what angle slice listing begins.  Measured in amounts of pi (1 would be read as 1*pi).  `LongSwipeThreshold` set the minimum length a swipe needs to be to be considered a long swipe.  Measured as a proportion of the diameter of the trackpad.  This should be greater than `MinimumDistance`; when less all swipes will be considered long swipes.  The default value is impossible so that long swipes are ignored in default function.  `Buttons` specifies a list of Button types to be tapped by swiping.  The size of this sets the amount of directions to draw lines with, extending from 0 pi to 2 pi.  `LongSwipeButtons` specifies a list of Button types to be pressed by long swipes.  Since the amount of directions is set by `Buttons` if this list is shorter than `Buttons` the unfilled directions will do nothing.  `IsContinuous` sets whether multiple swipes can be made from a single gesture.  By default the end of the swipe is where input stops on the trackpad.  When enabled this takes where a stroke stops moving to be a swipe's end with `MinimumSpeed` sets how slow the stroke needs to move to be considered stopped.  `MinimumSpeed` should be kept near the default value for best performance.
+Translates lines drawn as swipes on a trackpad into button input based on the direction of the line.  For example, with a list of two buttons and an offset of 0.5 pi's a northward swipe would tap the first button and a southward swipe would tap the second.  `MinimumDistance` sets the minimum length a detected swipe needs to be to activate a `Button`.  It is recommended to keep this above the default value.  `AngleOffset` specifies at what angle slice listing begins.  Measured in amounts of pi (1 would be read as 1\*pi).  `LongSwipeThreshold` set the minimum length a swipe needs to be to be considered a long swipe.  Measured as a proportion of the diameter of the trackpad, with a range of \[0, 1].  This should be greater than `MinimumDistance`; when less all swipes will be considered long swipes.  The default value is impossible so that long swipes are ignored in default function.  `Buttons` specifies a list of `Button` types to be tapped by swiping.  The size of this sets the amount of directions to draw lines with, extending from 0 pi to 2 pi.  `LongSwipeButtons` specifies a list of `Button` types to be pressed by long swipes.  Since the amount of directions is set by `Buttons` if this list is shorter than `Buttons` the unfilled directions will do nothing.  `IsContinuous` sets whether multiple swipes can be made from a single gesture.  By default the end of the swipe is where input stops on the trackpad.  When true this considers where a stroke stops moving to be a swipe's end point with `MinimumSpeed` setting how slow the stroke needs to move to be considered stopped.  `MinimumSpeed` should be kept near the default value for best performance.
 
 ### PadTrackball
 ```
@@ -192,7 +230,7 @@ Translates lines drawn as swipes on a trackpad into button input based on the di
 "InvertX": false,
 "InvertY": false
 ```
-Sets a trackpad to act as a trackball.  `HasInertia` sets whether the trackball will roll when input stops.  `Sensitivity` sets the resolution of sensitivity measured as pixels per diameter.  For example when set to 500 an input the length of half the trackpad will move the mouse cursor 250 pixels.  `Decceleration` sets how fast the trackball deccelerates when rolling.  `InvertX` and `InvertY` invert the x and y axises.
+Sets a trackpad to act as a trackball.  `HasInertia` sets whether the trackball will roll when input stops when true.  `Sensitivity` sets the resolution of sensitivity measured as pixels per diameter.  For example when set to 500 an input the length of half the trackpad will move the mouse cursor 250 pixels.  `Decceleration` sets how fast the trackball deccelerates when rolling.  `InvertX` and `InvertY` invert the x and y axises.
 
 ### StickButtonCross
 ```
@@ -209,7 +247,7 @@ Sets a trackpad to act as a trackball.  `HasInertia` sets whether the trackball 
 "InnerRadius": 0.35,
 "OuterRadius": 0.0
 ```
-Allows the thumbstick to be used like a directional pad.  `East`, `North`, `West`, and `South` bind a Button type to their respective direction.  `Inner` is a Button type pressed when input is within a certain distance from the center; distance is specified by `InnerRadius` as a proportion of the radius of the thumbstick's range measuring from the center.  `Outer` is a Button type pressed when input is a certain distance from the edge of the thumbstick's range; distance is specified by `OuterRadius` as a proportion of the radius of the thumbstick's range measured from its edge.  `HasOverlap` specifies whether there is overlap in the transition between buttons.  `OverlapIgnoranceRadius` specifies a distance, measured as a proportion of the trackpad's radius from its center to its edge, within which to not simulate diagonal input.  Its purpose is to hopefully make swiping feel more precise.  `Deadzone` specifies a distance from the center within which to stop creating input, measured as a proportion of the radius of the thumbstick's range from its center.
+Allows the thumbstick to be used like a directional pad.  `East`, `North`, `West`, and `South` bind a `Button` type to their respective direction.  `Inner` is a `Button` type that is pressed when input is within a certain distance from the center.  `InnerRadius` defines this distance as a proportion of the radius of the thumbstick's range measuring from the center, with a range of \[0, 1].  `Outer` is a `Button` type pressed when input is a certain distance from the edge of the thumbstick's range; this distance is specified by `OuterRadius` as a proportion of the radius of the thumbstick's range measured from its edge, with a range of \[0, 1].  `HasOverlap` specifies whether there is overlap in the transition between buttons when true.  `OverlapIgnoranceRadius` specifies a distance, measured as a proportion of the trackpad's radius from its center to its edge with a range of \[0, 1], within which to not simulate diagonal input.  Its purpose is to hopefully make swiping feel more precise.  `Deadzone` specifies a distance from the center within which to stop creating input, measured as a proportion of the radius of the thumbstick's range from its center, with a range of \[0, 1].
 
 ### StickRadial
 ```
@@ -220,7 +258,7 @@ Allows the thumbstick to be used like a directional pad.  `East`, `North`, `West
 "IncrementsLeftElseRight": true
 "TapsElseHolds": false
 ```
-Seperates the thumbstick into a number of slices and activates a slice's respective button when input enters it.  `Buttons` is a list of Button types.  "Deadzone" is measured as a proportion of the thumbstick's radius from its center and creates a range where input releases.  `AngleOffset` specifies at what angle slice 0 starts.  Measured in amounts of pie (1 would be read as 1*pi).  `IncrementsLeftElseRight` specifies whether rotating clockwise (left) or counterclockwise traverses up or down `Buttons`, respectively.  `TapsElseHolds`: if set to tap the Button respective to the entered slice will be tapped.  If set to hold the slice will be pressed when entered and released when exitted.
+Seperates the thumbstick into a number of slices and activates a slice's respective `Button` when input enters it.  `Buttons` is a list of `Button` types.  `Deadzone` is measured as a proportion of the thumbstick's radius with a range of \[0, 1].  Entering the `Deadzone` is the same as releasing the trackpad.  `AngleOffset` specifies at what angle slice 0 starts.  Measured in amounts of pie (1 would be read as 1\*pi).  `IncrementsLeftElseRight` specifies whether rotating clockwise (left) or counterclockwise traverses `Buttons` forwards when true or backwards when false.  `TapsElseHolds`: if true when a slice is entered it's respective `Button` will be tapped; if false the slice's respective `Button` will be pressed when entered and released when exitted.
 
 ### StickScroll
 ```
@@ -230,7 +268,7 @@ Seperates the thumbstick into a number of slices and activates a slice's respect
 "Reversed": false,
 "ScrollAlongXElseY": true
 ```
-Sets the thumbstick to scroll the mouse wheel.  `Sensitivity` sets how quickly the thumbstick scrolls.  `Deadzone` sets a deadzone for the thumbstick measured from its center as a proportion of its radius.  `Reversed` reverses the direction that the thumbstick scrolls in.  `ScrollAlongXElseY` sets the thumbstick to scroll based on east and west orientation or north and south.
+Sets the thumbstick to scroll the mouse wheel.  `Sensitivity` sets how quickly the thumbstick scrolls.  `Deadzone` sets a deadzone for the thumbstick measured from its center as a proportion of its radius with a range of \[0, 1].  `Reversed` reverses the direction that the thumbstick scrolls in.  `ScrollAlongXElseY` sets the thumbstick to scroll based on east and west orientation when true or north and south when false.
 
 ### StickStick
 ```
@@ -239,7 +277,7 @@ Sets the thumbstick to scroll the mouse wheel.  `Sensitivity` sets how quickly t
 "Gradingzone": 1.0
 "IsLeftElseRight": false
 ```
-Translates thumbstick input into thumbstick input of a gamepad.  `Deadzone` sets a radius extending from its center where input is always 0.  Measured as a proportion of the thumbstick's radius.  `Gradingzone` specifies an area measuring from the center of the thumbstick to simulate the degree of tilt of a controller's thumbstick; any input beyond this radius simulates maximum tilt of a thumbstick.  `IsLeftElseRight` specifies whether to simulate a left or right thumbstick.
+Translates thumbstick input into thumbstick input of a gamepad.  `Deadzone` sets a radius extending from the thumbstick's center where input is always 0.  Measured as a proportion of the thumbstick's radius with a range of \[0, 1].  `Gradingzone` specifies an area measuring from the center of the thumbstick to simulate the degree of tilt of a controller's thumbstick; any input beyond this radius simulates maximum tilt of a thumbstick.  `IsLeftElseRight` specifies whether to simulate a left or right thumbstick.
 
 ### TriggerButton
 ```
@@ -248,7 +286,7 @@ Translates thumbstick input into thumbstick input of a gamepad.  `Deadzone` sets
 "PullThreshold": 0.5,
 "IncludeSwitchInRange": false
 ```
-Sets a trigger to press a button when pulled past a certain degree and release the button when released.  `Button` specifies a Button type to press and release.  `PullThreshold` is the distance the trigger needs to travel to activate the button.  This is a value between 0 and 1 inclusively.  `IncludeSwitchInRange` will include the distance traveled to push the switch behind the trigger as part of the range of the trigger.
+Sets a trigger to press a button when pulled past a certain distance and release the button when released out of the range of the specified distance.  `Button` specifies a `Button` type to press and release.  `PullThreshold` is the distance the trigger needs to travel to activate the button; has range of \[0, 1].  `IncludeSwitchInRange` will include the distance traveled to push the switch behind the trigger as part of the trigger's range when true.
 
 ### TriggerTrigger
 ```
@@ -256,7 +294,7 @@ Sets a trigger to press a button when pulled past a certain degree and release t
 "IsLeftElseRight": false,
 "IncludeSwitchInRange": false
 ```
-Sets a trigger to act as a gamepad's trigger.  `IsLeftElseRight` sets input to translate to either a left or right trigger.  `IncludeSwitchInRange` will include the distance traveled to push the switch behind the trigger as part of the range of the trigger.
+Sets a trigger to act as a gamepad's trigger.  `IsLeftElseRight` sets input to translate to either a left or right trigger.  `IncludeSwitchInRange` will include the distance traveled to push the switch behind the trigger as part of the trigger's range when true.
 
 ## Key Codes
 Each simulated button has a name and an associated number.  Either can be used within an input map.
