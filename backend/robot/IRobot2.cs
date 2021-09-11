@@ -48,12 +48,19 @@ namespace Robot {
 			//Console.WriteLine(macro.ToString(brief: true));
 			this.Press(macro.PressButtons);
 			this.Release(macro.ReleaseButtons);
-			if (macro.MoveMouse is Macro.Move2<int> mm)         this.MoveMouse(mm.x, mm.y, mm.relatively);
-			if (macro.ScrollMouse is Macro.Scroll sm)           this.ScrollMouseWheel(sm.amount, sm.asClicks);
-			if (macro.pullLeftTrigger is byte plt)              this.PullLTrigger(plt);
-			if (macro.pullRightTrigger is byte prt)             this.PullRTrigger(prt);
-			if (macro.moveLeftStick is Macro.Move2<short> mls)  this.MoveLStick(mls.x, mls.y, mls.relatively);
-			if (macro.moveRightStick is Macro.Move2<short> mrs) this.MoveRStick(mrs.x, mrs.y, mrs.relatively);
+			if (macro.MoveMouse is not {x: 0, y: 0, relatively: true}) {
+				this.MoveMouse(macro.MoveMouse.x, macro.MoveMouse.y, macro.MoveMouse.relatively);
+			} else if (macro.ScrollMouse is not {amount: 0}) {
+				this.ScrollMouseWheel(macro.ScrollMouse.amount, macro.ScrollMouse.asClicks);
+			} else if (macro.PullLeftTrigger != 0) {
+				this.PullLTrigger(macro.pullLeftTrigger);
+			} else if (macro.PullRightTrigger != 0) {
+				this.PullRTrigger(macro.pullRightTrigger);
+			} else if (macro.moveLeftStick is not {x: 0, y: 0, relatively: true}) {
+				this.MoveLStick(macro.moveLeftStick.x, macro.moveLeftStick.y, macro.moveLeftStick.relatively);
+			} else if (macro.moveRightStick is not {x: 0, y: 0, relatively: true}) {
+				this.MoveRStick(macro.moveRightStick.x, macro.moveRightStick.y, macro.moveRightStick.relatively);
+			}
 		}
 
 		public static void PrintKeycodes(string directory) {

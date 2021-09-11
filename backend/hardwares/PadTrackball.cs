@@ -5,7 +5,11 @@ using System.Threading.Tasks;
 using api = SteamControllerApi;
 
 namespace Backend {
-	public class PadTrackball : Trackpad {
+	public class PadTrackball : Trackpad, MAcceleration {
+		public double Acceleration { get; set; } = 2;
+		public int AccelerationLowerBoundary { get; set; } = 2000;
+		public int AccelerationUpperBoundary { get; set; } = 1700;
+
 		public bool HasInertia { get; set; } = true;
 		public double Sensitivity {
 			get => (-Int16.MinValue + Int16.MaxValue) * sensitivity;
@@ -19,6 +23,7 @@ namespace Backend {
 		private bool isInitialPress = true;
 		private (short x, short y) previous;
 		private (double x, double y) amountStore;
+		private MAcceleration accel => this as MAcceleration;
 
 		// Fields for calculating rolling:
 		private Task? doInertia;
@@ -57,7 +62,7 @@ namespace Backend {
 			//var delta = this.SmoothInput((x: coord.x - previous.x, y: coord.y - previous.y));
 			var delta = this.SoftTieredSmooth((x: coord.x - previous.x, y: coord.y - previous.y));
 			//var movement = (x: delta.x * sensitivity, y: delta.y * sensitivity);
-			var movement = base.AccelerateInput(delta.x, delta.y, sensitivity);
+			var movement = this.AccelerateInput(delta.x, delta.y, sensitivity);
 			if (InvertX) movement.x = -movement.x;
 			if (InvertY) movement.y = -movement.y;
 
@@ -126,5 +131,9 @@ namespace Backend {
 		}
 
 		private void Move((double x, double y) movement) => this.Move(movement.x, movement.y);
+
+		private (double x, double y) AccelerateInput(int x, int y, double startingSensitivity) {
+			return accel.AccelerateInput(x, y, startingSensitivity);
+		}
 	}
 }

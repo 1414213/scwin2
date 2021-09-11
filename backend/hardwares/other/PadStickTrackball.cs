@@ -7,7 +7,11 @@ using api = SteamControllerApi;
 
 
 namespace Backend {
-	public class PadStickTrackball : Trackpad {
+	public class PadStickTrackball : Trackpad, MAcceleration {
+		public double Acceleration { get; set; } = 2;
+		public int AccelerationLowerBoundary { get; set; } = 2000;
+		public int AccelerationUpperBoundary { get; set; } = 1700;
+
 		public bool HasInertia { get; set; } = true;
 		public bool InvertX { get; set; }
 		public bool InvertY { get; set; }
@@ -17,6 +21,7 @@ namespace Backend {
 		}
 		public double Decceleration { get; set; } = 0.1;
 
+		private MAcceleration accel => this as MAcceleration;
 		private bool isInitialPress = true, isRolling;
 		private long elapsedTime;
 		private double sensitivity = 0.03;
@@ -60,7 +65,7 @@ namespace Backend {
 
 			// compute mouse movement
 			var delta = (x: coord.x - previous.x, y: coord.y - previous.y);
-			var movement = base.AccelerateInput(delta.x, delta.y, sensitivity);
+			var movement = this.AccelerateInput(delta.x, delta.y, sensitivity);
 			if (InvertX) movement.x = -movement.x;
 			if (InvertY) movement.y = -movement.y;
 
@@ -119,6 +124,10 @@ namespace Backend {
 			robot.MoveLStick((short)amountStore.x, (short)amountStore.y);
 			amountStore.x -= (int)amountStore.x;
 			amountStore.y -= (int)amountStore.y;
+		}
+
+		private (double x, double y) AccelerateInput(int x, int y, double startingSensitivity) {
+			return accel.AccelerateInput(x, y, startingSensitivity);
 		}
 	}
 }

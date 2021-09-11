@@ -5,84 +5,175 @@ namespace Robot {
 	public class Macro {
 		public struct Move2<T> {
 			public T x, y; public bool relatively;
-			public override string ToString() =>
-				"(" + x + ", " + y + ", " + relatively + ")";
+			public override string ToString() => "(" + x + ", " + y + ", " + relatively + ")";
 		}
+
 		public struct Scroll {
 			public int amount; public bool asClicks;
 			public override string ToString() => "(" + amount + ", " + asClicks + ")";
 		}
 
+		private struct SteamController {
+			public Key[] PressButtons, ReleaseButtons;
+			public double PullLeftTrigger {
+				get => pullLeftTrigger;
+				init => pullLeftTrigger = value switch {
+					< 0 or > 1 => throw new Backend.SettingInvalidException(
+						"PullLeftTrigger must be in range of [0, 1]."),
+					_          => value
+				};
+			}
+			public double PullRightTrigger {
+				get => pullRightTrigger;
+				init => pullRightTrigger = value switch {
+					< 0 or > 1 => throw new Backend.SettingInvalidException(
+						"PullRightTrigger must be in range of [0, 1]."),
+					_          => value
+				};
+			}
+			public Move2<double> MoveStick {
+				get => new Move2<double>{
+					x = this.ShortToRatio(moveStick.x),
+					y = this.ShortToRatio(moveStick.y),
+					relatively = moveStick.relatively
+				};
+				init => moveStick = value switch {
+					Move2<double> {x: < -1 or > 1, y: < -1 or > 1} => throw new Backend.SettingInvalidException("Stick must be in range of [-1, 1]."),
+					_           => new Move2<short>{
+						x = this.RatioToShort(value.x),
+						y = this.RatioToShort(value.y),
+						relatively = value.relatively   }
+				};
+			}
+			public Move2<double> MoveLeftPad {
+				get => new Move2<double>{
+					x = this.ShortToRatio(moveLeftPad.x),
+					y = this.ShortToRatio(moveLeftPad.y),
+					relatively = moveLeftPad.relatively
+				};
+				init => moveLeftPad = value switch {
+					Move2<double> {x: < -1 or > 1, y: < -1 or > 1}
+						=> throw new Backend.SettingInvalidException("LeftPad must be in range of [-1, 1]."),
+					_   => new Move2<short>{
+						x = this.RatioToShort(value.x),
+						y = this.RatioToShort(value.y),
+						relatively = value.relatively   }
+				};
+			}
+			public Move2<double> MoveRightPad {
+				get => new Move2<double>{
+					x = this.ShortToRatio(moveRightPad.x),
+					y = this.ShortToRatio(moveRightPad.y),
+					relatively = moveRightPad.relatively
+				};
+				init => moveRightPad = value switch {
+					Move2<double> {x: < -1 or > 1, y: < -1 or > 1}
+						=> throw new Backend.SettingInvalidException("RightPad must be in range of [-1, 1]."),
+					_   => new Move2<short>{
+						x = this.RatioToShort(value.x),
+						y = this.RatioToShort(value.y),
+						relatively = value.relatively   }
+				};
+			}
+
+			public readonly Move2<short> moveStick, moveLeftPad, moveRightPad;
+
+			private double pullLeftTrigger, pullRightTrigger;
+
+			/// <summary>Ratio [-1d, 1d] to range of short.</summary>
+			private short RatioToShort(double ratio) {
+				var value = ratio * (ratio > 0 ? Int16.MaxValue : Int16.MinValue);
+				return (short)Math.Clamp(value, Int16.MinValue, Int16.MaxValue);
+			}
+
+			/// <summary>Range of short to [-1d, 1d].</summary>
+			private double ShortToRatio(short n) {
+				if (n == 0) return 0;
+				var value = n / (double)(n > 0 ? Int16.MaxValue : Int16.MinValue);
+				return Math.Clamp(value, -1d, 1d);
+			}
+		}
+
 		public Key[] PressButtons = {};
 		public Key[] ReleaseButtons = {};
-		public Move2<int>? MoveMouse;
-		public Scroll? ScrollMouse;
-		public double? PullLeftTrigger {
-			get => pullLeftTrigger switch {
-				byte b => b / 255d,
-				null   => null
-			};
+		public Move2<int> MoveMouse = new() { x = 0, y = 0, relatively = true };
+		public Scroll ScrollMouse = new() { amount = 0 };
+		public double PullLeftTrigger {
+			get => pullLeftTrigger / 255d;
 			init => pullLeftTrigger = value switch {
-				double d when d is >= 0 and <= 1 => (byte)(d * 255),
-				null                             => null,
-				_ => throw new Backend.SettingInvalidException("PullLeftTrigger must be in range of [0, 1].")
+				< 0 or > 1 => throw new Backend.SettingInvalidException("PullLeftTrigger must be in range of [0, 1]."),
+				_          => (byte)(value * 255)
 			};
 		}
-		public double? PullRightTrigger {
-			get => pullRightTrigger switch {
-				byte b => b / 255d,
-				null   => null
-			};
+		public double PullRightTrigger {
+			get => pullRightTrigger / 255d;
 			init => pullRightTrigger = value switch {
-				double d when d is >= 0 and <= 1 => (byte)(d * 255),
-				null                             => null,
-				_ => throw new Backend.SettingInvalidException("PullRightTrigger must be in range of [0, 1].")
+				< 0 or > 1 => throw new Backend.SettingInvalidException(
+					"PullRightTrigger must be in range of [0, 1]."),
+				_          => (byte)(value * 255)
 			};
 		}
-		public Move2<double>? MoveLeftStick {
-			get => moveLeftStick switch {
-				Move2<short> m => new Move2<double>{ x = this.ShortToRatio(m.x),
-				                                     y = this.ShortToRatio(m.y),
-				                                     relatively = m.relatively },
-				null           => null
-			};
+		public Move2<double> MoveLeftStick {
+			get => new Move2<double>{
+				x = this.ShortToRatio(moveLeftStick.x),
+				y = this.ShortToRatio(moveLeftStick.y),
+				relatively = moveLeftStick.relatively   };
 			init => moveLeftStick = value switch {
-				Move2<double> m when (m.x is < 1d and > -1d) && (m.y is < 1d and > -1d)
-				     => new Move2<short>{ x = this.RatioToShort(m.x),
-				                          y = this.RatioToShort(m.y),
-				                          relatively = m.relatively },
-				null => null,
-				_ => throw new Backend.SettingInvalidException("The axes of MoveLeftStick must be between -1 and 1.")
+				Move2<double> {x: < -1 or > 1, y: < -1 or > 1} => throw new Backend.SettingInvalidException(
+					"The axes of MoveLeftStick must be in range of [-1, 1]."),
+				_                                              => new Move2<short>{
+					x = this.RatioToShort(value.x),
+					y = this.RatioToShort(value.y),
+					relatively = value.relatively   }
 			};
 		}
-		public Move2<double>? MoveRightStick {
-			get => moveRightStick switch {
-				Move2<short> m => new Move2<double>{ x = this.ShortToRatio(m.x),
-				                                     y = this.ShortToRatio(m.y),
-				                                     relatively = m.relatively },
-				null           => null
-			};
-			init => moveRightStick = value switch {
-				Move2<double> m when m.x < 1d && m.x > -1d && m.y < 1d && m.y > -1d
-				     => new Move2<short>{ x = this.RatioToShort(m.x),
-				                          y = this.RatioToShort(m.y),
-				                          relatively = m.relatively },
-				null => null,
-				_ => throw new Backend.SettingInvalidException("The axes of MoveRightStick must be between -1 and 1.")
+		public Move2<double> MoveRightStick {
+			get => new Move2<double>{
+				x = this.ShortToRatio(moveRightStick.x),
+				y = this.ShortToRatio(moveRightStick.y),
+				relatively = moveRightStick.relatively   };
+			init => moveLeftStick = value switch {
+				Move2<double> {x: < -1 or > 1, y: < -1 or > 1} => throw new Backend.SettingInvalidException(
+					"The axes of MoveRightStick must be in range of [-1, 1]."),
+				_                                              => new Move2<short>{
+					x = this.RatioToShort(value.x),
+					y = this.RatioToShort(value.y),
+					relatively = value.relatively   }
 			};
 		}
-		public string? AddActionLayer, RemoveActionLayer;
+		public string AddActionLayer = "", RemoveActionLayer = "";
 		public bool AddActionLayerAsTransparent = true;
-		public int Wait { get => wait; init {
-			if (value < 0) throw new Backend.SettingInvalidException("Wait must be a waitable time (> 0).");
-			this.wait = value;
-		} }
+		public int Wait {
+			get => wait;
+			init => wait = value switch {
+				< 0 => throw new Backend.SettingInvalidException("Wait must be a waitable time (> 0)."),
+				_   => value
+			};
+		}
 
-		public readonly Move2<short>? moveLeftStick, moveRightStick;
-		public readonly byte? pullLeftTrigger, pullRightTrigger;
+		public readonly Move2<short> moveLeftStick = new() { x = 0, y = 0, relatively = true };
+		public readonly Move2<short> moveRightStick = new() { x = 0, y = 0, relatively = true };
+		public readonly byte pullLeftTrigger, pullRightTrigger;
 
-		readonly int wait = 0;
-		const int shortRange = Int16.MaxValue - Int16.MinValue;
+		private readonly int wait = 0;
+		private const int shortRange = Int16.MaxValue - Int16.MinValue;
+
+		public byte PullLeftTriggerAsByte() => pullLeftTrigger;
+
+		public byte PullRightTriggerAsByte() => pullRightTrigger;
+
+		/// <summary>Ratio [-1d, 1d] to range of short.</summary>
+		private short RatioToShort(double ratio) {
+			var value = ratio * (ratio > 0 ? Int16.MaxValue : Int16.MinValue);
+			return (short)Math.Clamp(value, Int16.MinValue, Int16.MaxValue);
+		}
+
+		/// <summary>Range of short to [-1d, 1d].</summary>
+		private double ShortToRatio(short n) {
+			if (n == 0) return 0;
+			var value = n / (double)(n > 0 ? Int16.MaxValue : Int16.MinValue);
+			return Math.Clamp(value, -1d, 1d);
+		}
 
 		public override string ToString() => PressButtonsToString + " " + ReleaseButtonsToString + " "
 			+ MoveMouseToString + " "
@@ -100,18 +191,19 @@ namespace Robot {
 			if (!brief) return this.ToString();
 			else {
 				var str = "";
-				if (PressButtons.Length != 0)      str += PressButtonsToString + " ";
-				if (ReleaseButtons.Length != 0)    str += ReleaseButtonsToString + " ";
-				if (MoveMouse is not null)         str += MoveMouseToString + " ";
-				if (ScrollMouse is not null)       str += ScrollMouseToString + " ";
-				if (PullLeftTrigger is not null)   str += PullLeftTriggerToString + " ";
-				if (PullRightTrigger is not null)  str += PullRightTriggerToString + " ";
-				if (MoveLeftStick is not null)     str += MoveLeftStickToString + " ";
-				if (MoveRightStick is not null)    str += MoveRightStickToString + " ";
-				if (AddActionLayer is not null)    str += AddActionLayerToString + " ";
-				if (RemoveActionLayer is not null) str += RemoveActionLayerToString + " ";
-				if (AddActionLayer is not null)    str += AddActionLayerAsTransparentToString + " ";
-				if (Wait > 0)                      str += WaitToString + " ";
+				if (PressButtons.Length != 0)                             str += PressButtonsToString + " ";
+				if (ReleaseButtons.Length != 0)                           str += ReleaseButtonsToString + " ";
+				if (MoveMouse is not {x: 0, y: 0, relatively: true})      str += MoveMouseToString + " ";
+				if (ScrollMouse is not {amount: 0})                       str += ScrollMouseToString + " ";
+				if (PullLeftTrigger != 0)                                 str += PullLeftTriggerToString + " ";
+				if (PullRightTrigger != 0)                                str += PullRightTriggerToString + " ";
+				if (MoveLeftStick is not {x: 0, y: 0, relatively: true})  str += MoveLeftStickToString + " ";
+				if (MoveRightStick is not {x: 0, y: 0, relatively: true}) str += MoveRightStickToString + " ";
+				if (AddActionLayer != "")                                 str += AddActionLayerToString + " ";
+				if (RemoveActionLayer != "")                              str += RemoveActionLayerToString + " ";
+				if (AddActionLayer != "")
+					str += AddActionLayerAsTransparentToString + " ";
+				if (Wait > 0)                                             str += WaitToString + " ";
 				str.TrimEnd();
 
 				return str;
@@ -130,26 +222,15 @@ namespace Robot {
 			str += ReleaseButtons[ReleaseButtons.Length - 1].ToString() + "]";
 			return str;
 		} }
-		string MoveMouseToString => "MoveMouse: " + (MoveMouse?.ToString() ?? "null");
-		string ScrollMouseToString => "ScrollMouse: " + (ScrollMouse?.ToString() ?? "null");
-		string PullLeftTriggerToString => "PullLeftTrigger: " + (PullLeftTrigger?.ToString() ?? "null");
-		string PullRightTriggerToString => "PullRightTrigger: " + (PullRightTrigger?.ToString() ?? "null");
-		string MoveLeftStickToString => "MoveLeftStick: " + (MoveLeftStick?.ToString() ?? "null");
-		string MoveRightStickToString => "MoveRightStick: " + (moveRightStick?.ToString() ?? "null");
-		string AddActionLayerToString => "AddActionLayer: " + (AddActionLayer ?? "null");
-		string RemoveActionLayerToString => "RemoveActionLayer: " + (RemoveActionLayer ?? "null");
+		string MoveMouseToString => "MoveMouse: " + MoveMouse.ToString();
+		string ScrollMouseToString => "ScrollMouse: " + ScrollMouse.ToString();
+		string PullLeftTriggerToString => "PullLeftTrigger: " + PullLeftTrigger.ToString();
+		string PullRightTriggerToString => "PullRightTrigger: " + PullRightTrigger.ToString();
+		string MoveLeftStickToString => "MoveLeftStick: " + MoveLeftStick.ToString();
+		string MoveRightStickToString => "MoveRightStick: " + moveRightStick.ToString();
+		string AddActionLayerToString => "AddActionLayer: " + AddActionLayer;
+		string RemoveActionLayerToString => "RemoveActionLayer: " + RemoveActionLayer;
 		string AddActionLayerAsTransparentToString => "AddActionLayerAsTransparent: " + AddActionLayerAsTransparent;
 		string WaitToString => "Wait: " + Wait;
-
-		short RatioToShort(double ratio) {
-			var value = ratio > 0 ? ratio * Int16.MaxValue : ratio * Int16.MinValue;
-			return (short)Math.Clamp(value, Int16.MinValue, Int16.MaxValue);
-		}
-
-		double ShortToRatio(short n) {
-			if (n == 0) return 0;
-			var value = n > 0 ? n / (double)Int16.MaxValue : n / (double)Int16.MinValue;
-			return Math.Clamp(value, -1d, 1d);
-		}
 	}
 }
