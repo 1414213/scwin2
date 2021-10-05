@@ -64,7 +64,7 @@ Presses `Button` when pressed and released and then released `Button` when press
 ```
 Defines simulated input for a button to perform.  `Pressed` and `Released` are lists of `Macro`s which are performed when the button is pressed or released, respectively.  `Held` will repeat its given macros while the button is held.  `RepetitionsPerSecond` defines how many times per second `Held`'s `Macro`s are performed.
 
-The order of which `Macro`s in a list are performed is not guarenteed, save that button presses will always occur before releases and waiting will always occur last.  If order is important then define the simulated inputs as seperate `Macro` objects.
+The order of which each list of `Macro`s is performed is first element to last.  The order of which input fields in a `Macro` are simulated is not guaranteed, save that button presses will always occur before releases and waiting will always occur last.  If order is important then define the simulated inputs as seperate `Macro` objects.
 
 ### Macro
 ```
