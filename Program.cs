@@ -13,7 +13,10 @@ class Program {
 		int debugType = 0, debugGui = 0;
 		string? inputMapName = null;
 		for (int i = 0; i < args.Length; i++) {
-			Action<Action<string>, string> DoFlag = (action, errorMessage) => {
+
+			// Function to increment counter and check if it has then incremented beyond
+			// the length of the array of arguments.
+			void DoFlag(Action<string> action, string errorMessage) {
 				i++;
 				if (i >= args.Length) {
 					Console.WriteLine("ERROR: " + errorMessage);
@@ -22,6 +25,7 @@ class Program {
 				action(args[i]);
 			};
 
+			// Parse an argument.
 			switch (args[i]) {
 				case "-n":
 				case "-no-gamepad":

@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 
 namespace Robot {
 	public class Macro {
+
 		public struct Move2<T> {
 			public T x, y; public bool relatively;
 			public override string ToString() => "(" + x + ", " + y + ", " + relatively + ")";
@@ -18,16 +19,14 @@ namespace Robot {
 			public double PullLeftTrigger {
 				get => pullLeftTrigger;
 				init => pullLeftTrigger = value switch {
-					< 0 or > 1 => throw new Backend.SettingInvalidException(
-						"PullLeftTrigger must be in range of [0, 1]."),
+					< 0 or > 1 => throw new Backend.SettingInvalidException("PullLeftTrigger not within range [0, 1]."),
 					_          => value
 				};
 			}
 			public double PullRightTrigger {
 				get => pullRightTrigger;
 				init => pullRightTrigger = value switch {
-					< 0 or > 1 => throw new Backend.SettingInvalidException(
-						"PullRightTrigger must be in range of [0, 1]."),
+					< 0 or > 1 => throw new Backend.SettingInvalidException("PullRightTrigger not within range [0, 1]."),
 					_          => value
 				};
 			}
@@ -38,11 +37,11 @@ namespace Robot {
 					relatively = moveStick.relatively
 				};
 				init => moveStick = value switch {
-					Move2<double> {x: < -1 or > 1, y: < -1 or > 1} => throw new Backend.SettingInvalidException("Stick must be in range of [-1, 1]."),
-					_           => new Move2<short>{
-						x = this.RatioToShort(value.x),
-						y = this.RatioToShort(value.y),
-						relatively = value.relatively   }
+					Move2<double> {x: < -1 or > 1, y: < -1 or > 1}
+						=> throw new Backend.SettingInvalidException("Stick axes not within range [-1, 1]."),
+					_	=> new Move2<short>{ x = this.RatioToShort(value.x),
+					                         y = this.RatioToShort(value.y),
+					                         relatively = value.relatively }
 				};
 			}
 			public Move2<double> MoveLeftPad {
@@ -53,11 +52,10 @@ namespace Robot {
 				};
 				init => moveLeftPad = value switch {
 					Move2<double> {x: < -1 or > 1, y: < -1 or > 1}
-						=> throw new Backend.SettingInvalidException("LeftPad must be in range of [-1, 1]."),
-					_   => new Move2<short>{
-						x = this.RatioToShort(value.x),
-						y = this.RatioToShort(value.y),
-						relatively = value.relatively   }
+						=> throw new Backend.SettingInvalidException("LeftPad not within range [-1, 1]."),
+					_	=> new Move2<short>{ x = this.RatioToShort(value.x),
+					                         y = this.RatioToShort(value.y),
+					                         relatively = value.relatively }
 				};
 			}
 			public Move2<double> MoveRightPad {
@@ -68,11 +66,10 @@ namespace Robot {
 				};
 				init => moveRightPad = value switch {
 					Move2<double> {x: < -1 or > 1, y: < -1 or > 1}
-						=> throw new Backend.SettingInvalidException("RightPad must be in range of [-1, 1]."),
-					_   => new Move2<short>{
-						x = this.RatioToShort(value.x),
-						y = this.RatioToShort(value.y),
-						relatively = value.relatively   }
+						=> throw new Backend.SettingInvalidException("RightPad not within range [-1, 1]."),
+					_	=> new Move2<short>{ x = this.RatioToShort(value.x),
+					                         y = this.RatioToShort(value.y),
+					                         relatively = value.relatively }
 				};
 			}
 
@@ -81,17 +78,16 @@ namespace Robot {
 			private double pullLeftTrigger, pullRightTrigger;
 
 			/// <summary>Ratio [-1d, 1d] to range of short.</summary>
-			private short RatioToShort(double ratio) {
-				var value = ratio * (ratio > 0 ? Int16.MaxValue : Int16.MinValue);
-				return (short)Math.Clamp(value, Int16.MinValue, Int16.MaxValue);
-			}
+			private short RatioToShort(double ratio) => (short)Math.Clamp(
+				ratio * (ratio > 0 ? Int16.MaxValue : Int16.MinValue),
+				Int16.MinValue,
+				Int16.MaxValue);
 
 			/// <summary>Range of short to [-1d, 1d].</summary>
-			private double ShortToRatio(short n) {
-				if (n == 0) return 0;
-				var value = n / (double)(n > 0 ? Int16.MaxValue : Int16.MinValue);
-				return Math.Clamp(value, -1d, 1d);
-			}
+			private double ShortToRatio(short n) => n switch {
+				0 => 0,
+				_ => Math.Clamp(n / (double)(n > 0 ? Int16.MaxValue : Int16.MinValue), -1, 1)
+			};
 		}
 
 		public Key[] PressButtons = {};
@@ -101,15 +97,14 @@ namespace Robot {
 		public double PullLeftTrigger {
 			get => pullLeftTrigger / 255d;
 			init => pullLeftTrigger = value switch {
-				< 0 or > 1 => throw new Backend.SettingInvalidException("PullLeftTrigger must be in range of [0, 1]."),
+				< 0 or > 1 => throw new Backend.SettingInvalidException("PullLeftTrigger not within range [0, 1]."),
 				_          => (byte)(value * 255)
 			};
 		}
 		public double PullRightTrigger {
 			get => pullRightTrigger / 255d;
 			init => pullRightTrigger = value switch {
-				< 0 or > 1 => throw new Backend.SettingInvalidException(
-					"PullRightTrigger must be in range of [0, 1]."),
+				< 0 or > 1 => throw new Backend.SettingInvalidException("PullRightTrigger not within range [0, 1]."),
 				_          => (byte)(value * 255)
 			};
 		}
@@ -117,28 +112,31 @@ namespace Robot {
 			get => new Move2<double>{
 				x = this.ShortToRatio(moveLeftStick.x),
 				y = this.ShortToRatio(moveLeftStick.y),
-				relatively = moveLeftStick.relatively   };
+				relatively = moveLeftStick.relatively
+			};
 			init => moveLeftStick = value switch {
 				Move2<double> {x: < -1 or > 1, y: < -1 or > 1} => throw new Backend.SettingInvalidException(
-					"The axes of MoveLeftStick must be in range of [-1, 1]."),
-				_                                              => new Move2<short>{
+					"Axes of MoveLeftStick not witin range [-1, 1]."),
+				_ => new Move2<short>{
 					x = this.RatioToShort(value.x),
 					y = this.RatioToShort(value.y),
-					relatively = value.relatively   }
+					relatively = value.relatively
+				}
 			};
 		}
 		public Move2<double> MoveRightStick {
 			get => new Move2<double>{
 				x = this.ShortToRatio(moveRightStick.x),
 				y = this.ShortToRatio(moveRightStick.y),
-				relatively = moveRightStick.relatively   };
+				relatively = moveRightStick.relatively
+			};
 			init => moveLeftStick = value switch {
 				Move2<double> {x: < -1 or > 1, y: < -1 or > 1} => throw new Backend.SettingInvalidException(
-					"The axes of MoveRightStick must be in range of [-1, 1]."),
-				_                                              => new Move2<short>{
+					"Axes of MoveRightStick not within range [-1, 1]."),
+				_ => new Move2<short>{
 					x = this.RatioToShort(value.x),
 					y = this.RatioToShort(value.y),
-					relatively = value.relatively   }
+					relatively = value.relatively }
 			};
 		}
 		public string AddActionLayer = "", RemoveActionLayer = "";
@@ -210,18 +208,22 @@ namespace Robot {
 			}
 		}
 
-		string PressButtonsToString { get {
-			var str = "PressButtons: [";
-			for (int i = 0; i < PressButtons.Length - 1; i++) str += PressButtons[i].ToString() + ", ";
-			str += PressButtons[PressButtons.Length - 1].ToString() + "]";
-			return str;
-		} }
-		string ReleaseButtonsToString { get {
-			var str = "ReleaseButtons: [";
-			for (int i = 0; i < ReleaseButtons.Length - 1; i++) str += ReleaseButtons[i].ToString() + ", ";
-			str += ReleaseButtons[ReleaseButtons.Length - 1].ToString() + "]";
-			return str;
-		} }
+		string PressButtonsToString {
+			get {
+				var str = "PressButtons: [";
+				for (int i = 0; i < PressButtons.Length - 1; i++) str += PressButtons[i].ToString() + ", ";
+				str += PressButtons[PressButtons.Length - 1].ToString() + "]";
+				return str;
+			}
+		}
+		string ReleaseButtonsToString {
+			get {
+				var str = "ReleaseButtons: [";
+				for (int i = 0; i < ReleaseButtons.Length - 1; i++) str += ReleaseButtons[i].ToString() + ", ";
+				str += ReleaseButtons[ReleaseButtons.Length - 1].ToString() + "]";
+				return str;
+			}
+		}
 		string MoveMouseToString => "MoveMouse: " + MoveMouse.ToString();
 		string ScrollMouseToString => "ScrollMouse: " + ScrollMouse.ToString();
 		string PullLeftTriggerToString => "PullLeftTrigger: " + PullLeftTrigger.ToString();
