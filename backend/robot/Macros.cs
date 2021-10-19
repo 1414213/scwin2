@@ -2,7 +2,7 @@ using System;
 using Newtonsoft.Json;
 
 namespace Robot {
-	public class Macro {
+	public record Macro {
 
 		public struct Move2<T> {
 			public T x, y; public bool relatively;
@@ -12,82 +12,6 @@ namespace Robot {
 		public struct Scroll {
 			public int amount; public bool asClicks;
 			public override string ToString() => "(" + amount + ", " + asClicks + ")";
-		}
-
-		private struct SteamController {
-			public Key[] PressButtons, ReleaseButtons;
-			public double PullLeftTrigger {
-				get => pullLeftTrigger;
-				init => pullLeftTrigger = value switch {
-					< 0 or > 1 => throw new Backend.SettingInvalidException("PullLeftTrigger not within range [0, 1]."),
-					_          => value
-				};
-			}
-			public double PullRightTrigger {
-				get => pullRightTrigger;
-				init => pullRightTrigger = value switch {
-					< 0 or > 1 => throw new Backend.SettingInvalidException("PullRightTrigger not within range [0, 1]."),
-					_          => value
-				};
-			}
-			public Move2<double> MoveStick {
-				get => new Move2<double>{
-					x = this.ShortToRatio(moveStick.x),
-					y = this.ShortToRatio(moveStick.y),
-					relatively = moveStick.relatively
-				};
-				init => moveStick = value switch {
-					Move2<double> {x: < -1 or > 1, y: < -1 or > 1}
-						=> throw new Backend.SettingInvalidException("Stick axes not within range [-1, 1]."),
-					_	=> new Move2<short>{ x = this.RatioToShort(value.x),
-					                         y = this.RatioToShort(value.y),
-					                         relatively = value.relatively }
-				};
-			}
-			public Move2<double> MoveLeftPad {
-				get => new Move2<double>{
-					x = this.ShortToRatio(moveLeftPad.x),
-					y = this.ShortToRatio(moveLeftPad.y),
-					relatively = moveLeftPad.relatively
-				};
-				init => moveLeftPad = value switch {
-					Move2<double> {x: < -1 or > 1, y: < -1 or > 1}
-						=> throw new Backend.SettingInvalidException("LeftPad not within range [-1, 1]."),
-					_	=> new Move2<short>{ x = this.RatioToShort(value.x),
-					                         y = this.RatioToShort(value.y),
-					                         relatively = value.relatively }
-				};
-			}
-			public Move2<double> MoveRightPad {
-				get => new Move2<double>{
-					x = this.ShortToRatio(moveRightPad.x),
-					y = this.ShortToRatio(moveRightPad.y),
-					relatively = moveRightPad.relatively
-				};
-				init => moveRightPad = value switch {
-					Move2<double> {x: < -1 or > 1, y: < -1 or > 1}
-						=> throw new Backend.SettingInvalidException("RightPad not within range [-1, 1]."),
-					_	=> new Move2<short>{ x = this.RatioToShort(value.x),
-					                         y = this.RatioToShort(value.y),
-					                         relatively = value.relatively }
-				};
-			}
-
-			public readonly Move2<short> moveStick, moveLeftPad, moveRightPad;
-
-			private double pullLeftTrigger, pullRightTrigger;
-
-			/// <summary>Ratio [-1d, 1d] to range of short.</summary>
-			private short RatioToShort(double ratio) => (short)Math.Clamp(
-				ratio * (ratio > 0 ? Int16.MaxValue : Int16.MinValue),
-				Int16.MinValue,
-				Int16.MaxValue);
-
-			/// <summary>Range of short to [-1d, 1d].</summary>
-			private double ShortToRatio(short n) => n switch {
-				0 => 0,
-				_ => Math.Clamp(n / (double)(n > 0 ? Int16.MaxValue : Int16.MinValue), -1, 1)
-			};
 		}
 
 		public Key[] PressButtons = {};
@@ -139,8 +63,6 @@ namespace Robot {
 					relatively = value.relatively }
 			};
 		}
-		public string AddActionLayer = "", RemoveActionLayer = "";
-		public bool AddActionLayerAsTransparent = true;
 		public int Wait {
 			get => wait;
 			init => wait = value switch {
@@ -173,66 +95,56 @@ namespace Robot {
 			return Math.Clamp(value, -1d, 1d);
 		}
 
-		public override string ToString() => PressButtonsToString + " " + ReleaseButtonsToString + " "
-			+ MoveMouseToString + " "
-			+ ScrollMouseToString + " "
-			+ PullLeftTriggerToString + " "
-			+ PullRightTriggerToString + " "
-			+ MoveLeftStickToString + " "
-			+ MoveRightStickToString + " "
-			+ AddActionLayerToString + " "
-			+ RemoveActionLayerToString + " "
-			+ AddActionLayerAsTransparentToString + " "
-			+ WaitToString;
+		public override string ToString() => PressButtonsToString() + " "
+			+ ReleaseButtonsToString() + " "
+			+ "MoveMouse: " + MoveMouse.ToString() + " "
+			+ "ScrollMouse: " + ScrollMouse.ToString() + " "
+			+ "PullLeftTrigger: " + PullLeftTrigger.ToString() + " "
+			+ "PullRightTrigger: " + PullRightTrigger.ToString() + " "
+			+ "MoveLeftStick: " + MoveLeftStick.ToString() + " "
+			+ "MoveRightStick: " + MoveRightStick.ToString() + " "
+			+ "Wait: " + Wait;
 
 		public string ToString(bool brief) {
 			if (!brief) return this.ToString();
 			else {
 				var str = "";
-				if (PressButtons.Length != 0)                             str += PressButtonsToString + " ";
-				if (ReleaseButtons.Length != 0)                           str += ReleaseButtonsToString + " ";
-				if (MoveMouse is not {x: 0, y: 0, relatively: true})      str += MoveMouseToString + " ";
-				if (ScrollMouse is not {amount: 0})                       str += ScrollMouseToString + " ";
-				if (PullLeftTrigger != 0)                                 str += PullLeftTriggerToString + " ";
-				if (PullRightTrigger != 0)                                str += PullRightTriggerToString + " ";
-				if (MoveLeftStick is not {x: 0, y: 0, relatively: true})  str += MoveLeftStickToString + " ";
-				if (MoveRightStick is not {x: 0, y: 0, relatively: true}) str += MoveRightStickToString + " ";
-				if (AddActionLayer != "")                                 str += AddActionLayerToString + " ";
-				if (RemoveActionLayer != "")                              str += RemoveActionLayerToString + " ";
-				if (AddActionLayer != "")
-					str += AddActionLayerAsTransparentToString + " ";
-				if (Wait > 0)                                             str += WaitToString + " ";
+				if (PressButtons.Length != 0) {
+					str += PressButtonsToString() + " ";
+				} else if (ReleaseButtons.Length != 0) {
+					str += ReleaseButtonsToString() + " ";
+				} else if (MoveMouse is not {x: 0, y: 0, relatively: true}) {
+					str += "MoveMouse: " + MoveMouse.ToString() + " ";
+				} else if (ScrollMouse is not {amount: 0}) {
+					str += "ScrollMouse: " + ScrollMouse.ToString() + " ";
+				} else if (PullLeftTrigger != 0) {
+					str += "PullLeftTrigger: " + PullLeftTrigger.ToString() + " ";
+				} else if (PullRightTrigger != 0) {
+					str += "PullRightTrigger: " + PullRightTrigger.ToString() + " ";
+				} else if (MoveLeftStick is not {x: 0, y: 0, relatively: true}) {
+					str += "MoveLeftStick: " + MoveLeftStick.ToString() + " ";
+				} else if (MoveRightStick is not {x: 0, y: 0, relatively: true}) {
+					str += "MoveRightStick: " + MoveRightStick.ToString() + " ";
+				} else if (Wait > 0) {
+					str += "Wait: " + Wait + " ";
+				}
 				str.TrimEnd();
-
 				return str;
 			}
 		}
 
-		string PressButtonsToString {
-			get {
-				var str = "PressButtons: [";
-				for (int i = 0; i < PressButtons.Length - 1; i++) str += PressButtons[i].ToString() + ", ";
-				str += PressButtons[PressButtons.Length - 1].ToString() + "]";
-				return str;
-			}
+		protected string PressButtonsToString() {
+			var str = "PressButtons: [";
+			for (int i = 0; i < PressButtons.Length - 1; i++) str += PressButtons[i].ToString() + ", ";
+			str += PressButtons[PressButtons.Length - 1].ToString() + "]";
+			return str;
 		}
-		string ReleaseButtonsToString {
-			get {
-				var str = "ReleaseButtons: [";
-				for (int i = 0; i < ReleaseButtons.Length - 1; i++) str += ReleaseButtons[i].ToString() + ", ";
-				str += ReleaseButtons[ReleaseButtons.Length - 1].ToString() + "]";
-				return str;
-			}
+
+		protected string ReleaseButtonsToString() {
+			var str = "ReleaseButtons: [";
+			for (int i = 0; i < ReleaseButtons.Length - 1; i++) str += ReleaseButtons[i].ToString() + ", ";
+			str += ReleaseButtons[ReleaseButtons.Length - 1].ToString() + "]";
+			return str;
 		}
-		string MoveMouseToString => "MoveMouse: " + MoveMouse.ToString();
-		string ScrollMouseToString => "ScrollMouse: " + ScrollMouse.ToString();
-		string PullLeftTriggerToString => "PullLeftTrigger: " + PullLeftTrigger.ToString();
-		string PullRightTriggerToString => "PullRightTrigger: " + PullRightTrigger.ToString();
-		string MoveLeftStickToString => "MoveLeftStick: " + MoveLeftStick.ToString();
-		string MoveRightStickToString => "MoveRightStick: " + moveRightStick.ToString();
-		string AddActionLayerToString => "AddActionLayer: " + AddActionLayer;
-		string RemoveActionLayerToString => "RemoveActionLayer: " + RemoveActionLayer;
-		string AddActionLayerAsTransparentToString => "AddActionLayerAsTransparent: " + AddActionLayerAsTransparent;
-		string WaitToString => "Wait: " + Wait;
 	}
 }
