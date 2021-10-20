@@ -1,18 +1,79 @@
+using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Backend {
 	public class ButtonMacro : Button {
-		public enum ButtonState { Press, Releaase }
+		public enum ButtonState { None = 0, Press = 1, Releaase = 2 }
 
 		public record Macro : Robot.Macro {
+			public struct Movement2 {
+				public double X => this.ShortToRatio(vector.x);
+				public double Y => this.ShortToRatio(vector.y);
+				public readonly (short x, short y) vector;
+				public readonly ButtonState state;
+
+				public Movement2(short x, short y, ButtonState state) { this.vector = (x, y); this.state = state; }
+
+				public Movement2(double x, double y, ButtonState state, string errorFieldName) : this(0, 0, 0) {
+					var error = errorFieldName + " must have an (x, y) within the range [-1, 1].";
+					if (x is < -1 or > 1 || y is < -1 or > 1) throw new SettingInvalidException(error);
+					this = new Movement2(RatioToShort(x), RatioToShort(y), state);
+				}
+
+				public static implicit operator (short x, short y)(Movement2 movement2) => movement2.vector;
+
+				/// <summary>Ratio [-1d, 1d] to range of short.</summary>
+				private short RatioToShort(double ratio) {
+					var value = ratio * (ratio > 0 ? Int16.MaxValue : Int16.MinValue);
+					return (short)Math.Clamp(value, Int16.MinValue, Int16.MaxValue);
+				}
+
+				/// <summary>Range of short to [-1d, 1d].</summary>
+				private double ShortToRatio(short n) {
+					if (n == 0) return 0;
+					var value = n / (double)(n > 0 ? Int16.MaxValue : Int16.MinValue);
+					return Math.Clamp(value, -1d, 1d);
+				}
+			}
+
+			public new Key[] PressButtons {
+				get => pressButtons;
+				init {
+					pressButtons = value;
+					var robotButtons = new List<Robot.Key>();
+					foreach (var b in pressButtons) if (b.IsRobotKey()) robotButtons.Add((Robot.Key)(int)b);
+					base.PressButtons = robotButtons.ToArray();
+				}
+			}
+			public new Key[] ReleaseButtons {
+				get => releaseButtons;
+				init {
+					releaseButtons = value;
+					var robotButtons = new List<Robot.Key>();
+					foreach (var b in releaseButtons) if (b.IsRobotKey()) robotButtons.Add((Robot.Key)(int)b);
+					base.ReleaseButtons = robotButtons.ToArray();
+				}
+			}
 			public string AddActionLayer = "", RemoveActionLayer = "";
 			public bool AddActionLayerAsTransparent = true;
-			(double x, double y, ButtonState state)? LeftPadTouch;
-			(double x, double y, ButtonState state)? RightPadTouch;
-			(double x, double y, ButtonState state)? LeftPadClick;
-			(double x, double y, ButtonState state)? RightPadClick;
-			(double x, double y)? MoveStick;
+			public (double x, double y, ButtonState state)? LeftPadTouch {
+				get => leftPadTouch is null
+					? null
+					: (leftPadTouch.Value.position.X, leftPadTouch.Value.position.Y, leftPadTouch.Value.state);
+				init => leftPadTouch = value is null
+					? null
+					: (new Movement2(value.Value.x, value.Value.y, "LeftPadTouch"), value.Value.state);
+			}
+			public (double x, double y, ButtonState state)? RightPadTouch;
+			public (double x, double y, ButtonState state)? LeftPadClick;
+			public (double x, double y, ButtonState state)? RightPadClick;
+			public Movement2? MoveStick;
+
+			private (Movement2 position, ButtonState state)? leftPadTouch, rightPadTouch, leftPadClick, rightPadClick;
+
+			private Key[] pressButtons = {}, releaseButtons = {};
 
 			public override string ToString() => PressButtonsToString() + " "
 				+ ReleaseButtonsToString() + " "
@@ -101,6 +162,14 @@ namespace Backend {
 					EventDoer.AddActionLayer(aal, macro.AddActionLayerAsTransparent);
 				}
 				if (macro.RemoveActionLayer is string ral) EventDoer.RemoveActionLayer(ral);
+				if (macro.LeftPadTouch is not null) {
+					EventDoer.DoEvents({new SteamControllerApi.TrackpadData(
+						SteamControllerApi.Key.LPadTouch,
+						(macro.LeftPadTouch.Value.x, macro.LeftPadTouch.Value.y),
+						SteamControllerApi.Flags.Pressed,
+						null)});
+				}
+
 				Thread.Sleep(macro.Wait);
 			}
 		}
@@ -233,13 +302,33 @@ namespace Backend {
 			Steam_South,
 			Steam_StickClick,
 			Steam_LBumper,
-			Steam_RBumber,
+			Steam_RBumper,
 			Steam_LTriggerClick,
 			Steam_RTriggerClick,
 			Steam_LGripClick,
-			Steam_RGrickClick,
+			Steam_RGripClick,
 			Steam_Left,
 			Steam_Right,
 		}
+	}
+
+	public static class MacroExtensions {
+		public static bool IsRobotKey(this ButtonMacro.Key key) => key switch {
+			ButtonMacro.Key.Steam_Home          => false,
+			ButtonMacro.Key.Steam_East          => false,
+			ButtonMacro.Key.Steam_North         => false,
+			ButtonMacro.Key.Steam_West          => false,
+			ButtonMacro.Key.Steam_South         => false,
+			ButtonMacro.Key.Steam_StickClick    => false,
+			ButtonMacro.Key.Steam_LBumper       => false,
+			ButtonMacro.Key.Steam_RBumper       => false,
+			ButtonMacro.Key.Steam_LTriggerClick => false,
+			ButtonMacro.Key.Steam_RTriggerClick => false,
+			ButtonMacro.Key.Steam_LGripClick    => false,
+			ButtonMacro.Key.Steam_RGripClick    => false,
+			ButtonMacro.Key.Steam_Left          => false,
+			ButtonMacro.Key.Steam_Right         => false,
+			_ => true,
+		};
 	}
 }

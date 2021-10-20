@@ -6,8 +6,6 @@ using Device.Net;
 using Hid.Net.Windows;
 //using SerialPort.Net.Windows;
 
-using MethodExtensions;
-
 
 namespace SteamControllerApi {
 	public class Controller {
@@ -45,9 +43,9 @@ namespace SteamControllerApi {
 			}
 		}
 
-		public IList<IInputData> GenerateEvents(ReadResult input) => this.ParseState(this.ParseData(input.Data));
+		public IInputData[] GenerateEvents(ReadResult input) => this.ParseState(this.ParseData(input.Data));
 
-		public IList<IInputData> GenerateEvents(byte[] input) => this.ParseState(this.ParseData(input));
+		public IInputData[] GenerateEvents(byte[] input) => this.ParseState(this.ParseData(input));
 
 		private Dictionary<KeyInternal, IInputData> ParseData(byte[] data) {
 			// preparation
@@ -142,7 +140,7 @@ namespace SteamControllerApi {
 		/// the previously read press events stored in the steam controller instance to decide which keys were
 		/// pressed, held, and released, then generates a list of the press and release of events to return.
 		/// </summary>
-		private IList<IInputData> ParseState(Dictionary<KeyInternal, IInputData> newEvents) {
+		private IInputData[] ParseState(Dictionary<KeyInternal, IInputData> newEvents) {
 			var generatedEvents = new List<IInputData>(amountOfKeys);
 
 			// Add potential changes to the continuous states (left and right trigger and joystick).
@@ -228,7 +226,7 @@ namespace SteamControllerApi {
 			// reset state flags
 			isOscillating = false;
 
-			return generatedEvents;
+			return generatedEvents.ToArray();
 		}
 
 		/// <summary>Rotate point given from trackpad to eliminate the built-in 15 degrees of rotation.</summary>

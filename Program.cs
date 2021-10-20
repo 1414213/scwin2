@@ -146,7 +146,7 @@ class Program {
 
 		// App loop:
 		ReadResult input;
-		IList<api.IInputData> events;
+		api.IInputData[] events;
 		while (true) {
 			input = await device.ReadAsync();
 

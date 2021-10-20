@@ -67,7 +67,7 @@ namespace SteamControllerApi {
 		Motion,
 	}
 
-	public static class Extensions {
+	public static class KeyExtensions {
 		public static KeyInternal ToInternal(this Key key) => (KeyInternal)((int)key);
 
 		public static bool IsButton(this KeyInternal key) => key switch {
