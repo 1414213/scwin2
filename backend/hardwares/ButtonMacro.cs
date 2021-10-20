@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using api = SteamControllerApi;
 
 namespace Backend {
 	public class ButtonMacro : Button {
-		public enum ButtonState { None = 0, Press = 1, Releaase = 2 }
+		public enum ButtonState { None = 0, Press = 1, Release, Undefined }
 
 		public record Macro : Robot.Macro {
 			public struct Movement2 {
@@ -58,20 +59,32 @@ namespace Backend {
 			}
 			public string AddActionLayer = "", RemoveActionLayer = "";
 			public bool AddActionLayerAsTransparent = true;
-			public (double x, double y, ButtonState state)? LeftPadTouch {
-				get => leftPadTouch is null
-					? null
-					: (leftPadTouch.Value.position.X, leftPadTouch.Value.position.Y, leftPadTouch.Value.state);
-				init => leftPadTouch = value is null
-					? null
-					: (new Movement2(value.Value.x, value.Value.y, "LeftPadTouch"), value.Value.state);
+			public (double x, double y, ButtonState state)? TouchLeftPad {
+				init => touchLeftPad = value is (double x, double y, ButtonState state) v
+					? new Movement2(v.x, v.y, v.state, "TouchLeftPad")
+					: new Movement2(0, 0, ButtonState.None);
 			}
-			public (double x, double y, ButtonState state)? RightPadTouch;
-			public (double x, double y, ButtonState state)? LeftPadClick;
-			public (double x, double y, ButtonState state)? RightPadClick;
-			public Movement2? MoveStick;
-
-			private (Movement2 position, ButtonState state)? leftPadTouch, rightPadTouch, leftPadClick, rightPadClick;
+			public (double x, double y, ButtonState state)? TouchRightPad {
+				init => touchRightPad = value is (double x, double y, ButtonState state) v
+					? new Movement2(v.x, v.y, v.state, "TouchRightPad")
+					: new Movement2(0, 0, ButtonState.None);
+			}
+			public (double x, double y, ButtonState state)? ClickLeftPad {
+				init => clickLeftPad = value is (double x, double y, ButtonState state) v
+					? new Movement2(v.x, v.y, v.state, "ClickRightPad")
+					: new Movement2(0, 0, ButtonState.None);
+			}
+			public (double x, double y, ButtonState state)? ClickRightPad {
+				init => clickRightPad = value is not null
+					? new Movement2(value.Value.x, value.Value.y, value.Value.state, "ClickRightPad")
+					: new Movement2(0, 0, ButtonState.None);
+			}
+			public (double x, double y)? MoveStick {
+				init => moveStick = value is not null
+					? new Movement2(value.Value.x, value.Value.y, ButtonState.Undefined, "MoveStick")
+					: new Movement2(0, 0, ButtonState.None);
+			}
+			public Movement2 touchLeftPad, touchRightPad, clickLeftPad, clickRightPad, moveStick;
 
 			private Key[] pressButtons = {}, releaseButtons = {};
 
@@ -160,16 +173,9 @@ namespace Backend {
 				robot.DoMacro(macro as Robot.Macro);
 				if (macro.AddActionLayer is string aal) {
 					EventDoer.AddActionLayer(aal, macro.AddActionLayerAsTransparent);
+				} else if (macro.RemoveActionLayer is string ral) {
+					EventDoer.RemoveActionLayer(ral);
 				}
-				if (macro.RemoveActionLayer is string ral) EventDoer.RemoveActionLayer(ral);
-				if (macro.LeftPadTouch is not null) {
-					EventDoer.DoEvents({new SteamControllerApi.TrackpadData(
-						SteamControllerApi.Key.LPadTouch,
-						(macro.LeftPadTouch.Value.x, macro.LeftPadTouch.Value.y),
-						SteamControllerApi.Flags.Pressed,
-						null)});
-				}
-
 				Thread.Sleep(macro.Wait);
 			}
 		}
