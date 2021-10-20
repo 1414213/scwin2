@@ -23,8 +23,6 @@ namespace Backend {
 					this = new Movement2(RatioToShort(x), RatioToShort(y), state);
 				}
 
-				public static implicit operator (short x, short y)(Movement2 movement2) => movement2.vector;
-
 				/// <summary>Ratio [-1d, 1d] to range of short.</summary>
 				private short RatioToShort(double ratio) {
 					var value = ratio * (ratio > 0 ? Int16.MaxValue : Int16.MinValue);
@@ -94,8 +92,8 @@ namespace Backend {
 				+ "ScrollMouse: " + ScrollMouse.ToString() + " "
 				+ "PullLeftTrigger: " + PullLeftTrigger.ToString() + " "
 				+ "PullRightTrigger: " + PullRightTrigger.ToString() + " "
-				+ "MoveLeftStick: " + MoveLeftStick.ToString() + " "
-				+ "MoveRightStick: " + MoveRightStick.ToString() + " "
+				+ "MoveLeftStick: " + moveLeftStick.ToString() + " "
+				+ "MoveRightStick: " + moveRightStick.ToString() + " "
 				+ "AddActionLayer: " + AddActionLayer
 				+ "RemoveActionLayer: " + RemoveActionLayer
 				+ "AddActionLayerAsTransparent: " + AddActionLayerAsTransparent
@@ -117,10 +115,10 @@ namespace Backend {
 						str += "PullLeftTrigger: " + PullLeftTrigger.ToString() + " ";
 					} else if (PullRightTrigger != 0) {
 						str += "PullRightTrigger: " + PullRightTrigger.ToString() + " ";
-					} else if (MoveLeftStick is not {x: 0, y: 0, relatively: true}) {
-						str += "MoveLeftStick: " + MoveLeftStick.ToString() + " ";
-					} else if (MoveRightStick is not {x: 0, y: 0, relatively: true}) {
-						str += "MoveRightStick: " + MoveRightStick.ToString() + " ";
+					} else if (moveLeftStick is not {vector: (0, 0), relatively: true}) {
+						str += "MoveLeftStick: " + moveLeftStick.ToString() + " ";
+					} else if (moveRightStick is not {vector: (0, 0), relatively: true}) {
+						str += "MoveRightStick: " + moveRightStick.ToString() + " ";
 					} else if (AddActionLayer != "") {
 						str += "AddActionLayer: " + AddActionLayer + " "
 							+ "AddActionLayerAsTransparent: " + AddActionLayerAsTransparent;

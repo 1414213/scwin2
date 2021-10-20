@@ -2,85 +2,25 @@ using System;
 using Newtonsoft.Json;
 
 namespace Robot {
-	public record Macro {
+	public class SettingInvalidException : Exception {
+		public SettingInvalidException() {}
+		public SettingInvalidException(string message) : base(message) {}
+		public SettingInvalidException(string message, Exception inner) : base(message, inner) {}
+	}
 
-		public struct Move2<T> {
-			public T x, y; public bool relatively;
-			public override string ToString() => "(" + x + ", " + y + ", " + relatively + ")";
-		}
+	public struct Movement2 {
+		public double X => this.ShortToRatio(vector.x);
+		public double Y => this.ShortToRatio(vector.y);
+		public readonly (short x, short y) vector;
+		public readonly bool relatively;
 
-		public struct Scroll {
-			public int amount; public bool asClicks;
-			public override string ToString() => "(" + amount + ", " + asClicks + ")";
-		}
+		public Movement2(short x, short y, bool relatively) { this.vector = (x, y); this.relatively = relatively; }
 
-		public Key[] PressButtons = {};
-		public Key[] ReleaseButtons = {};
-		public Move2<int> MoveMouse = new() { x = 0, y = 0, relatively = true };
-		public Scroll ScrollMouse = new() { amount = 0 };
-		public double PullLeftTrigger {
-			get => pullLeftTrigger / 255d;
-			init => pullLeftTrigger = value switch {
-				< 0 or > 1 => throw new Backend.SettingInvalidException("PullLeftTrigger not within range [0, 1]."),
-				_          => (byte)(value * 255)
-			};
+		public Movement2(double x, double y, bool relatively, string errorFieldName) : this(0, 0, false) {
+			var error = errorFieldName + " must have an (x, y) within the range [-1, 1].";
+			if (x is < -1 or > 1 || y is < -1 or > 1) throw new SettingInvalidException(error);
+			this = new Movement2(RatioToShort(x), RatioToShort(y), relatively);
 		}
-		public double PullRightTrigger {
-			get => pullRightTrigger / 255d;
-			init => pullRightTrigger = value switch {
-				< 0 or > 1 => throw new Backend.SettingInvalidException("PullRightTrigger not within range [0, 1]."),
-				_          => (byte)(value * 255)
-			};
-		}
-		public Move2<double> MoveLeftStick {
-			get => new Move2<double>{
-				x = this.ShortToRatio(moveLeftStick.x),
-				y = this.ShortToRatio(moveLeftStick.y),
-				relatively = moveLeftStick.relatively
-			};
-			init => moveLeftStick = value switch {
-				Move2<double> {x: < -1 or > 1, y: < -1 or > 1} => throw new Backend.SettingInvalidException(
-					"Axes of MoveLeftStick not witin range [-1, 1]."),
-				_ => new Move2<short>{
-					x = this.RatioToShort(value.x),
-					y = this.RatioToShort(value.y),
-					relatively = value.relatively
-				}
-			};
-		}
-		public Move2<double> MoveRightStick {
-			get => new Move2<double>{
-				x = this.ShortToRatio(moveRightStick.x),
-				y = this.ShortToRatio(moveRightStick.y),
-				relatively = moveRightStick.relatively
-			};
-			init => moveLeftStick = value switch {
-				Move2<double> {x: < -1 or > 1, y: < -1 or > 1} => throw new Backend.SettingInvalidException(
-					"Axes of MoveRightStick not within range [-1, 1]."),
-				_ => new Move2<short>{
-					x = this.RatioToShort(value.x),
-					y = this.RatioToShort(value.y),
-					relatively = value.relatively }
-			};
-		}
-		public int Wait {
-			get => wait;
-			init => wait = value switch {
-				< 0 => throw new Backend.SettingInvalidException("Wait must be a waitable time (> 0)."),
-				_   => value
-			};
-		}
-
-		public readonly Move2<short> moveLeftStick = new() { x = 0, y = 0, relatively = true };
-		public readonly Move2<short> moveRightStick = new() { x = 0, y = 0, relatively = true };
-		public readonly byte pullLeftTrigger, pullRightTrigger;
-
-		private readonly int wait = 0;
-		private const int shortRange = Int16.MaxValue - Int16.MinValue;
-
-		public byte PullLeftTriggerAsByte() => pullLeftTrigger;
-
-		public byte PullRightTriggerAsByte() => pullRightTrigger;
 
 		/// <summary>Ratio [-1d, 1d] to range of short.</summary>
 		private short RatioToShort(double ratio) {
@@ -95,14 +35,70 @@ namespace Robot {
 			return Math.Clamp(value, -1d, 1d);
 		}
 
+		public override string ToString() => "Movement2 { vector = " + vector + ", relatively = " + relatively + " }";
+	}
+
+	public record Macro {
+
+		public struct MouseMovement {
+			public int x, y; public bool relatively;
+			public override string ToString() =>
+				"MoveMouse { x = " + x + ", y = " + y + ", relatively = " + relatively + " }";
+		}
+
+		public struct MouseScroll {
+			public int amount; public bool asClicks;
+			public override string ToString() => "Scroll { amount = " + amount + ", asClicks = " + asClicks + " }";
+		}
+
+		public Key[] PressButtons = {};
+		public Key[] ReleaseButtons = {};
+		public MouseMovement MoveMouse = new MouseMovement{ x = 0, y = 0, relatively = true };
+		public MouseScroll ScrollMouse = new MouseScroll{ amount = 0 };
+		public double PullLeftTrigger {
+			get => pullLeftTrigger / 255d;
+			init => pullLeftTrigger = value switch {
+				< 0 or > 1 => throw new SettingInvalidException("PullLeftTrigger not within range [0, 1]."),
+				_          => (byte)(value * 255)
+			};
+		}
+		public double PullRightTrigger {
+			get => pullRightTrigger / 255d;
+			init => pullRightTrigger = value switch {
+				< 0 or > 1 => throw new SettingInvalidException("PullRightTrigger not within range [0, 1]."),
+				_          => (byte)(value * 255)
+			};
+		}
+		public (double x, double y, bool relatively) MoveLeftStick {
+			get => (moveLeftStick.X, moveLeftStick.Y, moveLeftStick.relatively);
+			init => moveLeftStick = new Movement2(value.x, value.y, value.relatively, "MoveLeftStick");
+		}
+		public (double x, double y, bool relatively) MoveRightStick {
+			get => (moveRightStick.X, moveRightStick.Y, moveRightStick.relatively);
+			init => moveRightStick = new Movement2(value.x, value.y, value.relatively, "MoveRightStick");
+		}
+		public int Wait {
+			get => wait;
+			init => wait = value < 0
+				? throw new SettingInvalidException("Wait must be a waitable time (> 0).")
+				: value;
+		}
+
+		public readonly Movement2 moveLeftStick = new Movement2(0, 0, true);
+		public readonly Movement2 moveRightStick = new Movement2(0, 0, true);
+		public readonly byte pullLeftTrigger, pullRightTrigger;
+
+		private readonly int wait = 0;
+		private const int shortRange = Int16.MaxValue - Int16.MinValue;
+
 		public override string ToString() => PressButtonsToString() + " "
 			+ ReleaseButtonsToString() + " "
 			+ "MoveMouse: " + MoveMouse.ToString() + " "
 			+ "ScrollMouse: " + ScrollMouse.ToString() + " "
 			+ "PullLeftTrigger: " + PullLeftTrigger.ToString() + " "
 			+ "PullRightTrigger: " + PullRightTrigger.ToString() + " "
-			+ "MoveLeftStick: " + MoveLeftStick.ToString() + " "
-			+ "MoveRightStick: " + MoveRightStick.ToString() + " "
+			+ "MoveLeftStick: " + moveLeftStick.ToString() + " "
+			+ "MoveRightStick: " + moveRightStick.ToString() + " "
 			+ "Wait: " + Wait;
 
 		public string ToString(bool brief) {
@@ -121,10 +117,10 @@ namespace Robot {
 					str += "PullLeftTrigger: " + PullLeftTrigger.ToString() + " ";
 				} else if (PullRightTrigger != 0) {
 					str += "PullRightTrigger: " + PullRightTrigger.ToString() + " ";
-				} else if (MoveLeftStick is not {x: 0, y: 0, relatively: true}) {
-					str += "MoveLeftStick: " + MoveLeftStick.ToString() + " ";
-				} else if (MoveRightStick is not {x: 0, y: 0, relatively: true}) {
-					str += "MoveRightStick: " + MoveRightStick.ToString() + " ";
+				} else if (moveLeftStick is not {vector: (0, 0), relatively: true}) {
+					str += "MoveLeftStick: " + moveLeftStick.ToString() + " ";
+				} else if (moveRightStick is not {vector: (0, 0), relatively: true}) {
+					str += "MoveRightStick: " + moveRightStick.ToString() + " ";
 				} else if (Wait > 0) {
 					str += "Wait: " + Wait + " ";
 				}

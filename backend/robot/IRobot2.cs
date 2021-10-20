@@ -56,10 +56,12 @@ namespace Robot {
 				this.PullLTrigger(macro.pullLeftTrigger);
 			} else if (macro.PullRightTrigger != 0) {
 				this.PullRTrigger(macro.pullRightTrigger);
-			} else if (macro.moveLeftStick is not {x: 0, y: 0, relatively: true}) {
-				this.MoveLStick(macro.moveLeftStick.x, macro.moveLeftStick.y, macro.moveLeftStick.relatively);
-			} else if (macro.moveRightStick is not {x: 0, y: 0, relatively: true}) {
-				this.MoveRStick(macro.moveRightStick.x, macro.moveRightStick.y, macro.moveRightStick.relatively);
+			} else if (macro.moveLeftStick is not {vector: (0, 0), relatively: true}) {
+				var (x, y) = macro.moveLeftStick.vector;
+				this.MoveLStick(x, y, macro.moveLeftStick.relatively);
+			} else if (macro.moveRightStick is not {vector: (0, 0), relatively: true}) {
+				var (x, y) = macro.moveRightStick.vector;
+				this.MoveRStick(x, y, macro.moveRightStick.relatively);
 			}
 		}
 
