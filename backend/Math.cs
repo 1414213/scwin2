@@ -1,6 +1,6 @@
 using System;
 
-namespace Backend.Math64 {
+namespace Backend.MathDouble {
 	public struct Vec3 {
 		public double x, y, z;
 
@@ -8,15 +8,6 @@ namespace Backend.Math64 {
 			this.x = x;
 			this.y = y;
 			this.z = z;
-		}
-
-		public static double Dot(Vec3 v, Vec3 u) => v.x * u.x + v.y * u.y + v.z * u.z;
-
-		public static Vec3 Cross(Vec3 v, Vec3 u) {
-			return new Vec3(
-				x: v.y * u.z - v.z * u.y,
-				y: v.z * u.x - v.x * u.z,
-				z: v.x * u.y - v.y * u.x);
 		}
 
 		public static Vec3 operator +(Vec3 v) => v;
@@ -27,13 +18,24 @@ namespace Backend.Math64 {
 
 		public static Vec3 operator -(Vec3 v, Vec3 u) => v + (-u);
 
-		public static Vec3 operator *(double scalar, Vec3 v) => new Vec3(scalar * v.x, scalar * v.y, scalar * v.z);
+		public static Vec3 operator *(Vec3 v, double scalar) => new Vec3(v.x * scalar, v.y * scalar, v.z * scalar);
+
+		public static Vec3 operator /(Vec3 v, double scalar) => new Vec3(v.x / scalar, v.y / scalar, v.z / scalar);
+
+		public static double Dot(Vec3 v, Vec3 u) => v.x * u.x + v.y * u.y + v.z * u.z;
+
+		public static Vec3 Cross(Vec3 v, Vec3 u) => new Vec3(
+			x: v.y * u.z - v.z * u.y,
+			y: v.z * u.x - v.x * u.z,
+			z: v.x * u.y - v.y * u.x);
 
 		public double Dot(Vec3 right) => Vec3.Dot(this, right);
 
 		public Vec3 Cross(Vec3 right) => Vec3.Cross(this, right);
 
-		public override string ToString() => "{x:" + x + ", y:" + y + ", z:" + z + "}";
+		public (double x, double y, double z) ToTuple() => (x, y, z);
+
+		public override string ToString() => "{x: " + x + ", y: " + y + ", z: " + z + "}";
 	}
 
 	public struct Quaternion {
@@ -47,15 +49,9 @@ namespace Backend.Math64 {
 
 		public static Quaternion Identity => new Quaternion(0, 0, 0, 1);
 
-		public Quaternion(double x, double y, double z, double w) {
-			var e = new ArgumentException("Quaternion values must be between -1 and 1.");
-			if (x is < -1 or > 1 || y is < -1 or > 1 || z is < -1 or > 1 || w is < -1 or > 1) throw e;
+		public Quaternion(double w, Vec3 v) { this.w = w; this.v = v; }
 
-			this.v = new Vec3(x, y, z);
-			this.w = w;
-		}
-
-		public Quaternion(double w, Vec3 v) : this(v.x, v.y, v.z, w) {}
+		public Quaternion(double x, double y, double z, double w) : this(w, new Vec3(x, y, z)) {}
 
 		public static Quaternion operator +(Quaternion a) => a;
 
@@ -64,20 +60,51 @@ namespace Backend.Math64 {
 			Quaternion b
 		) => new Quaternion(a.W + b.W, a.v + b.v);
 
+		// References Handmade-Math: https://github.com/HandmadeMath/Handmade-Math
+
+		public static Quaternion operator -(Quaternion a) => new Quaternion(-a.X, -a.Y, -a.Z, -a.W);
+
+		public static Quaternion operator -(Quaternion a, Quaternion b) =>
+			new Quaternion(a.X - b.X, a.Y - b.Y, a.Z - b.Z, a.W - b.W);
+
 		public static Quaternion operator *(Quaternion a, Quaternion b) => new Quaternion(
-			w: a.W * b.W - a.v.Dot(b.v),
-			v: a.W * b.v + b.W * a.v + a.v.Cross(b.v));
+			x: a.X * b.W + a.Y * b.Z - a.Z * b.Y + a.W * b.X,
+			y: (-a.X * b.Z) + a.Y * b.W + a.Z * b.X + a.W * b.Y,
+			z: a.X * b.Y - a.Y * b.X + a.Z * b.W + a.W * b.Z,
+			w: (-a.X * b.X) - a.Y * b.Y - a.Z * b.Z + a.W * b.W);
 
-		public static Quaternion Difference(Quaternion a, Quaternion b) => a.Difference(b);
+		public static Quaternion operator *(Quaternion a, double scalar) =>
+			new Quaternion(a.X * scalar, a.Y * scalar, a.Z * scalar, a.W * scalar);
 
-		public Quaternion Conjugate() => new Quaternion(w, -v);
+		public static Quaternion operator /(Quaternion a, double scalar) =>
+			new Quaternion(a.X / scalar, a.Y / scalar, a.Z / scalar, a.W / scalar);
 
-		public Quaternion Inverse() {
-			var magnitude = Math.Sqrt(W * W + X * X + Y * Y + Z * Z);
-			return new Quaternion(W / (magnitude * magnitude), (1 / (magnitude * magnitude)) * v);
-		}
+		public static double Dot(Quaternion a, Quaternion b) => a.X * b.X + a.Y * b.Y + a.Z * b.Z + a.W * b.W;
 
-		public Quaternion Difference(Quaternion right) => this * right.Inverse();
+		public double Dot(Quaternion b) => Dot(this, b);
+
+		public static Quaternion Inverse(Quaternion a) => new Quaternion(-a.X, -a.Y, -a.Z, a.W);
+
+		public Quaternion Inverse() => Inverse(this);
+
+		public static Quaternion Normalize(Quaternion a) => a / Math.Sqrt(a.Dot(a));
+
+		public Quaternion Normalize() => Normalize(this);
+
+		// public static Quaternion operator *(Quaternion a, Quaternion b) => new Quaternion(
+		// 	w: a.W * b.W - a.v.Dot(b.v),
+		// 	v: a.W * b.v + b.W * a.v + a.v.Cross(b.v));
+
+		// public static Quaternion Difference(Quaternion a, Quaternion b) => a.Difference(b);
+
+		// public Quaternion Conjugate() => new Quaternion(w, -v);
+
+		// public Quaternion Inverse() {
+		// 	var magnitude = Math.Sqrt(W * W + X * X + Y * Y + Z * Z);
+		// 	return new Quaternion(W / (magnitude * magnitude), (1 / (magnitude * magnitude)) * v);
+		// }
+
+		// public Quaternion Difference(Quaternion right) => this * right.Inverse();
 
 		// Reference: https://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/
 		public (double roll, double pitch, double yaw) ToEuler() {
