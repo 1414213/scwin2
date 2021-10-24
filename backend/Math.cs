@@ -1,6 +1,6 @@
 using System;
 
-namespace Backend.CustomMath {
+namespace Backend.Math64 {
 	public struct Vec3 {
 		public double x, y, z;
 
@@ -33,7 +33,7 @@ namespace Backend.CustomMath {
 
 		public Vec3 Cross(Vec3 right) => Vec3.Cross(this, right);
 
-		public override string ToString() => "(x:" + x + ", y:" + y + ", z:" + z + ")";
+		public override string ToString() => "{x:" + x + ", y:" + y + ", z:" + z + "}";
 	}
 
 	public struct Quaternion {
@@ -49,10 +49,7 @@ namespace Backend.CustomMath {
 
 		public Quaternion(double x, double y, double z, double w) {
 			var e = new ArgumentException("Quaternion values must be between -1 and 1.");
-			if (x is < -1 or > 1) throw e;
-			if (y is < -1 or > 1) throw e;
-			if (z is < -1 or > 1) throw e;
-			if (w is < -1 or > 1) throw e;
+			if (x is < -1 or > 1 || y is < -1 or > 1 || z is < -1 or > 1 || w is < -1 or > 1) throw e;
 
 			this.v = new Vec3(x, y, z);
 			this.w = w;
@@ -65,15 +62,11 @@ namespace Backend.CustomMath {
 		public static Quaternion operator +(
 			Quaternion a,
 			Quaternion b
-		) => new Quaternion(a.W + b.W, a.ToVec3().v + b.ToVec3().v);
+		) => new Quaternion(a.W + b.W, a.v + b.v);
 
-		public static Quaternion operator *(Quaternion a, Quaternion b) {
-			var (_, v) = a.ToVec3();
-			var (_, u) = b.ToVec3();
-			return new Quaternion(
-				w: a.W * b.W - v.Dot(u),
-				v: a.W * u + b.W * v + v.Cross(u));
-		}
+		public static Quaternion operator *(Quaternion a, Quaternion b) => new Quaternion(
+			w: a.W * b.W - a.v.Dot(b.v),
+			v: a.W * b.v + b.W * a.v + a.v.Cross(b.v));
 
 		public static Quaternion Difference(Quaternion a, Quaternion b) => a.Difference(b);
 
@@ -106,8 +99,6 @@ namespace Backend.CustomMath {
 
 		public (double x, double y, double z, double w) ToTuple() => (X, Y, Z, W);
 
-		public (double w, Vec3 v) ToVec3() => (W, v);
-
-		public override string ToString() => "(W:" + W + " " + v + ")";
+		public override string ToString() => "{W: " + W + ", X: " + X + ", Y: " + Y + ", Z: " + Z + "}";
 	}
 }
