@@ -48,18 +48,19 @@ namespace Robot {
 			//Console.WriteLine(macro.ToString(brief: true));
 			this.Press(macro.PressButtons);
 			this.Release(macro.ReleaseButtons);
-			if (macro.MoveMouse is not {x: 0, y: 0, relatively: true}) {
+			if (macro.MoveMouse is not {x: 0, y: 0, relatively: true})
 				this.MoveMouse(macro.MoveMouse.x, macro.MoveMouse.y, macro.MoveMouse.relatively);
-			} else if (macro.ScrollMouse is not {amount: 0}) {
+			if (macro.ScrollMouse is not {amount: 0})
 				this.ScrollMouseWheel(macro.ScrollMouse.amount, macro.ScrollMouse.asClicks);
-			} else if (macro.PullLeftTrigger != 0) {
+			if (macro.PullLeftTrigger != 0)
 				this.PullLTrigger(macro.pullLeftTrigger);
-			} else if (macro.PullRightTrigger != 0) {
+			if (macro.PullRightTrigger != 0)
 				this.PullRTrigger(macro.pullRightTrigger);
-			} else if (macro.moveLeftStick is not {vector: (0, 0), relatively: true}) {
+			if (macro.moveLeftStick is not {vector: (0, 0), relatively: true}) {
 				var (x, y) = macro.moveLeftStick.vector;
 				this.MoveLStick(x, y, macro.moveLeftStick.relatively);
-			} else if (macro.moveRightStick is not {vector: (0, 0), relatively: true}) {
+			}
+			if (macro.moveRightStick is not {vector: (0, 0), relatively: true}) {
 				var (x, y) = macro.moveRightStick.vector;
 				this.MoveRStick(x, y, macro.moveRightStick.relatively);
 			}

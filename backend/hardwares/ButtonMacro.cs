@@ -103,30 +103,29 @@ namespace Backend {
 				if (!brief) return this.ToString();
 				else {
 					var str = "";
-					if (PressButtons.Length != 0) {
+					if (PressButtons.Length != 0)
 						str += PressButtonsToString() + " ";
-					} else if (ReleaseButtons.Length != 0) {
+					if (ReleaseButtons.Length != 0)
 						str += ReleaseButtonsToString() + " ";
-					} else if (MoveMouse is not {x: 0, y: 0, relatively: true}) {
+					if (MoveMouse is not {x: 0, y: 0, relatively: true})
 						str += "MoveMouse: " + MoveMouse.ToString() + " ";
-					} else if (ScrollMouse is not {amount: 0}) {
+					if (ScrollMouse is not {amount: 0})
 						str += "ScrollMouse: " + ScrollMouse.ToString() + " ";
-					} else if (PullLeftTrigger != 0) {
+					 if (PullLeftTrigger != 0)
 						str += "PullLeftTrigger: " + PullLeftTrigger.ToString() + " ";
-					} else if (PullRightTrigger != 0) {
+					if (PullRightTrigger != 0)
 						str += "PullRightTrigger: " + PullRightTrigger.ToString() + " ";
-					} else if (moveLeftStick is not {vector: (0, 0), relatively: true}) {
+					if (moveLeftStick is not {vector: (0, 0), relatively: true})
 						str += "MoveLeftStick: " + moveLeftStick.ToString() + " ";
-					} else if (moveRightStick is not {vector: (0, 0), relatively: true}) {
+					if (moveRightStick is not {vector: (0, 0), relatively: true})
 						str += "MoveRightStick: " + moveRightStick.ToString() + " ";
-					} else if (AddActionLayer != "") {
+					if (AddActionLayer != "")
 						str += "AddActionLayer: " + AddActionLayer + " "
 							+ "AddActionLayerAsTransparent: " + AddActionLayerAsTransparent;
-					} else if (RemoveActionLayer != "") {
+					if (RemoveActionLayer != "")
 						str += "RemoveActionLayer: " + RemoveActionLayer + " ";
-					} else if (Wait > 0) {
+					if (Wait > 0)
 						str += "Wait: " + Wait + " ";
-					}
 					str.TrimEnd();
 					return str;
 				}
@@ -169,11 +168,10 @@ namespace Backend {
 		private void DoMacros(Macro[] macros) {
 			foreach (var macro in macros) {
 				robot.DoMacro(macro as Robot.Macro);
-				if (macro.AddActionLayer is string aal) {
+				if (macro.AddActionLayer is string aal)
 					EventDoer.AddActionLayer(aal, macro.AddActionLayerAsTransparent);
-				} else if (macro.RemoveActionLayer is string ral) {
+				if (macro.RemoveActionLayer is string ral)
 					EventDoer.RemoveActionLayer(ral);
-				}
 				Thread.Sleep(macro.Wait);
 			}
 		}
