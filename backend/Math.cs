@@ -55,10 +55,7 @@ namespace Backend.MathDouble {
 
 		public static Quaternion operator +(Quaternion a) => a;
 
-		public static Quaternion operator +(
-			Quaternion a,
-			Quaternion b
-		) => new Quaternion(a.W + b.W, a.v + b.v);
+		public static Quaternion operator +(Quaternion a, Quaternion b) => new Quaternion(a.W + b.W, a.v + b.v);
 
 		// References Handmade-Math: https://github.com/HandmadeMath/Handmade-Math
 
@@ -87,24 +84,13 @@ namespace Backend.MathDouble {
 
 		public Quaternion Inverse() => Inverse(this);
 
+		public static Quaternion Difference(Quaternion a, Quaternion b) => a * b.Inverse();
+
+		public Quaternion Difference(Quaternion b) => Difference(this, b);
+
 		public static Quaternion Normalize(Quaternion a) => a / Math.Sqrt(a.Dot(a));
 
 		public Quaternion Normalize() => Normalize(this);
-
-		// public static Quaternion operator *(Quaternion a, Quaternion b) => new Quaternion(
-		// 	w: a.W * b.W - a.v.Dot(b.v),
-		// 	v: a.W * b.v + b.W * a.v + a.v.Cross(b.v));
-
-		// public static Quaternion Difference(Quaternion a, Quaternion b) => a.Difference(b);
-
-		// public Quaternion Conjugate() => new Quaternion(w, -v);
-
-		// public Quaternion Inverse() {
-		// 	var magnitude = Math.Sqrt(W * W + X * X + Y * Y + Z * Z);
-		// 	return new Quaternion(W / (magnitude * magnitude), (1 / (magnitude * magnitude)) * v);
-		// }
-
-		// public Quaternion Difference(Quaternion right) => this * right.Inverse();
 
 		// Reference: https://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/
 		public (double roll, double pitch, double yaw) ToEuler() {
