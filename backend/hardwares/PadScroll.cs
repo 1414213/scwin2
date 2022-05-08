@@ -1,7 +1,7 @@
 using System;
 using api = SteamControllerApi;
 
-namespace Backend {
+namespace Input {
 	public class PadScroll : Trackpad {
 		public bool IsWheelElseSwipe { get; set; } = true;
 		public double Sensitivity { get; set; } = 5;

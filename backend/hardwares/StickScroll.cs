@@ -1,7 +1,7 @@
 using System;
 using api = SteamControllerApi;
 
-namespace Backend {
+namespace Input {
 	public class StickScroll : Hardware {
 		public double Sensitivity { get; set; } = 0.8;
 		public double Deadzone { get => deadzone; set {

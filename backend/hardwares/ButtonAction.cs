@@ -1,7 +1,7 @@
 using System;
 using api = SteamControllerApi;
 
-namespace Backend {
+namespace Input {
 	public class ButtonAction : Button {
 		public bool IsTransparent { get; set; } = true;
 		public string Name { get; set; } = "";

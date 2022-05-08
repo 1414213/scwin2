@@ -1,7 +1,7 @@
 using System;
 using api = SteamControllerApi;
 
-namespace Backend {
+namespace Input {
 	public class StickStick : Hardware {
 		/// <summary>
 		/// Proportion of the thumbstick's radius.

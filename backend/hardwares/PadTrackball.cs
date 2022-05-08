@@ -4,26 +4,24 @@ using System.Threading;
 using System.Threading.Tasks;
 using api = SteamControllerApi;
 
-namespace Backend {
-	public class PadTrackball : Trackpad, MAcceleration {
-		public double Acceleration { get; set; } = 2;
-		public int AccelerationLowerBoundary { get; set; } = 2000;
-		public int AccelerationUpperBoundary { get; set; } = 1700;
-
+namespace Input {
+	public class PadTrackball : Trackpad {
+		public Accelerator Acceleration { get; set; } = new Accelerator(amount: 2, kind: Curve.Wide);
 		public bool HasInertia { get; set; } = true;
 		public double Sensitivity {
 			get => (-Int16.MinValue + Int16.MaxValue) * sensitivity;
 			set => sensitivity = value / (-Int16.MinValue + Int16.MaxValue);
 		}
 		public double Decceleration { get => decceleration; set => decceleration = value; }
+		public int Smoothing { get => smoother.Smoothing; set => smoother.Smoothing = value; }
 		public bool InvertX { get; set; }
 		public bool InvertY { get; set; }
 
 		private double sensitivity = 0.03;
 		private bool isInitialPress = true;
-		private (short x, short y) previous;
+		private (int x, int y) previous;
 		private (double x, double y) amountStore;
-		private MAcceleration accel => this as MAcceleration;
+		private PointSmoother smoother = new PointSmoother(500, bufferSize: 16);
 
 		// Fields for calculating rolling:
 		private Task? doInertia;
@@ -31,13 +29,6 @@ namespace Backend {
 		private Stopwatch stopwatch = new Stopwatch();
 		private long elapsedTime;
 		private double decceleration = 0.1;
-
-		public PadTrackball() {}
-
-		public PadTrackball(int sensitivity, bool hasInertia) {
-			this.Sensitivity = sensitivity;
-			this.HasInertia = hasInertia;
-		}
 
 		protected override void DoEventImpl(api.ITrackpadData input) {
 			var e = input as api.ITrackpadData ?? throw new ArgumentException(input + " must be of trackpad.");
@@ -47,7 +38,7 @@ namespace Backend {
 				previous = e.Position;
 				isRolling = false;
 				isInitialPress = false;
-				this.ClearSmoothingBuffer((0, 0, 0));
+				smoother.ClearSmoothingBuffer();
 				stopwatch.Restart();
 				return;
 			}
@@ -58,11 +49,13 @@ namespace Backend {
 			stopwatch.Restart();
 
 			// Compute mouse movement:
+			//var coord = smoother.SoftTieredSmooth(e.Position);
 			var coord = e.Position;
 			//var delta = this.SmoothInput((x: coord.x - previous.x, y: coord.y - previous.y));
-			var delta = this.SoftTieredSmooth((x: coord.x - previous.x, y: coord.y - previous.y));
-			//var movement = (x: delta.x * sensitivity, y: delta.y * sensitivity);
-			var movement = this.AccelerateInput(delta.x, delta.y, sensitivity);
+			var delta = smoother.SoftTieredSmooth((x: coord.x - previous.x, y: coord.y - previous.y));
+			//var delta = (x: coord.x - previous.x, y: coord.y - previous.y);
+			var movement = (x: delta.x * sensitivity, y: delta.y * sensitivity);
+			//var movement = this.AccelerateInput(delta.x, delta.y, sensitivity);
 			if (InvertX) movement.x = -movement.x;
 			if (InvertY) movement.y = -movement.y;
 
@@ -89,9 +82,7 @@ namespace Backend {
 						// While guardian is a sanity check; stops rolling by simulating when the trackball loses
 						// the momentum needed to overcum friction.  Constant is measured in velocity per millisecond.
 						while (Math.Sqrt(speed.x * speed.x + speed.y * speed.y) > 5) {
-							if (!isRolling) {
-								return;
-							}
+							if (!isRolling) { return; }
 
 							// Remove speed according to amount of decceleration.
 							speedMagnitude.x -= speedMagnitude.x * decceleration;
@@ -115,7 +106,7 @@ namespace Backend {
 		public override void Unfreeze(api.IInputData newInput) {
 			// Reset previous input.
 			isInitialPress = true;
-			base.ClearSmoothingBuffer((0, 0, 0));
+			smoother.ClearSmoothingBuffer();
 
 			this.DoEvent(newInput);
 		}
@@ -133,7 +124,7 @@ namespace Backend {
 		private void Move((double x, double y) movement) => this.Move(movement.x, movement.y);
 
 		private (double x, double y) AccelerateInput(int x, int y, double startingSensitivity) {
-			return accel.AccelerateInput(x, y, startingSensitivity);
+			return Acceleration.AccelerateInput(x, y, startingSensitivity);
 		}
 	}
 }

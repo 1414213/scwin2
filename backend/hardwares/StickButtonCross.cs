@@ -2,7 +2,7 @@ using System;
 using api = SteamControllerApi;
 using Robot;
 
-namespace Backend {
+namespace Input {
 	public class StickButtonCross : Hardware {
 		public Button East { get; set; } = new ButtonKey();
 		public Button North { get; set; } = new ButtonKey();

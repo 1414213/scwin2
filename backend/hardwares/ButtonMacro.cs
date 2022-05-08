@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using api = SteamControllerApi;
 
-namespace Backend {
+namespace Input {
 	public class ButtonMacro : Button {
 		public enum ButtonState { None = 0, Press = 1, Release, Undefined }
 

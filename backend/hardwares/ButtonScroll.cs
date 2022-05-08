@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 //using api = SteamControllerApi;
 
 
-namespace Backend {
+namespace Input {
 	public class ButtonScroll : Button {
 		public double Amount { get; set; } = 1;
 		public bool AsClicks { get; set; } = true;

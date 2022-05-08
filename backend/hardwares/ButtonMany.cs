@@ -1,7 +1,7 @@
 using System.Collections;
 using Robot;
 
-namespace Backend {
+namespace Input {
 	class ButtonMany : Button, IEnumerable {
 		public Button[] Buttons { get; set; } = {};
 

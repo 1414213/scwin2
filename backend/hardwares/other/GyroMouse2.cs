@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using SteamControllerApi;
 using api = SteamControllerApi;
 
-namespace Backend {
+namespace Input {
 	public class GyroMouse2 : Hardware {
 		public double Sensitivity {
 			get => (-Int16.MinValue + Int16.MaxValue) * sensitivity;

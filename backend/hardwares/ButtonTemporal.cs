@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Backend {
+namespace Input {
 	public class ButtonTemporal : Button {
 		public Button Short { get; set; } = new ButtonKey();
 		public Button Long { get; set; } = new ButtonKey();

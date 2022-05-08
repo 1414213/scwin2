@@ -1,12 +1,12 @@
 using System;
-using Backend.MathDouble;
+using Input.MathDouble;
 using api = SteamControllerApi;
 
 // x = roll  = heading
 // y = pitch = attitude
 // z = yaw   = bank
 
-namespace Backend {
+namespace Input {
 	public class GyroMouse : Hardware {
 		/// <summary>Amount of pixels covered by the entire range of rotation.</summary>
 		public double Sensitivity { get => sensitivity * Math.PI * 2; set => sensitivity = value / (Math.PI * 2); }

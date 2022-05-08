@@ -5,7 +5,7 @@ using api = SteamControllerApi;
 using Robot;
 
 
-namespace Backend {
+namespace Input {
 	// NOTE: If PullThreshold is not set on construction, then it defaults to 0.
 	public class TriggerButton : Hardware {
 		public Button Button { get; set; } = new ButtonKey(Key.None);

@@ -1,7 +1,7 @@
 using SteamControllerApi;
 using api = SteamControllerApi;
 
-namespace Backend {
+namespace Input {
 	public class PadRadial : Trackpad {
 		public Button[] Buttons { get => radial.Buttons; set => radial.Buttons = value; }
 		public double Deadzone { get => radial.Deadzone; set => radial.Deadzone = value; }

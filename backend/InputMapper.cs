@@ -10,12 +10,24 @@ using api = SteamControllerApi;
 using Robot;
 
 
-namespace Backend {
+namespace Input {
 	public static class InputMapper {
 		public class Map {
 			public string Name { get; set; } = "";
 			public Dictionary<string, Hardware?> InputMap { get; set; } = CreateBlankInputMap();
 			public Dictionary<string, Dictionary<string, Hardware?>> ActionMaps = new ();
+
+			// Ensure that no keys are being held by the OS when the program stops.
+			~Map() {
+				foreach (var entry in InputMap) {
+					entry.Value?.ReleaseAll();
+				}
+				foreach (var mapEntry in ActionMaps) {
+					foreach (var entry in mapEntry.Value) {
+						entry.Value?.ReleaseAll();
+					}
+				}
+			}
 		}
 
 		public static string Directory { get; set; } = @"inputmaps\";

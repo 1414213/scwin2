@@ -1,7 +1,7 @@
 using System;
 using api = SteamControllerApi;
 
-namespace Backend {
+namespace Input {
 	public class TriggerTrigger : Hardware {
 		public bool IsLeftElseRight { get; set; }
 		public bool IncludeSwitchInRange { get; set; }

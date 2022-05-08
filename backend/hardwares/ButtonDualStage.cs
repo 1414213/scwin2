@@ -1,6 +1,6 @@
 using System;
 
-namespace Backend {
+namespace Input {
 	internal class ButtonDualStage : Button {
 		public Button Button { get; set; } = new ButtonKey();
 		public new bool IsPressed => this.isPressed;

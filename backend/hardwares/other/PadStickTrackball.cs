@@ -6,8 +6,8 @@ using SteamControllerApi;
 using api = SteamControllerApi;
 
 
-namespace Backend {
-	public class PadStickTrackball : Trackpad, MAcceleration {
+namespace Input {
+	public class PadStickTrackball : Trackpad {
 		public double Acceleration { get; set; } = 2;
 		public int AccelerationLowerBoundary { get; set; } = 2000;
 		public int AccelerationUpperBoundary { get; set; } = 1700;
@@ -21,7 +21,8 @@ namespace Backend {
 		}
 		public double Decceleration { get; set; } = 0.1;
 
-		private MAcceleration accel => this as MAcceleration;
+		private Accelerator accel = new Accelerator();
+		private PointSmoother smoother = new PointSmoother();
 		private bool isInitialPress = true, isRolling;
 		private long elapsedTime;
 		private double sensitivity = 0.03;
@@ -113,7 +114,7 @@ namespace Backend {
 		public override void Unfreeze(IInputData newInput) {
 			// Reset previous input.
 			isInitialPress = true;
-			base.ClearSmoothingBuffer((0, 0, 0));
+			smoother.ClearSmoothingBuffer();
 
 			this.DoEvent(newInput);
 		}

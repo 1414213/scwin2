@@ -2,7 +2,7 @@ using System;
 using Newtonsoft.Json;
 using api = SteamControllerApi;
 
-namespace Backend {
+namespace Input {
 	public abstract class Button : Hardware {
 		public bool IsDualStage { get; set; }
 		[JsonIgnore]

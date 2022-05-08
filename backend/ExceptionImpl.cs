@@ -1,6 +1,6 @@
 using System;
 
-namespace Backend {
+namespace Input {
 	public class NoGamepadCreatedException : Exception {
 		public NoGamepadCreatedException() : base("No virtual gamepad was created.") {}
 	}

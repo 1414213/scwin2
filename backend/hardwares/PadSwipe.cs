@@ -8,7 +8,7 @@ using api = SteamControllerApi;
 using Robot;
 
 
-namespace Backend {
+namespace Input {
 	public class PadSwipe : Trackpad {
 		public double MinimunDistance { get => minimumDistance;
 			set {

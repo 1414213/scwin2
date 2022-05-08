@@ -1,4 +1,4 @@
-namespace Backend {
+namespace Input {
 	public class ButtonToggle : Button {
 		public Button ButtonToToggle { get; set; } = new ButtonKey();
 		public bool IsPressElseRelease { get; set; } = true;

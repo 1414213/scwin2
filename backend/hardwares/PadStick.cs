@@ -2,7 +2,7 @@ using System;
 using SteamControllerApi;
 using api = SteamControllerApi;
 
-namespace Backend {
+namespace Input {
 	public class PadStick : Trackpad {
 		public double Deadzone { get => stick.Deadzone; set => stick.Deadzone = value; }
 		public double Gradingzone { get => stick.Gradingzone; set => stick.Gradingzone = value; }

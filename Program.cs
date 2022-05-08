@@ -32,12 +32,13 @@ class Program {
 				case "--no-gamepad":
 					noGamepad = true;
 					break;
-				case "-d":
+				case "-dir":
+				case "--dir":
 				case "-directory":
 				case "--directory": {
 					DoFlag(directory => {
 						if (!(directory.EndsWith("\\") || directory.EndsWith("/"))) directory += "/";
-						Backend.InputMapper.Directory = directory;
+						Input.InputMapper.Directory = directory;
 					}, "No directory given.");
 					break;
 				}
@@ -107,12 +108,14 @@ class Program {
 		await device.InitializeAsync();
 
 		// Prepare to handle input events from steam controller.
-		var (map, isNotBlank) = Backend.InputMapper.Open(inputMapName);
+		var (map, isNotBlank) = Input.InputMapper.Open(inputMapName);
 		if (!isNotBlank) {
 			Console.WriteLine($"New input map {map.Name} created!");
 			return;
 		}
-		var doer = new Backend.EventDoer(map, steamcon, !noGamepad){ Debug = debugType };
+		Input.EventDoer.Debug = debugType;
+		Input.EventDoer.Map = map;
+		if (noGamepad) Input.Hardware.DisableGamepad(); else Input.Hardware.EnableGamepad();
 
 		// Haptic tests:
 		// var haptic = new byte[64] {
@@ -156,7 +159,7 @@ class Program {
 				events = steamcon.GenerateEvents(input);
 				if (debugType is 2) foreach (var e in events) Console.WriteLine(e);
 				if (debugType is 3) foreach (var e in events) if (e is not api.IMotionData) Console.WriteLine(e);
-				doer.DoEvents(events);
+				Input.EventDoer.DoEvents(events);
 			}
 		}
 	}

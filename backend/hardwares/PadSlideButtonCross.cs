@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using api = SteamControllerApi;
 using Robot;
 
-namespace Backend {
+namespace Input {
 	public class PadSlideButtonCross : Trackpad {
 		// Wrap a StickButtonCross object.
 		public Button East         { get => buttonCross.East;        set => buttonCross.East = value; }

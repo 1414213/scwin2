@@ -3,8 +3,8 @@ using System.Diagnostics;
 using Newtonsoft.Json;
 using api = SteamControllerApi;
 
-namespace Backend {
-	public abstract class Trackpad : SmoothInt {
+namespace Input {
+	public abstract class Trackpad : Hardware {
 		public Button DoubleTapButton { get; set; } = new ButtonKey();
 		public bool IsDoubleTapHeld { get; set; }
 

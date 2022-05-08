@@ -2,7 +2,7 @@ using System;
 using SteamControllerApi;
 using api = SteamControllerApi;
 
-namespace Backend {
+namespace Input {
 	class PadSlideStick : Trackpad {
 		public double RelativeSize {
 			get => this.relativeSize;

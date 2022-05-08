@@ -1,7 +1,7 @@
 using System;
 using api = SteamControllerApi;
 
-namespace Backend {
+namespace Input {
 	public class ButtonDoubler : Button {
 		public Button Button { get; set; } = new ButtonKey();
 

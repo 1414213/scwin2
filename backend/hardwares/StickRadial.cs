@@ -2,7 +2,7 @@ using System;
 using Newtonsoft.Json;
 using api = SteamControllerApi;
 
-namespace Backend {
+namespace Input {
 	public class StickRadial : Hardware {
 		public Button[] Buttons { get; set; } = {};
 		public double Deadzone { get => deadzone; set {

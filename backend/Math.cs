@@ -1,6 +1,6 @@
 using System;
 
-namespace Backend.MathDouble {
+namespace Input.MathDouble {
 	public struct Vec3 {
 		public double x, y, z;
 

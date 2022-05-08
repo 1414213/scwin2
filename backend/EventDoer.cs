@@ -3,10 +3,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Backend {
+namespace Input {
 	using SteamControllerApi;
 
-	public class EventDoer {
+	public static class EventDoer {
 		public struct ActionLayer {
 			public string name;
 			public Dictionary<string, Hardware?> inputMap;
@@ -23,30 +23,28 @@ namespace Backend {
 			}
 		}
 
-		public LinkedList<ActionLayer> ActionLayering { get; } = new ();
-		public InputMapper.Map Map { get => map; init {
+		static public LinkedList<ActionLayer> ActionLayering { get; } = new ();
+		static public InputMapper.Map Map { get => map; set {
 			map = value;
 			ActionLayering.AddLast(new ActionLayer(map.Name, map.InputMap, false, false));
 		} }
+		static public IInputData[] CurrentEvents => currentEvents;
 
-		private InputMapper.Map map = new InputMapper.Map();
+		static private InputMapper.Map map = new InputMapper.Map();
+		static private IInputData[] currentEvents = {};
 
 		// Stuff for changing state of this EventDoer from the hardware classes.
 		// Currently Hardware stores a static reference to some EventDoer object so to connect multiple
 		// steamcons the references would need to be swapped for each steamcon.
-		public int Debug { get; init; }
+		static public int Debug { get; set; }
 
-		private ConcurrentQueue<IInputData> eventPipe = new ();
-		private Task processEvents;
-		private readonly object actionLayeringLock = new {};
-		private Controller steamcon;
+		static private ConcurrentQueue<IInputData> eventPipe = new ();
+		static private Task processEvents;
+		static private readonly object actionLayeringLock = new {};
 		
-		private EventDoer(bool createVirtualGamepad, Controller steamcon) {
-			Hardware.Init(createVirtualGamepad, this);
-			this.steamcon = steamcon;
-
+		static EventDoer() {
 			// For if event generation from DoEvent methods is added.  Currently does nothing.
-			this.processEvents = Task.Run(() => {
+			EventDoer.processEvents = Task.Run(() => {
 				while (true) {
 					while (eventPipe.IsEmpty) {} // Wait for side effects to be added.
 					var e = (IInputData?)null;
@@ -72,40 +70,16 @@ namespace Backend {
 			});
 		}
 
-		public EventDoer(InputMapper.Map map, Controller steamcon, bool createVirtualGamepad) : this(
-			createVirtualGamepad,
-			steamcon
-		) {
-			this.Map = map;
-		}
-
-		~EventDoer() {
-			foreach (var layer in ActionLayering) foreach (var entry in layer.inputMap) entry.Value?.ReleaseAll();
-		}
-
 		/// <summary>Take in input and then simulate input.</summary>
-		public void DoEvents(IList<IInputData> events) {
+		static public void DoEvents(IInputData[] events) {
+			EventDoer.currentEvents = events;
 			foreach (var e in events) eventPipe.Enqueue(e);
 		}
-
-		public IInputData GetStateOf(KeyInternal key) => steamcon.State[key];
-
-		public IInputData GetStateOfButton(Key key) => steamcon.State[key.ToInternal()];
-
-		public ITriggerData GetStateOfTrigger(bool leftElseRight) {
-			return (ITriggerData)steamcon.State[leftElseRight ? KeyInternal.LTrigger : KeyInternal.RTrigger];
-		}
-
-		public IPositional GetStateOfStick() => (IPositional)steamcon.State[KeyInternal.Stick];
-
-		public IMotionData GetStateOfMotion() => (IMotionData)steamcon.State[KeyInternal.Motion];
-
-		public long GetTimingOf(Key key) => steamcon.StateTimings[key.ToInternal()].ElapsedMilliseconds;
 
 		//public void AddSideEffect(SideEffect sideEffect) => sideEffectsPipe.Enqueue(sideEffect);
 
 		/// <summary>Thread-safe.</summary>
-		public void AddActionLayer(string name, bool isTransparent) {
+		static public void AddActionLayer(string name, bool isTransparent) {
 			lock (actionLayeringLock) {
 				if (Map.ActionMaps.ContainsKey(name)) {
 					ref var last = ref ActionLayering.Last!.ValueRef;
@@ -119,7 +93,7 @@ namespace Backend {
 		}
 
 		/// <summary>Thread-safe.</summary>
-		public void RemoveActionLayer(string name) {
+		static public void RemoveActionLayer(string name) {
 			lock (actionLayeringLock) {
 				for (var n = ActionLayering.First!.Next; n != null; n = n.Next) if (n.Value.name == name) {
 					ActionLayering.Remove(n);
@@ -127,27 +101,5 @@ namespace Backend {
 				}
 			}
 		}
-
-		// private void HandleSideEffects() {
-		// 	bool wasSuccessful;
-		// 	SideEffect sideEffect;
-
-		// 	while (!sideEffectsPipe.IsEmpty) {
-		// 		wasSuccessful = sideEffectsPipe.TryDequeue(out sideEffect!);
-		// 		if (wasSuccessful) switch (sideEffect) {
-		// 			// match for different side effects the event doer needs to produce
-		// 			case ActionMapAddition a: {
-		// 				this.AddActionLayer(a.name, a.isTransparent);
-		// 				break;
-		// 			}
-		// 			case ActionMapRemoval r: {
-		// 				this.RemoveActionLayer(r.name);
-		// 				break;
-		// 			}
-		// 			default: throw new NotImplementedException(
-		// 				$"SideEffect type {sideEffect.GetType().ToString()} doesn't exist.");
-		// 		}
-		// 	}
-		// }
 	}
 }

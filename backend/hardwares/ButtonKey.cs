@@ -1,6 +1,6 @@
 using Robot;
 
-namespace Backend {
+namespace Input {
 	public class ButtonKey : Button {
 		public Key Key { get; set; } = Key.None;
 

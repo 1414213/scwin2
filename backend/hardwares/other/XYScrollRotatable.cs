@@ -2,7 +2,7 @@ using System;
 using SteamControllerApi;
 using api = SteamControllerApi;
 
-namespace Backend {
+namespace Input {
 	public class XYScrollRotatable : Trackpad {
 		public bool IsWheelElseSwipe { get; set; } = true;
 		public int Sensitivity { get; set; } = 50;
