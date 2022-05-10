@@ -62,9 +62,10 @@ namespace Input {
 		private int lowerBoundary, upperBoundary;
 
 		public Accelerator(
-			double amount = 1.5,
-			int lowerBoundary = 0, int upperBoundary = int.MaxValue,
-			Curve kind = Curve.None
+			double amount = 2,
+			int lowerBoundary = 0,
+			int upperBoundary = int.MaxValue,
+			Curve kind = Curve.Wide
 		) {
 			this.Amount = amount;
 			this.lowerBoundary = lowerBoundary;

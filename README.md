@@ -12,7 +12,7 @@ This is a hobby project that aims to suppliment Steam Input by implementing feat
 It is recommended to use this alongside the Steam client and Steam Input.  The first argument should be the name of a keymap.  If the given keymap cannot be found then it creates a blank keymap of the given name.  Flags can appear anywhere.
 ### Flags
 - -n, --no-gamepad: start the program without creating a virtual gamepad
-- -d [string], --directory [string]: specify a directory to search for input maps from as the next argument
+- -dir [string], --directory [string]: specify a directory to search for input maps from as the next argument
 - --debug [int]: show debug information
     - 0: nothing
     - 1: raw input
@@ -34,7 +34,7 @@ Any type beginning with the name "Button" is a type of a button type.  Any butto
 
 ### ButtonAction
 ```
-"$type": "Backend.ButtonAction, scwin",
+"$type": "Input.ButtonAction, scwin",
 "IsLayered": true,
 "Name": ""
 ```
@@ -42,21 +42,21 @@ Functions like action layers in Steam Input.  Layers an action map when pressed 
 
 ### ButtonDoubler
 ```
-"$type": "Backend.ButtonDoubler, scwin",
+"$type": "Input.ButtonDoubler, scwin",
 "Button": Button
 ```
 Taps `Button` when pressed and taps it again when it is released.
 
 ### ButtonDualStage
 ```
-"$type": "Backend.ButtonDualStage, scwin",
+"$type": "Input.ButtonDualStage, scwin",
 "Button": Button,
 ```
 Presses `Button` when pressed and released and then released `Button` when pressed and released again.
 
 ### ButtonMacro
 ```
-"$type": "Backend.ButtonMacro, scwin",
+"$type": "Input.ButtonMacro, scwin",
 "Pressed": [Macro],
 "Held": [Macro],
 "Released": [Macro],
@@ -94,14 +94,14 @@ Defines input to simulate.
 
 ### ButtonKey
 ```
-"$type": "Backend.ButtonKey, scwin",
+"$type": "Input.ButtonKey, scwin",
 "Key": "None"
 ```
 Simulates input from a key.  `Key` is the key to simulate and can be defined as its name or key code.
 
 ### ButtonScroll
 ```
-"$type": "Backend.ButtonScroll, scwin",
+"$type": "Input.ButtonScroll, scwin",
 "Amount": 1.0,
 "AsClicks": true,
 "IsContinuous": false
@@ -110,7 +110,7 @@ Scrolls the mouse wheel when pressed.  `Amount` specifies the amount to scroll. 
 
 ### ButtonTemporal
 ```
-"$type": "Backend.ButtonTemporal, scwin",
+"$type": "Input.ButtonTemporal, scwin",
 "Short": Button,
 "Long": Button,
 "TemporalThreshold": 500,
@@ -120,7 +120,7 @@ Allows a single button to simulate two buttons, differentating between the two b
 
 ### ButtonMany
 ```
-"$type": "Backend.ButtonMany, scwin",
+"$type": "Input.ButtonMany, scwin",
 "Buttons": [Button]
 ```
 Presses and releases every `Button` in `Buttons` when pressed and released, respectively.  `Buttons` is a list of `Button` types.
@@ -134,7 +134,7 @@ Defines functionality shared by all simulation using a trackpad; these JSON fiel
 
 ### PadButtonCross
 ```
-"$type": "Backend.PadButtonCross, scwin",
+"$type": "Input.PadButtonCross, scwin",
 "East": Button,
 "North": Button,
 "West": Button,
@@ -151,7 +151,7 @@ Works the same as `StickButtonCross`.
 
 ### PadRadial
 ```
-"$type": "Backend.PadRadial, scwin",
+"$type": "Input.PadRadial, scwin",
 "Buttons": [Button],
 "Deadzone": 0.0,
 "AngleOffset": 0.0,
@@ -162,7 +162,7 @@ Works the same as `StickRadial`.  All `Button`s in `Buttons` are released when i
 
 ### PadScroll
 ```
-"$type": "Backend.PadScroll, scwin",
+"$type": "Input.PadScroll, scwin",
 "IsWheelElseSwipe": true,
 "Sensitivity": 5.0,
 "Reversed": false,
@@ -172,7 +172,7 @@ Sets a trackpad to simulate scrolling the mouse wheel.  `IsWheelElseSwipe` sets 
 
 ### PadSlideButtonCross
 ```
-"$type": "Backend.PadSlideButtonCross, scwin",
+"$type": "Input.PadSlideButtonCross, scwin",
 "East": Button,
 "North": Button,
 "West": Button,
@@ -191,7 +191,7 @@ Works the same as `PadSlideStick` but simuates a sliding `PadButtonCross` instea
 
 ### PadSlideStick
 ```
-"$type": "Backend.PadSlideStick, scwin",
+"$type": "Input.PadSlideStick, scwin",
 "RelativeSize": 0.5,
 "Deadzone": 0.1,
 "IsLeftElseRight": false,
@@ -201,7 +201,7 @@ Translates sliding input on the trackpad into thumbstick input.  For example sli
 
 ### PadStick
 ```
-"$type": "Backend.PadStick, scwin",
+"$type": "Input.PadStick, scwin",
 "Deadzone": 0.2,
 "Gradingzone": 0.8,
 "IsLeftElseRight": false
@@ -210,7 +210,7 @@ Sets a trackpad to simulate a thumbstick of the virtual gamepad; works the same 
 
 ### PadSwipe
 ```
-"$type": "Backend.PadSwipe, scwin",
+"$type": "Input.PadSwipe, scwin",
 "MinimumDistance": 0.25,
 "AngleOffset": 0.0,
 "LongSwipeThreshold": 1.5,
@@ -223,18 +223,34 @@ Translates lines drawn as swipes on a trackpad into button input based on the di
 
 ### PadTrackball
 ```
-"$type": "Backend.PadTrackball, scwin",
+"$type": "Input.PadTrackball, scwin",
 "HadInertia": true,
 "Sensitivity": 1966.05
+"Smoothing": 500,
 "Decceleration": 0.1,
+"Acceleration": {
+    "Amount": 2,
+    "LowerBoundary": 0,
+    "UpperBoundary": 2147483647,
+    "Kind": "Wide"
+},
 "InvertX": false,
 "InvertY": false
 ```
 Sets a trackpad to act as a trackball.  `HasInertia` sets whether the trackball will roll when input stops when true.  `Sensitivity` sets the resolution of sensitivity measured as pixels per diameter.  For example when set to 500 an input the length of half the trackpad will move the mouse cursor 250 pixels.  `Decceleration` sets how fast the trackball deccelerates when rolling.  `InvertX` and `InvertY` invert the x and y axises.
 
+Accelerator controls how the trackball accelerates input.
+- `Amount` sets the factor to multiply the sensitivity by.  A value of 1 will create no acceleration.
+- `LowerBoundary` sets the movement speed at which acceleration begins.  Giving a negative value will set this to 0 so that acceleration starts at all speeds.
+- `UpperBoundary` sets the movement speed at which acceleration stops.  Giving this a negative value will set it to it's maximum value so that acceleration never stops.
+- `Kind` sets the kind of acceleration curve the trackball will use.
+  - `Linear` - Speed is multiplied by a constant value.
+  - `Wide` - Wide acceleration.  Acceleration increases expodentially, giving it a more gradual start.
+  - `None` - No acceleration.
+
 ### StickButtonCross
 ```
-"$type": "Backend.StickButtonCross, scwin",
+"$type": "Input.StickButtonCross, scwin",
 "East": Button,
 "North": Button,
 "West": Button,
@@ -251,7 +267,7 @@ Allows the thumbstick to be used like a directional pad.  `East`, `North`, `West
 
 ### StickRadial
 ```
-"$type": "Backend.StickRadial, scwin",
+"$type": "Input.StickRadial, scwin",
 "Buttons": [Button],
 "Deadzone": 0.1,
 "AngleOffset": 0.0,
@@ -262,7 +278,7 @@ Seperates the thumbstick into a number of slices and activates a slice's respect
 
 ### StickScroll
 ```
-"$type": "Backend.StickScroll, scwin",
+"$type": "Input.StickScroll, scwin",
 "Sensitivity": 0.8,
 "Deadzone": 0.2,
 "Reversed": false,
@@ -272,7 +288,7 @@ Sets the thumbstick to scroll the mouse wheel.  `Sensitivity` sets how quickly t
 
 ### StickStick
 ```
-"$type": "Backend.StickStick, scwin",
+"$type": "Input.StickStick, scwin",
 "Deadzone": 0.2,
 "Gradingzone": 1.0
 "IsLeftElseRight": false
@@ -281,7 +297,7 @@ Translates thumbstick input into thumbstick input of a gamepad.  `Deadzone` sets
 
 ### TriggerButton
 ```
-"$type": "Backend.TriggerButton, scwin",
+"$type": "Input.TriggerButton, scwin",
 "Button": Button,
 "PullThreshold": 0.5,
 "IncludeSwitchInRange": false
@@ -290,7 +306,7 @@ Sets a trigger to press a button when pulled past a certain distance and release
 
 ### TriggerTrigger
 ```
-"$type": "Backend.TriggerTrigger, scwin",
+"$type": "Input.TriggerTrigger, scwin",
 "IsLeftElseRight": false,
 "IncludeSwitchInRange": false
 ```

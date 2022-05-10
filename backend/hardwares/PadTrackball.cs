@@ -54,8 +54,8 @@ namespace Input {
 			//var delta = this.SmoothInput((x: coord.x - previous.x, y: coord.y - previous.y));
 			var delta = smoother.SoftTieredSmooth((x: coord.x - previous.x, y: coord.y - previous.y));
 			//var delta = (x: coord.x - previous.x, y: coord.y - previous.y);
-			var movement = (x: delta.x * sensitivity, y: delta.y * sensitivity);
-			//var movement = this.AccelerateInput(delta.x, delta.y, sensitivity);
+			//var movement = (x: delta.x * sensitivity, y: delta.y * sensitivity);
+			var movement = this.AccelerateInput(delta.x, delta.y, sensitivity);
 			if (InvertX) movement.x = -movement.x;
 			if (InvertY) movement.y = -movement.y;
 
@@ -67,7 +67,7 @@ namespace Input {
 			if (e.IsRelease) {
 				isInitialPress = true;
 				amountStore = (0, 0);
-				//this.coordsToSmooth.Clear();
+				smoother.ClearSmoothingBuffer();
 				stopwatch.Stop();
 
 				if (HasInertia) {
@@ -77,24 +77,22 @@ namespace Input {
 					doInertia = Task.Run(() => {
 						var speedMagnitude = (x: Math.Abs(speed.x), y: Math.Abs(speed.y));
 						var magnitudeSign = (x: speed.x > 0 ? 1 : -1, y: speed.y > 0 ? 1 : -1);
+						var currentSensitivity = movement.x / delta.x;
 						Thread.Sleep(10);
 
 						// While guardian is a sanity check; stops rolling by simulating when the trackball loses
 						// the momentum needed to overcum friction.  Constant is measured in velocity per millisecond.
-						while (Math.Sqrt(speed.x * speed.x + speed.y * speed.y) > 5) {
-							if (!isRolling) { return; }
-
+						while (Math.Sqrt(
+							speedMagnitude.x * speedMagnitude.x + speedMagnitude.y * speedMagnitude.y
+						) > 5 && isRolling) {
 							// Remove speed according to amount of decceleration.
 							speedMagnitude.x -= speedMagnitude.x * decceleration;
 							speedMagnitude.y -= speedMagnitude.y * decceleration;
 							
-							var movement = (x: speedMagnitude.x * 10 * sensitivity * magnitudeSign.x,
-							                y: speedMagnitude.y * 10 * sensitivity * magnitudeSign.y);
-							//Console.WriteLine($"{speedMagnitude}");
+							var movement = (x: speedMagnitude.x * 10 * currentSensitivity * magnitudeSign.x,
+							                y: speedMagnitude.y * 10 * currentSensitivity * magnitudeSign.y);
 							this.Move(movement);
 							Thread.Sleep(10);
-							//flickDistance.x += (-(mu * g) * 0.1);
-							//flickDistance.y += (-(mu * g) * 0.1);
 						}
 					});
 				}
