@@ -1,5 +1,5 @@
 # scwin2
-User-level driver for steam controllers.  Allows for functionality to be defined using key-mappings written in JSON and inputted using a command line interface.
+Input mapper for steam controllers.  Allows for functionality to be defined using key-mappings written in JSON and inputted using a command line interface.
 
 This is a hobby project that aims to suppliment Steam Input by implementing features in a more simple and naïve way to allow for more flexibility when configuring the steam controller.  For example when a button assigned as a mouse scroll can be set to click the scroll wheel or scroll it while held, and touches and clicks of the trackpads can be configured seperately.
 
