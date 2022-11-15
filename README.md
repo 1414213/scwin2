@@ -10,7 +10,7 @@ This is a hobby project that aims to suppliment Steam Input by implementing feat
 
 ## How To Use
 ### Building and Running
-To run install dependencies and enter `dotnet run [NameOfInputmapHere]` into cmd.  It is recommended to use this alongside the Steam client and Steam Input.  The first argument should be the name of an inputmap.  If the given inputmap cannot be found then a blank inputmap of the given name is created.  Flags can be typed anywhere.
+To run install dependencies and run the .NET project.  It is recommended to use this alongside the Steam client and Steam Input.  The first argument should be the name of an inputmap.  If the given inputmap cannot be found then a blank inputmap of the given name is created.  Flags can be typed anywhere.
 ### Flags
 - -n, --no-gamepad: start the program without creating a virtual gamepad
 - -dir [string], --directory [string]: specify a directory to search for input maps from as the next argument
